@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="cache-control" content="no-cache" />
+    <title>Scroller Demo (scroll bubbles up only on eof/bof) </title>
+    <script src="http://coffeescript.org/extras/coffee-script.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.js"></script>
+    <script src="../../src/ui-scroll.coffee" type="text/coffeescript"></script>
+    <script src="../../src/ui-scroll-jqlite.coffee" type="text/coffeescript"></script>
+    <script src="scrollBubblingPrevent.coffee" type="text/coffeescript"></script>
+</head>
+<body>
+<h2> Scroll bubbles up only on eof/bof </h2>
+There are 100 elements in datasource indexes -50 through +50. Scrolling of the document begins only after bof/eof is hit.
+
+<div style="width: 400px; background-color: rgba(255, 249, 0, 0.28); ">
+
+    padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>
+    padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>
+    padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>
+    padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>
+
+    <div ui-scroll-viewport style="width: 400px; height: 300px; display: block; background-color: white;">
+        <ul>
+            <li ui-scroll="item in datasource">*{{item}}*</li>
+        </ul>
+    </div>
+
+    padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>
+    padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>
+    padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>
+    padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>padding<br>
+
+</div>
+
+</body>
+</html>

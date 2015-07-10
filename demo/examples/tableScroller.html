@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Scroller Demo (table based)</title>
+    <script src="http://coffeescript.org/extras/coffee-script.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.js"></script>
+    <script src="../../src/ui-scroll.coffee" type="text/coffeescript"></script>
+    <script src="../../src/ui-scroll-jqlite.coffee" type="text/coffeescript"></script>
+    <script src="tableScroller.coffee" type="text/coffeescript"></script>
+    <style>
+        .viewport{
+            height:400px;
+        }
+    </style>
+</head>
+<body>
+<h2 style="position: fixed; left: 150px; top: 0;">is loading: {{loading}}; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="../index.html"> browse sample code</a></h2>
+<table>
+    <tbody style="height:300px" ui-scroll-viewport>
+        <tr ui-scroll="item in datasource" is-loading="loading">
+            <td style="width: 30px">
+                {{$index}}
+            </td>
+            <td style="width: 100px">
+                {{item}}
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

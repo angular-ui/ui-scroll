@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Scroller Demo (list based)</title>
+    <script src="http://coffeescript.org/extras/coffee-script.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.js"></script>
+    <script src="../../src/ui-scroll.coffee" type="text/coffeescript"></script>
+    <script src="../../src/ui-scroll-jqlite.coffee" type="text/coffeescript"></script>
+    <script src="listScroller.coffee" type="text/coffeescript"></script>
+    <style>
+        .viewport{
+            height:400px;
+        }
+    </style>
+</head>
+<body>
+    <h2 style="position: fixed; left: 150px; top: 0;">is loading: {{loading}}; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <a href="../index.html"> browse sample code</a></h2>
+    <div ui-scroll-viewport class="viewport">
+        <ul>
+            <li ui-scroll="item in datasource"  is-loading="loading">*{{item}}*</li>
+        </ul>
+    </div>
+</body>
+</html>
