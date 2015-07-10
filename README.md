@@ -15,7 +15,7 @@ uiScroll directive
 **uiScroll** directive solves this problem by dynamically destroying elements as they become invisible and recreating
 them if they become visible again.
 
-Look [here](https://github.com/Hill30/NGScroller) for older versions of the component
+Look [here](https://github.com/Hill30/NGScroller) for older versions.
 
 ###Description
 
