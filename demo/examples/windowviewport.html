@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Scroller Demo (entire window)</title>
+    <script src="http://coffeescript.org/extras/coffee-script.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.js"></script>
+    <script src="../../src/ui-scroll.coffee" type="text/coffeescript"></script>
+	<script src="../../src/ui-scroll-jqlite.coffee" type="text/coffeescript"></script>
+    <script src="windowviewport.coffee" type="text/coffeescript"></script>
+</head>
+<body>
+<style>
+    .even {
+        background-color: #ffffe0;
+    }
+    .odd {
+        background-color: #e0ffff;
+    }
+</style>
+    <h2 style="position: fixed; left: 150px; top: 0;"> is loading: {{loading}}; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../index.html"> browse sample code</a></h2>
+	<h2 style="position: fixed; left: 150px; top: 20px;"> top visible: {{topItem}}</h2>
+    <div ui-scroll="item in datasource" top-visible="topItem" is-loading="loading" ng-class-even="'even'" ng-class-odd="'odd'">*{{item}}*</div>
+</body>
+</html>
