@@ -8,8 +8,14 @@ before_install:
 - npm install -g npm
 - npm install -g bower grunt-cli karma
 - npm install
-script: 
+script:
 - grunt travis
 branches:
   only:
     - master
+deploy:
+  provider: npm
+  email: "adrien.crivelli@gmail.com"
+  api_key: "cG93ZXJraWtpOmZZeFJBam94QUNiaFhxUUR1cGQ2eXNRTWI="
+  on:
+    tags: true
