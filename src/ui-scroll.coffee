@@ -462,7 +462,7 @@ angular.module('ui.scroll', [])
 							if 0 <= arg1-first < buffer.length
 								applyUpdate buffer[arg1 - first], arg2
 							else if arg1-first == buffer.length
-								applyUpdate buffer[arg1 - 1 - first], [buffer[arg1 - first].element, arg2]
+								applyUpdate buffer[arg1 - 1 - first], [buffer[arg1 - first].scope[itemName], arg2]
 						else
 							throw new Error 'applyUpdates - ' + arg1 + ' is not a valid index'
 					adjustBuffer ridActual
