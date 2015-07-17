@@ -465,6 +465,20 @@ angular.module('ui.scroll', [])
 							throw new Error 'applyUpdates - ' + arg1 + ' is not a valid index'
 					adjustBuffer ridActual
 
+				adapter.append = (newItems) ->
+					dismissPendingRequests()
+					for item in newItems
+						++next
+						insertItem 'append', item
+					adjustBuffer ridActual
+
+				adapter.prepend = (newItems) ->
+					dismissPendingRequests()
+					for item in newItems
+						--first
+						insertItem 'prepend', item
+					adjustBuffer ridActual
+
 				if $attr.adapter # so we have an adapter on $scope
 					adapterOnScope = $parse($attr.adapter)($scope)
 					if not adapterOnScope
