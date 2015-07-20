@@ -144,7 +144,7 @@ describe('uiScroll', function () {
 		);
 	};
 
-	describe('applyUpdates tests', function () {
+	describe('applyUpdates tests\n', function () {
 		var scrollSettings = {datasource: 'myOnePageDatasource', adapter: 'adapter'};
 
 		it('should create adapter object', function () {
@@ -536,7 +536,7 @@ describe('uiScroll', function () {
 		});
 	});
 
-	describe('applyUpdates tests (index based)', function () {
+	describe('applyUpdates tests (index based)\n', function () {
 		var scrollSettings = {datasource: 'myOnePageDatasource', adapter: 'adapter'};
 
 		it('should update selected (first) row', function () {
@@ -877,7 +877,7 @@ describe('uiScroll', function () {
 		});
 	});
 
-	describe('applyUpdates tests with object items', function () {
+	describe('applyUpdates tests with object items\n', function () {
 		var scrollSettings = {
 			datasource: 'myObjectDatasource',
 			adapter: 'adapter',
@@ -1067,7 +1067,138 @@ describe('uiScroll', function () {
 		});
 	});
 
+    describe('append tests\n', function () {
+        var scrollSettings = {datasource: 'myOnePageDatasource', adapter: 'adapter'};
 
+        it('should append two rows to the dataset', function () {
+            runTest(scrollSettings,
+                function (viewport, scope, $timeout) {
 
+                    scope.adapter.append(['appended one', 'appended two']);
+
+                    $timeout.flush();
+
+                    expect(viewport.children().length).toBe(7);
+
+                    var row1 = viewport.children()[1];
+                    expect(row1.tagName.toLowerCase()).toBe('div');
+                    expect(row1.innerHTML).toBe('1: one');
+
+                    var row2 = viewport.children()[2];
+                    expect(row2.tagName.toLowerCase()).toBe('div');
+                    expect(row2.innerHTML).toBe('2: two');
+
+                    var row3 = viewport.children()[3];
+                    expect(row3.tagName.toLowerCase()).toBe('div');
+                    expect(row3.innerHTML).toBe('3: three');
+
+                    var row4 = viewport.children()[4];
+                    expect(row4.tagName.toLowerCase()).toBe('div');
+                    expect(row4.innerHTML).toBe('4: appended one');
+
+                    var row5 = viewport.children()[5];
+                    expect(row5.tagName.toLowerCase()).toBe('div');
+                    expect(row5.innerHTML).toBe('5: appended two');
+
+                    expect(scope.adapter).toBeTruthy();
+                    expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+                }
+            );
+        });
+
+        var emptyScrollSettings = {datasource: 'myEmptyDatasource', adapter: 'adapter'};
+
+        it('should append two rows to the empty dataset', function () {
+            runTest(emptyScrollSettings,
+                function (viewport, scope, $timeout) {
+
+                    scope.adapter.append(['appended one', 'appended two']);
+
+                    $timeout.flush();
+
+                    expect(viewport.children().length).toBe(4);
+
+                    var row4 = viewport.children()[1];
+                    expect(row4.tagName.toLowerCase()).toBe('div');
+                    expect(row4.innerHTML).toBe('1: appended one');
+
+                    var row5 = viewport.children()[2];
+                    expect(row5.tagName.toLowerCase()).toBe('div');
+                    expect(row5.innerHTML).toBe('2: appended two');
+
+                    expect(scope.adapter).toBeTruthy();
+                    expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: appended one');
+                }
+            );
+        });
+
+    });
+
+    describe('prepend tests\n', function () {
+        var scrollSettings = {datasource: 'myOnePageDatasource', adapter: 'adapter'};
+
+        it('should prepend two rows to the dataset', function () {
+            runTest(scrollSettings,
+                function (viewport, scope, $timeout) {
+
+                    scope.adapter.prepend(['prepended one', 'prepended two']);
+
+                    $timeout.flush();
+
+                    expect(viewport.children().length).toBe(7);
+
+                    var row4 = viewport.children()[1];
+                    expect(row4.tagName.toLowerCase()).toBe('div');
+                    expect(row4.innerHTML).toBe('-1: prepended one');
+
+                    var row5 = viewport.children()[2];
+                    expect(row5.tagName.toLowerCase()).toBe('div');
+                    expect(row5.innerHTML).toBe('0: prepended two');
+
+                    var row1 = viewport.children()[3];
+                    expect(row1.tagName.toLowerCase()).toBe('div');
+                    expect(row1.innerHTML).toBe('1: one');
+
+                    var row2 = viewport.children()[4];
+                    expect(row2.tagName.toLowerCase()).toBe('div');
+                    expect(row2.innerHTML).toBe('2: two');
+
+                    var row3 = viewport.children()[5];
+                    expect(row3.tagName.toLowerCase()).toBe('div');
+                    expect(row3.innerHTML).toBe('3: three');
+
+                    expect(scope.adapter).toBeTruthy();
+                    expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: prepended one');
+                }
+            );
+        });
+
+        var emptyScrollSettings = {datasource: 'myEmptyDatasource', adapter: 'adapter'};
+
+        it('should prepend two rows to the empty dataset', function () {
+            runTest(emptyScrollSettings,
+                function (viewport, scope, $timeout) {
+
+                    scope.adapter.prepend(['prepended one', 'prepended two']);
+
+                    $timeout.flush();
+
+                    expect(viewport.children().length).toBe(4);
+
+                    var row4 = viewport.children()[1];
+                    expect(row4.tagName.toLowerCase()).toBe('div');
+                    expect(row4.innerHTML).toBe('-1: prepended one');
+
+                    var row5 = viewport.children()[2];
+                    expect(row5.tagName.toLowerCase()).toBe('div');
+                    expect(row5.innerHTML).toBe('0: prepended two');
+
+                    expect(scope.adapter).toBeTruthy();
+                    expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: prepended one');
+                }
+            );
+        });
+
+    });
 
 });

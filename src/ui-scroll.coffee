@@ -474,7 +474,7 @@ angular.module('ui.scroll', [])
 
 				adapter.prepend = (newItems) ->
 					dismissPendingRequests()
-					for item in newItems
+					for item in newItems.reverse()
 						--first
 						insertItem 'prepend', item
 					adjustBuffer ridActual
