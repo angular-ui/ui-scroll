@@ -121,6 +121,7 @@ exactly `count` elements unless it hit eof/bof
 
     #### Description
     this is an optional method. If supplied the scroller will $watch its value and will refresh the content if the value has changed
+    
 **Deprecated:** Method `revision` is deprecated - use `reload()` method on the adapter instead
 
 ###Adapter
