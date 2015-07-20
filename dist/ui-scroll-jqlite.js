@@ -18,12 +18,12 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', [
           return obj && obj.document && obj.location && obj.alert && obj.setInterval;
         };
         scrollTo = function(self, direction, value) {
-          var elem, method, preserve, prop, _ref;
+          var elem, method, preserve, prop, ref;
           elem = self[0];
-          _ref = {
+          ref = {
             top: ['scrollTop', 'pageYOffset', 'scrollLeft'],
             left: ['scrollLeft', 'pageXOffset', 'scrollTop']
-          }[direction], method = _ref[0], prop = _ref[1], preserve = _ref[2];
+          }[direction], method = ref[0], prop = ref[1], preserve = ref[2];
           if (isWindow(elem)) {
             if (angular.isDefined(value)) {
               return elem.scrollTo(self[preserve].call(self), value);
@@ -78,7 +78,7 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', [
           };
         }
         getMeasurements = function(elem, measure) {
-          var base, borderA, borderB, computedMarginA, computedMarginB, computedStyle, dirA, dirB, marginA, marginB, paddingA, paddingB, _ref;
+          var base, borderA, borderB, computedMarginA, computedMarginB, computedStyle, dirA, dirB, marginA, marginB, paddingA, paddingB, ref;
           if (isWindow(elem)) {
             base = document.documentElement[{
               height: 'clientHeight',
@@ -91,10 +91,10 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', [
               margin: 0
             };
           }
-          _ref = {
+          ref = {
             width: [elem.offsetWidth, 'Left', 'Right'],
             height: [elem.offsetHeight, 'Top', 'Bottom']
-          }[measure], base = _ref[0], dirA = _ref[1], dirB = _ref[2];
+          }[measure], base = ref[0], dirA = ref[1], dirB = ref[2];
           computedStyle = getStyle(elem);
           paddingA = convertToPx(elem, computedStyle['padding' + dirA]) || 0;
           paddingB = convertToPx(elem, computedStyle['padding' + dirB]) || 0;
@@ -136,7 +136,7 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', [
         };
         return angular.forEach({
           before: function(newElem) {
-            var children, elem, i, parent, self, _i, _ref;
+            var children, elem, i, j, parent, ref, self;
             self = this;
             elem = self[0];
             parent = self.parent();
@@ -144,7 +144,7 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', [
             if (children[0] === elem) {
               return parent.prepend(newElem);
             } else {
-              for (i = _i = 1, _ref = children.length - 1; 1 <= _ref ? _i <= _ref : _i >= _ref; i = 1 <= _ref ? ++_i : --_i) {
+              for (i = j = 1, ref = children.length - 1; 1 <= ref ? j <= ref : j >= ref; i = 1 <= ref ? ++j : --j) {
                 if (children[i] === elem) {
                   angular.element(children[i - 1]).after(newElem);
                   return;
@@ -168,10 +168,10 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', [
           outerHeight: function(option) {
             return getWidthHeight(this[0], 'height', option ? 'outerfull' : 'outer');
           },
+
           /*
           The offset setter method is not implemented
-          */
-
+           */
           offset: function(value) {
             var box, doc, docElem, elem, self, win;
             self = this;
@@ -223,8 +223,8 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', [
   }
 ]);
 
+
 /*
 //# sourceURL=src/ui-scroll-jqlite.js
-*/
-
+ */
 }());
