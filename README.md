@@ -121,41 +121,65 @@ exactly `count` elements unless it hit eof/bof
 
     #### Description
     this is an optional method. If supplied the scroller will $watch its value and will refresh the content if the value has changed
-    
+
 **Deprecated:** Method `revision` is deprecated - use `reload()` method on the adapter instead
 
 ###Adapter
 The adapter object is an internal object created for every instance of the scroller. Properties and methods of the adapter can be used to manipulate and assess the scroller the adapter was created for. Adapter based API replaces old (undocumented) event based API introduced earlier for this purpose. The event based API is now deprecated and no longer supported.
 
-Here is a list of properties and methods of the adapter object:
+Adapter object implements the following properties:
 
-* Property `isLoading` - a boolean value indicating whether there are any pending load requests.
-* Property `topVisible` - a reference to the item currently in the topmost visible position.
-* Property `topVisibleElement` - a reference to the DOM element currently in the topmost visible position.
-* Property `topVisibleScope` - a reference to the scope created for the item currently in the topmost visible position.
-* Method `reload()` can be used to re-initialize and reload the scroller
-* Method `applyUpdates` is used to insert/modify/delete items from scroller without reloading the entire thing
+* `isLoading` - a boolean value indicating whether there are any pending load requests.
+* `topVisible` - a reference to the item currently in the topmost visible position.
+* `topVisibleElement` - a reference to the DOM element currently in the topmost visible position.
+* `topVisibleScope` - a reference to the scope created for the item currently in the topmost visible position.
 
-####Manipulating the scroller content with applyUpdates method
+Adapater object implements the following methods
 
-Method `applyUpdates` provides a way to update the scroller content without full reload of the content from the datasource. The updates are performed by changing the items in the scroller internal buffer after they are loaded from the datasource. An item in the buffer can be deleted or modified. Also several items can be inserted to replace a given item.
+* Method `reload` 
 
-* Method `applyUpdates(index, newItems)`
+        reload()
 
+   #### Description
+    calling this method reinitializes and reloads the scroller content. This method is introduced as a replacement for the revision method of the datasource, which is now deprecated.
+    
+* Method `applyUpdates` 
+
+            applyUpdates(index, newItems)
     #### Description
-    Updates scroller content at the given location in the dataset
+    Replaces the item in the buffer at the given index with the new items.
 #### Parameters
-    * **index** index of the item to be affected in the dataset.
-    * **newItems** an array of items to replace the affected item. If the array is empty (`[]`) the item will be deleted, otherwise the items in the array replace the affected item.
+    * **index** provides position of the item to be affected in the dataset (not in the buffer). If the item with the given index currently is not in the buffer no updates will be applied. `$index` property of the item $scope can be used to access the index value for a given item
+    * **newItems** is an array of items to replace the affected item. If the array is empty (`[]`) the item will be deleted, otherwise the items in the array replace the item. If the newItem array contains the old item, the old item stays in place.
 
-* Method `applyUpdates(updater)`
+            applyUpdates(updater)
 
     #### Description
     Updates scroller content as determined by the updater function
 #### Parameters
-    * **updater** a function to be applied to every item currently in the buffer. The function will receive 3 parameters: `item`, `scope`, and `element`. Here `item` is the item to be affected, `scope` is the item $scope, and `element` is the html element for the item. The return value of the function should be an array of items. Similarly to the `newItem` parameter (see above), if the array is empty(`[]`), the item is deleted, otherwise the item is replaced by the items in the array. If the return value is not an array, the item remains unaffected, unless some updates were made to the item in the updater function. This can be thought of as in place update.
+    * **updater** is a function to be applied to every item currently in the buffer. The function will receive 3 parameters: `item`, `scope`, and `element`. Here `item` is the item to be affected, `scope` is the item $scope, and `element` is the html element for the item. The return value of the function should be an array of items. Similarly to the `newItem` parameter (see above), if the array is empty(`[]`), the item is deleted, otherwise the item is replaced by the items in the array. If the return value is not an array, the item remains unaffected, unless some updates were made to the item in the updater function. This can be thought of as in place update.
 
-**Important: update datasource to match the scroller buffer content:** Keep in mind that the modifications made by the `applyUpdates` methods are only applied to the content of the buffer. As the items in response to scrolling are pushed out of the buffer, the modifications are lost. It is your responsibility to ensure that as the scroller is scrolled back and a modified item is requested from the datasource again the values returned by the datasource would reflect the updated state. In other words you have to make sure that in addition to manipulating the scroller content you also apply the modifications to the dataset underlying the datasource.
+* Metod `append`
+
+            append(newItems)
+    #### Description
+    Adds new items after the last item in the buffer. 
+#### Parameters
+    * **newItems** provides an array of items to be appended.
+
+* Method `prepend`
+ 
+            prepend(newItems)
+    #### Description
+    Adds new items before the first item in the buffer.
+#### Parameters
+    * **newItems** provides an array of items to be prepended.
+ 
+####Manipulating the scroller content with adapter methods
+
+Adapter methods `applyUpdates`, `append` and `prepend` provide a way to update the scroller content without full reload of the content from the datasource. The updates are performed by changing the items in the scroller internal buffer after they are loaded from the datasource. Items in the buffer can be deleted or replaced with one or more items.
+
+**Important: update datasource to match the scroller buffer content:** Keep in mind that the modifications made by the adapter methods are only applied to the content of the buffer. As the items in response to scrolling are pushed out of the buffer, the modifications are lost. It is your responsibility to ensure that as the scroller is scrolled back and a modified item is requested from the datasource again the values returned by the datasource would reflect the updated state. In other words you have to make sure that in addition to manipulating the scroller content you also apply the modifications to the dataset underlying the datasource.
 
 ###Animations
 In the fashion similar to ngRepeat the following animations are supported:
