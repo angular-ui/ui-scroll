@@ -1,4 +1,3 @@
----
 language: node_js
 node_js:
 - '0.10'
@@ -12,10 +11,11 @@ script:
 - grunt travis
 branches:
   only:
-    - master
+  - master
 deploy:
   provider: npm
-  email: "adrien.crivelli@gmail.com"
-  api_key: "cG93ZXJraWtpOmZZeFJBam94QUNiaFhxUUR1cGQ2eXNRTWI="
+  email: adrien.crivelli@gmail.com
+  api_key:
+    secure: L5VUYzT5DFZ4NauNQbFPpZJbnc9tOugShm7H3s1P6Yc6ZM9sK9kVTVqPiRFOi1K4y8AW2Ohbt7D5TjrXFWJVqiYMDhuN/+EIWEDVvQFFF95Nx8QUAhfVhtCZcRNCtA09IntHhfiXXSBkzKUp75f52bRgDyze/B1HIJcFOx6mH8zVWpPANW4hpMi1fqSISZ3159xK9SfdXng9CbCLptR5f92dwdqHxY7hqw+PluhM4yPwov39nXJitokbcC9UZj8vGzSvm2bjAki5zX1SQ/9YSFCtw8WozEpAPDj9GhBd5jYZotfV1SpqgWptswqBpUu/suEnarMNOu3psHXoz2ho0468ORKxinAoFCiYPw0ysF0q3+E1/ekEihg7gkP2YQXpWBw7dyVilJbwSvFSNKOMwrmUV2Ed3LUhxlp1AvIspOod+/MkOvOtzR5OeMVTJgo1DYiXH5/J/M6axQVT7m+Bo2/FE9bJxz2exCcH7BPdqVC/879RkmvTebS7xhflqLh4INsPJ1exB5woYchaPl1oX/Ih0YTpOSr6gxsBpjix/ajTKJ0Y3PvbPeRPM5G094kaMGNIQ5YXjqnFLrIntkbZy8qOqE+7QIValkJn1bSqsCjM8qYDYtsQxoBfIX0XxZJzFv9jnf/pw4dBeHHl5na8wOeF8+fpYAHvTJd5v9NSH3U=
   on:
     tags: true
