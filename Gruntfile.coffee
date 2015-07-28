@@ -13,7 +13,7 @@ module.exports = (grunt) ->
 		connect:
 			app:
 				options:
-					base: './src/'
+					base: './'
 					middleware: require './server/middleware'
 					port: 5001
 		watch:

@@ -308,18 +308,22 @@ angular.module('ui.scroll', [])
 
 					# We need the item bindings to be processed before we can do adjustment
 					$timeout ->
+
 						for wrapper in toBePrepended
 							builder.insertElement wrapper.element
-							# an element is inserted at the top
-							newHeight = builder.topPadding() - wrapper.element.outerHeight(true)
+							prepFirst = prepFirst || wrapper.element # element prepended first
+							prepLast = wrapper.element # element prepended last
+							wrapper.op = 'none'
+
+						if prepFirst
+							heightIncrement = prepFirst.next().offset().top - prepLast.offset().top
 							# adjust padding to prevent it from visually pushing everything down
-							if newHeight >= 0
+							if builder.topPadding() >= heightIncrement
 								# if possible, reduce topPadding
-								builder.topPadding(newHeight)
+								builder.topPadding(builder.topPadding() - heightIncrement)
 							else
 								# if not, increment scrollTop
-								viewport.scrollTop(viewport.scrollTop() + wrapper.element.outerHeight(true))
-							wrapper.op = 'none'
+								viewport.scrollTop(viewport.scrollTop() + heightIncrement)
 
 						for wrapper in toBeRemoved
 							promises = promises.concat (removeItem wrapper)
