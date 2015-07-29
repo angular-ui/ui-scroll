@@ -309,14 +309,15 @@ angular.module('ui.scroll', [])
 					# We need the item bindings to be processed before we can do adjustment
 					$timeout ->
 
+						if toBePrepended.length
+							bottomPos = buffer[buffer.length-1].element.offset().top;
+
 						for wrapper in toBePrepended
 							builder.insertElement wrapper.element
-							prepFirst = prepFirst || wrapper.element # element prepended first
-							prepLast = wrapper.element # element prepended last
 							wrapper.op = 'none'
 
-						if prepFirst
-							heightIncrement = prepFirst.next().offset().top - prepLast.offset().top
+						if toBePrepended.length
+							heightIncrement = buffer[buffer.length-1].element.offset().top - bottomPos
 							# adjust padding to prevent it from visually pushing everything down
 							if builder.topPadding() >= heightIncrement
 								# if possible, reduce topPadding
