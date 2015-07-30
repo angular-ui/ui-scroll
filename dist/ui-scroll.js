@@ -354,17 +354,22 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
               }
             }
             return $timeout(function() {
-              var item, itemHeight, itemTop, k, l, len1, len2, len3, len4, m, n, newHeight, newRow, rowTop, topHeight;
+              var bottomPos, heightIncrement, item, itemHeight, itemTop, k, l, len1, len2, len3, len4, m, n, newRow, rowTop, topHeight;
+              if (toBePrepended.length) {
+                bottomPos = buffer[buffer.length - 1].element.offset().top;
+              }
               for (k = 0, len1 = toBePrepended.length; k < len1; k++) {
                 wrapper = toBePrepended[k];
                 builder.insertElement(wrapper.element);
-                newHeight = builder.topPadding() - wrapper.element.outerHeight(true);
-                if (newHeight >= 0) {
-                  builder.topPadding(newHeight);
-                } else {
-                  viewport.scrollTop(viewport.scrollTop() + wrapper.element.outerHeight(true));
-                }
                 wrapper.op = 'none';
+              }
+              if (toBePrepended.length) {
+                heightIncrement = buffer[buffer.length - 1].element.offset().top - bottomPos;
+                if (builder.topPadding() >= heightIncrement) {
+                  builder.topPadding(builder.topPadding() - heightIncrement);
+                } else {
+                  viewport.scrollTop(viewport.scrollTop() + heightIncrement);
+                }
               }
               for (l = 0, len2 = toBeRemoved.length; l < len2; l++) {
                 wrapper = toBeRemoved[l];
