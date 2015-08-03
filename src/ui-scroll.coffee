@@ -115,7 +115,7 @@ angular.module('ui.scroll', [])
 				#
 				# Calling linker is the only way I found to get access to the tag name of the template
 				# to prevent the directive scope from pollution a new scope is created and destroyed
-				# right after the repeaterHandler creation is completed
+				# right after the builder creation is completed
 				linker $scope.$new(), (template) ->
 
 					repeaterType = template[0].localName
@@ -150,12 +150,14 @@ angular.module('ui.scroll', [])
 						viewport: viewport
 						topPadding: -> topPadding.paddingHeight.apply(topPadding, arguments)
 						bottomPadding: -> bottomPadding.paddingHeight.apply(bottomPadding, arguments)
-						insertElement: (e, sibling) -> insertElement(e, sibling || topPadding)
-						insertElementAnimated: (e, sibling) -> insertElementAnimated(e, sibling || topPadding)
+						topOffset: -> topPadding.offset().top + topPadding.outerHeight()
+						bottomOffset: -> bottomPadding.offset().top
 						bottomDataPos: ->
 							scrollHeight(viewport) - bottomPadding.paddingHeight()
 						topDataPos: ->
 							topPadding.paddingHeight()
+						insertElement: (e, sibling) -> insertElement(e, sibling || topPadding)
+						insertElementAnimated: (e, sibling) -> insertElementAnimated(e, sibling || topPadding)
 
 				viewport = builder.viewport
 
@@ -287,37 +289,34 @@ angular.module('ui.scroll', [])
 					toBePrepended = []
 					toBeRemoved = []
 
-					for wrapper, i in buffer
-						switch wrapper.op
-							when 'prepend' then toBePrepended.unshift wrapper
-							when 'append'
-								if (i == 0)
-									builder.insertElement wrapper.element
-								else
-									builder.insertElement wrapper.element, buffer[i-1].element
-								builder.bottomPadding(Math.max(0,builder.bottomPadding() - wrapper.element.outerHeight(true)))
-								wrapper.op = 'none'
-							when 'insert'
-								if (i == 0)
-									promises = promises.concat (builder.insertElementAnimated wrapper.element)
-								else
-									promises = promises.concat (builder.insertElementAnimated wrapper.element, buffer[i-1].element)
-								builder.bottomPadding(Math.max(0,builder.bottomPadding() - wrapper.element.outerHeight(true)))
-								wrapper.op = 'none'
-							when 'remove' then toBeRemoved.push wrapper
-
 					# We need the item bindings to be processed before we can do adjustment
 					$timeout ->
 
-						if toBePrepended.length
-							bottomPos = buffer[buffer.length-1].element.offset().top;
+						topOffset = builder.topOffset()
+						for wrapper, i in buffer
+							switch wrapper.op
+								when 'prepend' then toBePrepended.unshift wrapper
+								when 'append'
+									if (i == 0) # the first item in buffer is to be appended, therefore the buffer was empty
+										builder.insertElement wrapper.element
+									else
+										builder.insertElement wrapper.element, buffer[i-1].element
+									wrapper.op = 'none'
+								when 'insert'
+									if (i == 0)
+										promises = promises.concat (builder.insertElementAnimated wrapper.element)
+									else
+										promises = promises.concat (builder.insertElementAnimated wrapper.element, buffer[i-1].element)
+									wrapper.op = 'none'
+								when 'remove' then toBeRemoved.push wrapper
+						builder.bottomPadding(Math.max(0,builder.bottomPadding() - (builder.topOffset() - topOffset)))
 
-						for wrapper in toBePrepended
-							builder.insertElement wrapper.element
-							wrapper.op = 'none'
-
 						if toBePrepended.length
-							heightIncrement = buffer[buffer.length-1].element.offset().top - bottomPos
+							bottomPos = builder.bottomOffset()
+							for wrapper in toBePrepended
+								builder.insertElement wrapper.element
+								wrapper.op = 'none'
+							heightIncrement = builder.bottomOffset() - bottomPos
 							# adjust padding to prevent it from visually pushing everything down
 							if builder.topPadding() >= heightIncrement
 								# if possible, reduce topPadding
