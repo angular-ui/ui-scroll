@@ -309,6 +309,10 @@ angular.module('ui.scroll', [])
 										promises = promises.concat (builder.insertElementAnimated wrapper.element, buffer[i-1].element)
 									wrapper.op = 'none'
 								when 'remove' then toBeRemoved.push wrapper
+
+						for wrapper in toBeRemoved
+							promises = promises.concat (removeItem wrapper)
+
 						builder.bottomPadding(Math.max(0,builder.bottomPadding() - (builder.topOffset() - topOffset)))
 
 						if toBePrepended.length
@@ -324,9 +328,6 @@ angular.module('ui.scroll', [])
 							else
 								# if not, increment scrollTop
 								viewport.scrollTop(viewport.scrollTop() + heightIncrement)
-
-						for wrapper in toBeRemoved
-							promises = promises.concat (removeItem wrapper)
 
 						# re-index the buffer
 						item.scope.$index = first + i for item,i in buffer
