@@ -215,6 +215,12 @@ See [index.html](http://rawgithub.com/angular-ui/ui-scroll/master/demo/index.htm
 
 ###History
 
+###v1.3.1
+* Changed the logic of viewport scroll/padding recalculation (to solve the problem [#8](https://github.com/angular-ui/ui-scroll/issues/8)).
+* Splitted test specifications.
+* Updated dev-dependencies (package.json).
+* Implemented append/prepend methods on the adapter.
+
 ###v1.3.0
 * Reorganized the repository structure.
 
