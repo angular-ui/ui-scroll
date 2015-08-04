@@ -150,8 +150,6 @@ angular.module('ui.scroll', [])
 						viewport: viewport
 						topPadding: -> topPadding.paddingHeight.apply(topPadding, arguments)
 						bottomPadding: -> bottomPadding.paddingHeight.apply(bottomPadding, arguments)
-						topOffset: -> topPadding.offset().top + topPadding.outerHeight()
-						bottomOffset: -> bottomPadding.offset().top
 						bottomDataPos: ->
 							scrollHeight(viewport) - bottomPadding.paddingHeight()
 						topDataPos: ->
@@ -292,7 +290,7 @@ angular.module('ui.scroll', [])
 					# We need the item bindings to be processed before we can do adjustment
 					$timeout ->
 
-						topOffset = builder.topOffset()
+						bottomPos = builder.bottomDataPos()
 						for wrapper, i in buffer
 							switch wrapper.op
 								when 'prepend' then toBePrepended.unshift wrapper
@@ -313,14 +311,15 @@ angular.module('ui.scroll', [])
 						for wrapper in toBeRemoved
 							promises = promises.concat (removeItem wrapper)
 
-						builder.bottomPadding(Math.max(0,builder.bottomPadding() - (builder.topOffset() - topOffset)))
+						# for anything other than prepend adjust the bottomPadding height
+						builder.bottomPadding(Math.max(0,builder.bottomPadding() - (builder.bottomDataPos() - bottomPos)))
 
 						if toBePrepended.length
-							bottomPos = builder.bottomOffset()
+							bottomPos = builder.bottomDataPos()
 							for wrapper in toBePrepended
 								builder.insertElement wrapper.element
 								wrapper.op = 'none'
-							heightIncrement = builder.bottomOffset() - bottomPos
+							heightIncrement = builder.bottomDataPos() - bottomPos
 							# adjust padding to prevent it from visually pushing everything down
 							if builder.topPadding() >= heightIncrement
 								# if possible, reduce topPadding
