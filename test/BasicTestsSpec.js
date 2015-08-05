@@ -101,7 +101,21 @@ describe('uiScroll', function () {
                     }
                 };
             }
-        ]);
+        ])
+
+            .factory('myInfiniteDatasource', [
+                '$log', '$timeout', '$rootScope', function () {
+                    return {
+                        get: function (index, count, success) {
+                            var result = [];
+                            for (var i = index; i < index + count; i++) {
+                                result.push('item' + i);
+                            }
+                            success(result);
+                        }
+                    };
+                }
+            ]);
 
     beforeEach(module('ui.scroll'));
     beforeEach(module('ui.scroll.test'));
@@ -736,5 +750,147 @@ describe('uiScroll', function () {
 
     });
 
+    describe('paddings recalculation', function () {
+
+        var viewportHeight = 60;
+        var itemHeight = 10;
+        var bufferSize = 3;
+
+        var scrollSettings = {
+            datasource: 'myInfiniteDatasource',
+            viewportHeight: viewportHeight,
+            itemHeight: itemHeight,
+            bufferSize: bufferSize
+        };
+
+        it('should calculate top padding element\'s height', function () {
+            runTest(scrollSettings,
+                function (viewport, scope, $timeout) {
+                    var topPaddingElement = angular.element(viewport.children()[0]);
+
+                    var scrollDelta = itemHeight * bufferSize;
+                    var limit = 6; // must be > 2 !
+                    var i;
+
+                    // scroll down (double speed) + expectation
+                    for(i = 0; i < limit; i++) {
+                        viewport.scrollTop(viewport.scrollTop() + 2 * scrollDelta);
+                        viewport.trigger('scroll');
+                        $timeout.flush();
+
+                        expect(topPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
+                    }
+
+                    // scroll up (normal speed) + expectation
+                    for(i = limit - 1; i >= 0; i--) {
+                        expect(topPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
+
+                        viewport.scrollTop(viewport.scrollTop() - scrollDelta);
+                        viewport.trigger('scroll');
+                        $timeout.flush();
+                    }
+
+                }
+            );
+        });
+
+        it('should calculate top padding element\'s height with new rows pre-built', function () {
+            runTest(scrollSettings,
+                function (viewport, scope, $timeout) {
+                    var topPaddingElement = angular.element(viewport.children()[0]);
+
+                    var scrollDelta = itemHeight * bufferSize;
+                    var limit = 6; // must be > 2 !
+                    var i;
+
+                    // scroll down, new rows building
+                    for(i = 0; i < limit; i++) {
+                        viewport.scrollTop(viewport.scrollTop() + scrollDelta);
+                        viewport.trigger('scroll');
+                        $timeout.flush();
+                    }
+
+                    // scroll up, return to the top
+                    for(i = 0; i < limit; i++) {
+                        viewport.scrollTop(viewport.scrollTop() - scrollDelta);
+                        viewport.trigger('scroll');
+                        $timeout.flush();
+                    }
+
+                    // scroll down + expectation
+                    for(i = 0; i < limit; i++) {
+                        viewport.scrollTop(viewport.scrollTop() + scrollDelta);
+                        viewport.trigger('scroll');
+                        $timeout.flush();
+
+                        expect(topPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
+                        //console.log(topPaddingElement.height() + ' =?= ' + itemHeight * bufferSize * (i + 1));
+                    }
+
+                    // scroll up + expectation
+                    for(i = limit - 1; i >= 0; i--) {
+                        expect(topPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
+                        //console.log(topPaddingElement.height() + ' =?= ' + itemHeight * bufferSize * (i + 1));
+
+                        viewport.scrollTop(viewport.scrollTop() - scrollDelta);
+                        viewport.trigger('scroll');
+                        $timeout.flush();
+                    }
+
+                }
+            );
+        });
+
+        it('should calculate bottom padding element\'s height with new rows pre-built', function () {
+            runTest(scrollSettings,
+                function (viewport, scope, $timeout) {
+                    var bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
+
+                    var scrollDelta = itemHeight * bufferSize;
+                    var limit = 6; // must be > 2 !
+                    var i;
+
+                    // scroll up, new rows building
+                    for(i = 0; i < limit; i++) {
+                        viewport.scrollTop(viewport.scrollTop() - scrollDelta);
+                        viewport.trigger('scroll');
+                        $timeout.flush();
+                    }
+
+                    // scroll down, return to the bottom
+                    for(i = 0; i < limit; i++) {
+                        viewport.scrollTop(viewport.scrollTop() + scrollDelta);
+                        viewport.trigger('scroll');
+                        $timeout.flush();
+                    }
+
+                    // unstable delta passing
+                    viewport.scrollTop(viewport.scrollTop() - 5);
+
+                    // scroll up + expectation
+                    for(i = 0; i < limit; i++) {
+                        viewport.scrollTop(viewport.scrollTop() - scrollDelta);
+                        viewport.trigger('scroll');
+                        $timeout.flush();
+
+                        expect(bottomPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
+                        //console.log(bottomPaddingElement.height() + ' =?= ' + itemHeight * bufferSize * (i + 1));
+                    }
+
+                    // scroll down + expectation
+                    for(i = limit - 1; i >= 0; i--) {
+                        expect(bottomPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
+                        //console.log(bottomPaddingElement.height() + ' =?= ' + itemHeight * bufferSize * (i + 1));
+
+                        viewport.scrollTop(viewport.scrollTop() + scrollDelta);
+                        viewport.trigger('scroll');
+                        $timeout.flush();
+                    }
+
+                }
+            );
+        });
+
+    });
 
 });
