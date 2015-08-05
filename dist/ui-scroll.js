@@ -150,17 +150,17 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
               bottomPadding: function() {
                 return bottomPadding.paddingHeight.apply(bottomPadding, arguments);
               },
-              insertElement: function(e, sibling) {
-                return insertElement(e, sibling || topPadding);
-              },
-              insertElementAnimated: function(e, sibling) {
-                return insertElementAnimated(e, sibling || topPadding);
-              },
               bottomDataPos: function() {
                 return scrollHeight(viewport) - bottomPadding.paddingHeight();
               },
               topDataPos: function() {
                 return topPadding.paddingHeight();
+              },
+              insertElement: function(e, sibling) {
+                return insertElement(e, sibling || topPadding);
+              },
+              insertElementAnimated: function(e, sibling) {
+                return insertElementAnimated(e, sibling || topPadding);
               }
             };
           });
@@ -321,54 +321,57 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
             }
           };
           adjustBuffer = function(rid, finalize) {
-            var i, j, len, promises, toBePrepended, toBeRemoved, wrapper;
+            var promises, toBePrepended, toBeRemoved;
             promises = [];
             toBePrepended = [];
             toBeRemoved = [];
-            for (i = j = 0, len = buffer.length; j < len; i = ++j) {
-              wrapper = buffer[i];
-              switch (wrapper.op) {
-                case 'prepend':
-                  toBePrepended.unshift(wrapper);
-                  break;
-                case 'append':
-                  if (i === 0) {
-                    builder.insertElement(wrapper.element);
-                  } else {
-                    builder.insertElement(wrapper.element, buffer[i - 1].element);
-                  }
-                  builder.bottomPadding(Math.max(0, builder.bottomPadding() - wrapper.element.outerHeight(true)));
-                  wrapper.op = 'none';
-                  break;
-                case 'insert':
-                  if (i === 0) {
-                    promises = promises.concat(builder.insertElementAnimated(wrapper.element));
-                  } else {
-                    promises = promises.concat(builder.insertElementAnimated(wrapper.element, buffer[i - 1].element));
-                  }
-                  builder.bottomPadding(Math.max(0, builder.bottomPadding() - wrapper.element.outerHeight(true)));
-                  wrapper.op = 'none';
-                  break;
-                case 'remove':
-                  toBeRemoved.push(wrapper);
-              }
-            }
             return $timeout(function() {
-              var item, itemHeight, itemTop, k, l, len1, len2, len3, len4, m, n, newHeight, newRow, rowTop, topHeight;
-              for (k = 0, len1 = toBePrepended.length; k < len1; k++) {
-                wrapper = toBePrepended[k];
-                builder.insertElement(wrapper.element);
-                newHeight = builder.topPadding() - wrapper.element.outerHeight(true);
-                if (newHeight >= 0) {
-                  builder.topPadding(newHeight);
-                } else {
-                  viewport.scrollTop(viewport.scrollTop() + wrapper.element.outerHeight(true));
+              var bottomPos, heightIncrement, i, item, itemHeight, itemTop, j, k, l, len, len1, len2, len3, len4, m, n, newRow, rowTop, topHeight, wrapper;
+              bottomPos = builder.bottomDataPos();
+              for (i = j = 0, len = buffer.length; j < len; i = ++j) {
+                wrapper = buffer[i];
+                switch (wrapper.op) {
+                  case 'prepend':
+                    toBePrepended.unshift(wrapper);
+                    break;
+                  case 'append':
+                    if (i === 0) {
+                      builder.insertElement(wrapper.element);
+                    } else {
+                      builder.insertElement(wrapper.element, buffer[i - 1].element);
+                    }
+                    wrapper.op = 'none';
+                    break;
+                  case 'insert':
+                    if (i === 0) {
+                      promises = promises.concat(builder.insertElementAnimated(wrapper.element));
+                    } else {
+                      promises = promises.concat(builder.insertElementAnimated(wrapper.element, buffer[i - 1].element));
+                    }
+                    wrapper.op = 'none';
+                    break;
+                  case 'remove':
+                    toBeRemoved.push(wrapper);
                 }
-                wrapper.op = 'none';
               }
-              for (l = 0, len2 = toBeRemoved.length; l < len2; l++) {
-                wrapper = toBeRemoved[l];
+              for (k = 0, len1 = toBeRemoved.length; k < len1; k++) {
+                wrapper = toBeRemoved[k];
                 promises = promises.concat(removeItem(wrapper));
+              }
+              builder.bottomPadding(Math.max(0, builder.bottomPadding() - (builder.bottomDataPos() - bottomPos)));
+              if (toBePrepended.length) {
+                bottomPos = builder.bottomDataPos();
+                for (l = 0, len2 = toBePrepended.length; l < len2; l++) {
+                  wrapper = toBePrepended[l];
+                  builder.insertElement(wrapper.element);
+                  wrapper.op = 'none';
+                }
+                heightIncrement = builder.bottomDataPos() - bottomPos;
+                if (builder.topPadding() >= heightIncrement) {
+                  builder.topPadding(builder.topPadding() - heightIncrement);
+                } else {
+                  viewport.scrollTop(viewport.scrollTop() + heightIncrement);
+                }
               }
               for (i = m = 0, len3 = buffer.length; m < len3; i = ++m) {
                 item = buffer[i];
