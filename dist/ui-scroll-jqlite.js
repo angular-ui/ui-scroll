@@ -1,4 +1,12 @@
-(function () {
+/*!
+ * angular-ui-scroll
+ * https://github.com/angular-ui/ui-scroll.git
+ * Version: 1.3.1 -- 2015-08-05T13:39:04.079Z
+ * License: MIT
+ */
+ 
+
+ (function () {
 'use strict';
 angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', [
   '$log', '$window', function(console, window) {

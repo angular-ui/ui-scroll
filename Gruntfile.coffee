@@ -10,6 +10,15 @@ module.exports = (grunt) ->
 	grunt.loadNpmTasks 'grunt-contrib-uglify'
 
 	grunt.initConfig
+		packageBower: grunt.file.readJSON('./bower.json')
+		timestamp: (new Date()).toISOString()
+		releaseData:
+			'/*!\n' +
+			' * <%= packageBower.name %>\n' +
+			' * <%= packageBower.homepage %>\n' +
+			' * Version: <%= packageBower.version %> -- <%= timestamp %>\n' +
+			' * License: <%= packageBower.license %>\n' +
+			' */\n'
 		connect:
 			app:
 				options:
@@ -49,11 +58,11 @@ module.exports = (grunt) ->
 					bare: true
 					#sourceMap: true
 
-		#prepend 'use strict' to the files
 		concat:
-		#usestrict:
 			options:
-				banner: '(function () {\n\'use strict\';\n'
+				#prepend 'use strict' and release data to the files
+				banner:
+					'<%= releaseData %> \n\n (function () {\n\'use strict\';\n'
 				footer: '}());'
 				stripBanners: true
 				process: (src, filepath) ->
@@ -71,11 +80,13 @@ module.exports = (grunt) ->
 					)
 
 			dynamic_mappings:
-				files: 
+				files:
 					'dist/ui-scroll.js': ['./temp/**/ui-scroll.js']
 					'dist/ui-scroll-jqlite.js': ['./temp/**/ui-scroll-jqlite.js']
 
 		uglify:
+			options:
+				banner: '<%= releaseData %>'
 			common:
 				files:
 					'./dist/ui-scroll.min.js': [
