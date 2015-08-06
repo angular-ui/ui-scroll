@@ -9,9 +9,6 @@ before_install:
 - npm install
 script:
 - grunt travis
-branches:
-  only:
-  - master
 deploy:
   provider: npm
   email: adrien.crivelli@gmail.com
