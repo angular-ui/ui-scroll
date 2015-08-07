@@ -95,7 +95,7 @@ angular.module('ui.scroll', [])
 
 				insertElement =
 					(newElement, previousElement) ->
-						element.after.apply(previousElement, newElement)
+						element.after.apply(previousElement, [newElement])
 						[]
 
 				insertElementAnimated =
