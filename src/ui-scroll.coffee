@@ -208,53 +208,45 @@ angular.module('ui.scroll', [])
 
 				clipBottom = ->
 					# clip the invisible items off the bottom
-					bottomHeight = 0 #builder.bottomPadding()
 					overage = 0
-
 					for i in [buffer.length-1..0]
 						item = buffer[i]
 						itemTop = item.element.offset().top
-						newRow = rowTop isnt itemTop
-						rowTop = itemTop
-						itemHeight = item.element.outerHeight(true) if newRow
-						if (builder.bottomDataPos() - bottomHeight - itemHeight > bottomVisiblePos() + bufferPadding())
-							bottomHeight += itemHeight if newRow
+						itemBottom = itemTop + item.element.outerHeight(true) 
+						lastItemBottom = itemBottom unless lastItemBottom
+						if (itemTop > bottomVisiblePos() + bufferPadding())
 							overage++
 							eof = false
 						else
-							break if newRow
-							overage++
+							paddingIncrement = itemBottom - lastItemBottom
+							break 
 
 					if overage > 0
-						builder.bottomPadding(builder.bottomPadding() + bottomHeight)
+						builder.bottomPadding(builder.bottomPadding() + paddingIncrement)
 						removeFromBuffer(buffer.length - overage, buffer.length)
 						next -= overage
-						#log 'clipped off bottom ' + overage + ' bottom padding ' + builder.bottomPadding()
+						log 'clipped off bottom ' + overage + ' bottom padding ' + builder.bottomPadding()
 
 				shouldLoadTop = ->
 					!bof && (builder.topDataPos() > topVisiblePos() - bufferPadding())
 
 				clipTop = ->
 					# clip the invisible items off the top
-					topHeight = 0
 					overage = 0
 					for item in buffer
 						itemTop = item.element.offset().top
-						newRow = rowTop isnt itemTop
-						rowTop = itemTop
-						itemHeight = item.element.outerHeight(true) if newRow
-						if (builder.topDataPos() + topHeight + itemHeight < topVisiblePos() - bufferPadding())
-							topHeight += itemHeight if newRow
+						itemHeight = item.element.outerHeight(true)
+						if (itemTop + itemHeight < topVisiblePos() - bufferPadding())
 							overage++
 							bof = false
 						else
-							break if newRow
-							overage++
+							paddingIncrement = itemTop - buffer[0].element.offset().top
+							break
 					if overage > 0
-						builder.topPadding(builder.topPadding() + topHeight)
+						builder.topPadding(builder.topPadding() + paddingIncrement)
 						removeFromBuffer(0, overage)
 						first += overage
-						#log 'clipped off top ' + overage + ' top padding ' + builder.topPadding()
+						log 'clipped off top ' + overage + ' top padding ' + builder.topPadding()
 
 				enqueueFetch = (rid, direction)->
 					if (!adapter.isLoading)
@@ -383,7 +375,7 @@ angular.module('ui.scroll', [])
 									for item in result
 										++next
 										insertItem 'append', item
-										#log 'appended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
+									log 'appended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
 								finalize rid
 					else
 						if buffer.length && !shouldLoadTop()
@@ -402,7 +394,7 @@ angular.module('ui.scroll', [])
 									for i in [result.length-1..0]
 										--first
 										insertItem 'prepend', result[i]
-									#log 'prepended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
+									log 'prepended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
 								finalize rid
 
 
