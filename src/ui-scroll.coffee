@@ -212,15 +212,14 @@ angular.module('ui.scroll', [])
 					for i in [buffer.length-1..0]
 						item = buffer[i]
 						itemTop = item.element.offset().top
-						itemBottom = itemTop + item.element.outerHeight(true) 
+						itemBottom = itemTop + item.element.outerHeight(true)
 						lastItemBottom = itemBottom unless lastItemBottom
 						if (itemTop > bottomVisiblePos() + bufferPadding())
 							overage++
 							eof = false
 						else
-							paddingIncrement = itemBottom - lastItemBottom
+							paddingIncrement = lastItemBottom - itemBottom
 							break 
-
 					if overage > 0
 						builder.bottomPadding(builder.bottomPadding() + paddingIncrement)
 						removeFromBuffer(buffer.length - overage, buffer.length)
@@ -305,6 +304,7 @@ angular.module('ui.scroll', [])
 
 						# for anything other than prepend adjust the bottomPadding height
 						builder.bottomPadding(Math.max(0,builder.bottomPadding() - (builder.bottomDataPos() - bottomPos)))
+						log "new bottomPadding #{builder.bottomPadding()}" if (builder.bottomDataPos() - bottomPos)
 
 						if toBePrepended.length
 							bottomPos = builder.bottomDataPos()
@@ -318,7 +318,8 @@ angular.module('ui.scroll', [])
 								builder.topPadding(builder.topPadding() - heightIncrement)
 							else
 								# if not, increment scrollTop
-								viewport.scrollTop(viewport.scrollTop() + heightIncrement)
+								viewport.scrollTop(viewport.scrollTop() + heightIncrement - builder.topPadding())
+								builder.topPadding(0)
 
 						# re-index the buffer
 						item.scope.$index = first + i for item,i in buffer
