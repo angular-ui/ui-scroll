@@ -337,6 +337,8 @@ angular.module('ui.scroll', [])
 						else
 							enqueueFetch(rid, false) if shouldLoadTop()
 						finalize(rid) if finalize
+
+						#topVisible is not necessarily the first item in the buffer
 						if pending.length == 0
 							topHeight = 0
 							for item in buffer
@@ -349,6 +351,7 @@ angular.module('ui.scroll', [])
 								else
 									topVisible(item) if newRow
 									break
+
 						# the promise from the timeout should be added to promises array
 						# I just could not make promises work with the jasmine tests
 						if (promises.length)
