@@ -281,7 +281,7 @@ angular.module('ui.scroll', [])
 							when 'append' then buffer.push wrapper
 							when 'prepend' then buffer.unshift wrapper
 
-				adjustBuffer = (rid, finalize) ->
+				adjustBuffer = (rid, adjustAfterFetch) ->
 
 					promises = []
 					toBePrepended = []
@@ -300,6 +300,7 @@ angular.module('ui.scroll', [])
 									else
 										builder.insertElement wrapper.element, buffer[i-1].element
 									wrapper.op = 'none'
+									keepFetching = keepFetching || wrapper.element.outerHeight(true)
 								when 'insert'
 									if (i == 0)
 										promises = promises.concat (builder.insertElementAnimated wrapper.element)
@@ -319,6 +320,7 @@ angular.module('ui.scroll', [])
 							for wrapper in toBePrepended
 								builder.insertElement wrapper.element
 								wrapper.op = 'none'
+								keepFetching = keepFetching || wrapper.element.outerHeight(true)
 							heightIncrement = builder.bottomDataPos() - bottomPos
 							# adjust padding to prevent it from visually pushing everything down
 							if builder.topPadding() >= heightIncrement
@@ -332,11 +334,18 @@ angular.module('ui.scroll', [])
 						item.scope.$index = first + i for item,i in buffer
 
 						#log "top {actual=#{builder.topDataPos()} visible from=#{topVisiblePos()} bottom {visible through=#{bottomVisiblePos()} actual=#{builder.bottomDataPos()}}"
+
 						if shouldLoadBottom()
-							enqueueFetch(rid, true)
+							# keepFetching = true means that at least one item app/prepended in the last batch had height > 0
+							# !adjustAfterFetch = false means that this is chained fetch (a fetch after another fetch)
+							enqueueFetch(rid, true) if !adjustAfterFetch || keepFetching
 						else
-							enqueueFetch(rid, false) if shouldLoadTop()
-						finalize(rid) if finalize
+							if shouldLoadTop()
+								# pending[0] = true means that previous fetch was at the bottom we need to force at least one at the top
+								# BTW there will always be at least 1 element in the pending array because bottom is fetched first
+								enqueueFetch(rid, false) if !adjustAfterFetch || keepFetching || pending[0]
+
+						adjustAfterFetch(rid) if adjustAfterFetch
 
 						#topVisible is not necessarily the first item in the buffer
 						if pending.length == 0
