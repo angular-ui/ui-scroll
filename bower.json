@@ -22,11 +22,9 @@
 	"ignore": [
 		"server",
 		"test",
-		"src/examples",
-		"src/index.html",
+		"demo",
 		"**/.*",
 		"Gruntfile.coffee",
-		"package.json",
-		"test.dat"
+		"package.json"
 	]
 }
