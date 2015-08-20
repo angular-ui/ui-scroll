@@ -285,12 +285,13 @@ angular.module('ui.scroll', [])
 
 				adjustBuffer = (rid, adjustAfterFetch) ->
 
-					promises = []
-					toBePrepended = []
-					toBeRemoved = []
-
 					# We need the item bindings to be processed before we can do adjustment
 					$timeout ->
+
+						promises = []
+						toBePrepended = []
+						toBeRemoved = []
+						alreadyAdjusted = false
 
 						bottomPos = builder.bottomDataPos()
 						for wrapper, i in buffer
@@ -302,7 +303,18 @@ angular.module('ui.scroll', [])
 									else
 										builder.insertElement wrapper.element, buffer[i-1].element
 									wrapper.op = 'none'
-									keepFetching = keepFetching || wrapper.element.outerHeight(true)
+									if wrapper.element.outerHeight(true)
+										keepFetching = keepFetching || true
+									else
+										((wrapperClosure) ->
+											wrapperClosure.unregister = wrapperClosure.scope.$watch ->
+												#log "item #{wrapperClosure.scope.item} visible=#{wrapperClosure.element.outerHeight(true) > 0}"
+												if wrapperClosure.element.outerHeight(true)
+													if !alreadyAdjusted
+														adjustBuffer()
+														alreadyAdjusted = true
+													wrapperClosure.unregister()
+										)(wrapper)
 								when 'insert'
 									if (i == 0)
 										promises = promises.concat (builder.insertElementAnimated wrapper.element)
@@ -322,8 +334,21 @@ angular.module('ui.scroll', [])
 							for wrapper in toBePrepended
 								builder.insertElement wrapper.element
 								wrapper.op = 'none'
-								keepFetching = keepFetching || wrapper.element.outerHeight(true)
+								if wrapper.element.outerHeight(true)
+									keepFetching = keepFetching || true
+								else
+									((wrapperClosure) ->
+										wrapperClosure.unregister = wrapperClosure.scope.$watch ->
+											#log "item #{wrapperClosure.scope.item} visible=#{wrapperClosure.element.outerHeight(true) > 0}"
+											if wrapperClosure.element.outerHeight(true)
+												if !alreadyAdjusted
+													adjustBuffer()
+													alreadyAdjusted = true
+												wrapperClosure.unregister()
+									)(wrapper)
+
 							heightIncrement = builder.bottomDataPos() - bottomPos
+
 							# adjust padding to prevent it from visually pushing everything down
 							if builder.topPadding() >= heightIncrement
 								# if possible, reduce topPadding
@@ -343,7 +368,7 @@ angular.module('ui.scroll', [])
 							enqueueFetch(rid, true) if !adjustAfterFetch || keepFetching
 						else
 							if shouldLoadTop()
-								# pending[0] = true means that previous fetch was at the bottom we need to force at least one at the top
+								# pending[0] = true means that previous fetch was appending. We need to force at least one prepend
 								# BTW there will always be at least 1 element in the pending array because bottom is fetched first
 								enqueueFetch(rid, false) if !adjustAfterFetch || keepFetching || pending[0]
 
