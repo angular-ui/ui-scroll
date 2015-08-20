@@ -118,7 +118,7 @@ angular.module('ui.scroll', [])
 				# right after the builder creation is completed
 				linker $scope.$new(), (template, scope) ->
 					# Destroy template's scope to remove any watchers on it.
-					scope.$destroy();
+					scope.$destroy()
 
 					repeaterType = template[0].localName
 					if repeaterType in ['dl']
