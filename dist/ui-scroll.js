@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.3.1 -- 2015-08-05T13:39:04.079Z
+ * Version: 1.3.1 -- 2015-08-20T10:58:44.121Z
  * License: MIT
  */
  
@@ -99,7 +99,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
             return [];
           };
           insertElement = function(newElement, previousElement) {
-            element.after.apply(previousElement, newElement);
+            element.after.apply(previousElement, [newElement]);
             return [];
           };
           insertElementAnimated = $animate ? angular.version.minor === 2 ? function(newElement, previousElement) {
@@ -112,8 +112,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
           } : function(newElement, previousElement) {
             return [$animate.enter(newElement, element, previousElement)];
           } : insertElement;
-          linker($scope.$new(), function(template) {
+          linker($scope.$new(), function(template, scope) {
             var bottomPadding, padding, repeaterType, topPadding, viewport;
+            scope.$destroy();
             repeaterType = template[0].localName;
             if (repeaterType === 'dl') {
               throw new Error('ui-scroll directive does not support <' + template[0].localName + '> as a repeating tag: ' + template[0].outerHTML);

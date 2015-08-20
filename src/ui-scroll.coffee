@@ -116,7 +116,9 @@ angular.module('ui.scroll', [])
 				# Calling linker is the only way I found to get access to the tag name of the template
 				# to prevent the directive scope from pollution a new scope is created and destroyed
 				# right after the builder creation is completed
-				linker $scope.$new(), (template) ->
+				linker $scope.$new(), (template, scope) ->
+					# Destroy template's scope to remove any watchers on it.
+					scope.$destroy()
 
 					repeaterType = template[0].localName
 					if repeaterType in ['dl']
