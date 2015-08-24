@@ -303,13 +303,12 @@ angular.module('ui.scroll', [])
 									else
 										builder.insertElement wrapper.element, buffer[i-1].element
 									wrapper.op = 'none'
-									if wrapper.element.outerHeight(true)
+									if wrapper.element.height()
 										keepFetching = keepFetching || true
 									else
 										((wrapperClosure) ->
 											wrapperClosure.unregister = wrapperClosure.scope.$watch ->
-												#log "item #{wrapperClosure.scope.item} visible=#{wrapperClosure.element.outerHeight(true) > 0}"
-												if wrapperClosure.element.outerHeight(true)
+												if wrapperClosure.element.height()
 													if !alreadyAdjusted
 														adjustBuffer()
 														alreadyAdjusted = true
@@ -334,13 +333,12 @@ angular.module('ui.scroll', [])
 							for wrapper in toBePrepended
 								builder.insertElement wrapper.element
 								wrapper.op = 'none'
-								if wrapper.element.outerHeight(true)
+								if wrapper.element.height(true)
 									keepFetching = keepFetching || true
 								else
 									((wrapperClosure) ->
 										wrapperClosure.unregister = wrapperClosure.scope.$watch ->
-											#log "item #{wrapperClosure.scope.item} visible=#{wrapperClosure.element.outerHeight(true) > 0}"
-											if wrapperClosure.element.outerHeight(true)
+											if wrapperClosure.element.height(true)
 												if !alreadyAdjusted
 													adjustBuffer()
 													alreadyAdjusted = true
