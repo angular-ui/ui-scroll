@@ -22,10 +22,6 @@ describe('uiScroll', function () {
                         expect(row.innerHTML).toBe(i + ': item' + i);
                     }
 
-                    for (var i = 1; i < 6; i++) {
-                        var row = viewport.children()[i];
-                        expect(angular.element(row).height()).toBe(40);
-                    }
                 }
             );
         });
@@ -46,38 +42,29 @@ describe('uiScroll', function () {
                         expect(row.innerHTML).toBe(i + ': item' + i);
                     }
 
-                    for (var i = 1; i < 6; i++) {
-                        var row = viewport.children()[i];
-                        expect(angular.element(row).height()).toBe(40);
-                    }
                 }
             );
         });
 
 
-        it('should preserve elements after visibility switched off (display:none)', function () {
+        it('should only load one batch with visibility switched off (display:none)', function () {
             runTest(scrollSettings,
                 function (viewport, scope, $timeout) {
-                    debugger
                     viewport.css('display','none');
                     scope.adapter.reload();
                     $timeout.flush();
 
-                    expect(viewport.children().length).toBe(8);
+                    expect(viewport.children().length).toBe(5);
                     expect(viewport.scrollTop()).toBe(0);
                     expect(viewport.children().css('height')).toBe('0px');
-                    expect(angular.element(viewport.children()[7]).css('height')).toBe('0px');
+                    expect(angular.element(viewport.children()[4]).css('height')).toBe('0px');
 
-                    for (var i = 1; i < 7; i++) {
+                    for (var i = 1; i < 3; i++) {
                         var row = viewport.children()[i];
                         expect(row.tagName.toLowerCase()).toBe('div');
                         expect(row.innerHTML).toBe(i + ': item' + i);
                     }
 
-                    for (var i = 1; i < 6; i++) {
-                        var row = viewport.children()[i];
-                        expect(angular.element(row).height()).toBe(40);
-                    }
                 }
             );
         });

@@ -303,12 +303,13 @@ angular.module('ui.scroll', [])
 									else
 										builder.insertElement wrapper.element, buffer[i-1].element
 									wrapper.op = 'none'
-									if wrapper.element.height()
+									log "element height #{wrapper.element.height()} offset #{wrapper.element[0].offsetParent}"
+									if wrapper.element.height() && wrapper.element[0].offsetParent
 										keepFetching = keepFetching || true
 									else
 										((wrapperClosure) ->
 											wrapperClosure.unregister = wrapperClosure.scope.$watch ->
-												if wrapperClosure.element.height()
+												if wrapperClosure.element.height() && wrapperClosure.element[0].offsetParent
 													if !alreadyAdjusted
 														adjustBuffer()
 														alreadyAdjusted = true
