@@ -46,11 +46,11 @@ describe('uiScroll', function () {
             );
         });
 
-
-        it('should only load one batch with visibility switched off (display:none)', function () {
+/*
+        it('should only load one batch with visibility switched off (visibility:hidden)', function () {
             runTest(scrollSettings,
                 function (viewport, scope, $timeout) {
-                    viewport.css('display','none');
+                    viewport.css('visibility','hidden');
                     scope.adapter.reload();
                     $timeout.flush();
 
@@ -60,6 +60,32 @@ describe('uiScroll', function () {
                     expect(angular.element(viewport.children()[4]).css('height')).toBe('0px');
 
                     for (var i = 1; i < 3; i++) {
+                        var row = viewport.children()[i];
+                        expect(row.tagName.toLowerCase()).toBe('div');
+                        expect(row.innerHTML).toBe(i + ': item' + i);
+                    }
+
+                }
+            );
+        });
+*/
+        it('should load full set after visibility switched back on', function () {
+            runTest(scrollSettings,
+                function (viewport, scope, $timeout) {
+                    viewport.css('display','none');
+                    scope.adapter.reload();
+                    $timeout.flush();
+
+                    viewport.css('display','block');
+                    scope.$apply();
+                    $timeout.flush();
+
+                    expect(viewport.children().length).toBe(8);
+                    expect(viewport.scrollTop()).toBe(0);
+                    expect(viewport.children().css('height')).toBe('0px');
+                    expect(angular.element(viewport.children()[7]).css('height')).toBe('0px');
+
+                    for (var i = 1; i < 7; i++) {
                         var row = viewport.children()[i];
                         expect(row.tagName.toLowerCase()).toBe('div');
                         expect(row.innerHTML).toBe(i + ': item' + i);
