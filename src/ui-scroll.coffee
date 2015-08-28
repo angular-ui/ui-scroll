@@ -206,6 +206,7 @@ angular.module('ui.scroll', [])
 					viewport.scrollTop()
 
 				shouldLoadBottom = ->
+					#log "bottom pos #{builder.bottomDataPos()} < bottom visible #{bottomVisiblePos()} + padding #{bufferPadding()} "
 					!eof && builder.bottomDataPos() < bottomVisiblePos() + bufferPadding()
 
 				clipBottom = ->
@@ -234,6 +235,7 @@ angular.module('ui.scroll', [])
 						#log 'clipped off bottom ' + overage + ' bottom padding ' + builder.bottomPadding()
 
 				shouldLoadTop = ->
+					#log "top pos #{builder.topDataPos()} > top visible #{topVisiblePos()} - padding #{bufferPadding()}"
 					!bof && (builder.topDataPos() > topVisiblePos() - bufferPadding())
 
 				clipTop = ->
@@ -283,6 +285,20 @@ angular.module('ui.scroll', [])
 							when 'append' then buffer.push wrapper
 							when 'prepend' then buffer.unshift wrapper
 
+				insertWrapperContent = (wrapper, sibling) ->
+					builder.insertElement wrapper.element, sibling
+					if wrapper.element.height() && wrapper.element[0].offsetParent
+						true
+					else
+						wrapper.unregister = wrapper.scope.$watch ->
+							if wrapper.element.height() && wrapper.element[0].offsetParent
+								# adjust buffer will be called multiple times - once per invisible item in the buffer
+								# only the first one of them is really necessary. I hope the rest of them will
+								# pretty much a noop. It is just that eliminating redundant calls is just too messy.
+								adjustBuffer()
+								wrapper.unregister()
+						false
+
 				adjustBuffer = (rid, adjustAfterFetch) ->
 
 					# We need the item bindings to be processed before we can do adjustment
@@ -291,7 +307,6 @@ angular.module('ui.scroll', [])
 						promises = []
 						toBePrepended = []
 						toBeRemoved = []
-						alreadyAdjusted = false
 
 						bottomPos = builder.bottomDataPos()
 						for wrapper, i in buffer
@@ -299,21 +314,10 @@ angular.module('ui.scroll', [])
 								when 'prepend' then toBePrepended.unshift wrapper
 								when 'append'
 									if (i == 0) # the first item in buffer is to be appended, therefore the buffer was empty
-										builder.insertElement wrapper.element
+										keepFetching = insertWrapperContent(wrapper) || keepFetching
 									else
-										builder.insertElement wrapper.element, buffer[i-1].element
+										keepFetching = insertWrapperContent(wrapper, buffer[i-1].element) || keepFetching
 									wrapper.op = 'none'
-									if wrapper.element.height() && wrapper.element[0].offsetParent
-										keepFetching = keepFetching || true
-									else
-										((wrapperClosure) ->
-											wrapperClosure.unregister = wrapperClosure.scope.$watch ->
-												if wrapperClosure.element.height() && wrapperClosure.element[0].offsetParent
-													if !alreadyAdjusted
-														adjustBuffer()
-														alreadyAdjusted = true
-													wrapperClosure.unregister()
-										)(wrapper)
 								when 'insert'
 									if (i == 0)
 										promises = promises.concat (builder.insertElementAnimated wrapper.element)
@@ -331,19 +335,8 @@ angular.module('ui.scroll', [])
 						if toBePrepended.length
 							bottomPos = builder.bottomDataPos()
 							for wrapper in toBePrepended
-								builder.insertElement wrapper.element
+								keepFetching = insertWrapperContent(wrapper) || keepFetching
 								wrapper.op = 'none'
-								if wrapper.element.height(true) && wrapper.element[0].offsetParent
-									keepFetching = keepFetching || true
-								else
-									((wrapperClosure) ->
-										wrapperClosure.unregister = wrapperClosure.scope.$watch ->
-											if wrapperClosure.element.height(true) && wrapper.element[0].offsetParent
-												if !alreadyAdjusted
-													adjustBuffer()
-													alreadyAdjusted = true
-												wrapperClosure.unregister()
-									)(wrapper)
 
 							heightIncrement = builder.bottomDataPos() - bottomPos
 
