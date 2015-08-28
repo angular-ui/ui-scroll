@@ -299,7 +299,7 @@ angular.module('ui.scroll', [])
 								wrapper.unregister()
 						false
 
-				processBufferedItems = ->
+				processBufferedItems = (rid) ->
 					promises = []
 					toBePrepended = []
 					toBeRemoved = []
@@ -346,52 +346,64 @@ angular.module('ui.scroll', [])
 
 					# re-index the buffer
 					item.scope.$index = first + i for item,i in buffer
-					[keepFetching, promises]
 
-				adjustBuffer = (rid, adjustAfterFetch) ->
+					# schedule another adjustBuffer after animation completion
+					if (promises.length)
+						$q.all(promises).then ->
+							#log "Animation completed rid #{rid}"
+							adjustBuffer rid
+
+					keepFetching
+
+				calculateTopProperties = ->
+					topHeight = 0
+					for item in buffer
+						itemTop = item.element.offset().top
+						newRow = rowTop isnt itemTop
+						rowTop = itemTop
+						itemHeight = item.element.outerHeight(true) if newRow
+						if newRow and (builder.topDataPos() + topHeight + itemHeight < topVisiblePos())
+							topHeight += itemHeight
+						else
+							topVisible(item) if newRow
+							break
+
+				adjustBuffer = (rid) ->
 
 					# We need the item bindings to be processed before we can do adjustment
 					$timeout ->
 
-						[keepFetching, promises] = processBufferedItems()
+						processBufferedItems(rid)
+
+						if shouldLoadBottom()
+							enqueueFetch(rid, true)
+						else
+							if shouldLoadTop()
+								enqueueFetch(rid, false)
+
+						if pending.length == 0
+							calculateTopProperties()
+
+				adjustBufferAfterFetch = (rid) ->
+
+					# We need the item bindings to be processed before we can do adjustment
+					$timeout ->
+
+						keepFetching = processBufferedItems(rid)
 
 						if shouldLoadBottom()
 							# keepFetching = true means that at least one item app/prepended in the last batch had height > 0
-							# !adjustAfterFetch = false means that this is chained fetch (a fetch after another fetch)
-							enqueueFetch(rid, true) if !adjustAfterFetch || keepFetching
+							enqueueFetch(rid, true) if keepFetching
 						else
 							if shouldLoadTop()
 								# pending[0] = true means that previous fetch was appending. We need to force at least one prepend
 								# BTW there will always be at least 1 element in the pending array because bottom is fetched first
-								enqueueFetch(rid, false) if !adjustAfterFetch || keepFetching || pending[0]
+								enqueueFetch(rid, false) if keepFetching || pending[0]
 
-						adjustAfterFetch(rid) if adjustAfterFetch
-
-						if pending.length == 0
-							topHeight = 0
-							for item in buffer
-								itemTop = item.element.offset().top
-								newRow = rowTop isnt itemTop
-								rowTop = itemTop
-								itemHeight = item.element.outerHeight(true) if newRow
-								if newRow and (builder.topDataPos() + topHeight + itemHeight < topVisiblePos())
-									topHeight += itemHeight
-								else
-									topVisible(item) if newRow
-									break
-
-						# the promise from the timeout should be added to promises array
-						# I just could not make promises work with the jasmine tests
-						if (promises.length)
-							$q.all(promises).then ->
-								#log "Animation completed rid #{rid}"
-								adjustBuffer rid
-
-				adjustBufferAfterFetch = (rid) ->
-					adjustBuffer rid, ->
 						pending.shift()
 						if pending.length == 0
 							loading(false)
+							calculateTopProperties()
 						else
 							fetch(rid)
 
