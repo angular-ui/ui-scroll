@@ -46,11 +46,11 @@ describe('uiScroll', function () {
             );
         });
 
-/*
+
         it('should only load one batch with visibility switched off (visibility:hidden)', function () {
             runTest(scrollSettings,
                 function (viewport, scope, $timeout) {
-                    viewport.css('visibility','hidden');
+                    viewport.css('display','none');
                     scope.adapter.reload();
                     $timeout.flush();
 
@@ -68,7 +68,7 @@ describe('uiScroll', function () {
                 }
             );
         });
-*/
+
         it('should load full set after visibility switched back on', function () {
             runTest(scrollSettings,
                 function (viewport, scope, $timeout) {
