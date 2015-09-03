@@ -53,9 +53,7 @@ angular.module('ui.scroll', [])
 
 				bufferSize = Math.max(3, +$attr.bufferSize || 10)
 				bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +$attr.padding || 0.1) # some extra space to initiate preload
-
-				scrollHeight = (elem)->
-					elem[0].scrollHeight ? elem[0].document.documentElement.scrollHeight
+				scrollHeight = (elem) -> elem[0].scrollHeight ? elem[0].document.documentElement.scrollHeight
 
 				# initial settings
 
@@ -70,9 +68,11 @@ angular.module('ui.scroll', [])
 
 				# Element manipulation routines
 
+				isAngularVersionLessThen1_3 = angular.version.major == 1 and angular.version.minor < 3
+
 				removeItem =
 					if $animate
-						if angular.version.minor == 2
+						if isAngularVersionLessThen1_3
 							(wrapper) ->
 								buffer.splice buffer.indexOf(wrapper), 1
 								deferred = $q.defer()
@@ -100,7 +100,7 @@ angular.module('ui.scroll', [])
 
 				insertElementAnimated =
 					if $animate
-						if angular.version.minor == 2
+						if isAngularVersionLessThen1_3
 							(newElement, previousElement) ->
 								deferred = $q.defer()
 								$animate.enter newElement, element, previousElement, -> deferred.resolve()
@@ -152,15 +152,12 @@ angular.module('ui.scroll', [])
 						viewport: viewport
 						topPadding: -> topPadding.paddingHeight.apply(topPadding, arguments)
 						bottomPadding: -> bottomPadding.paddingHeight.apply(bottomPadding, arguments)
-						bottomDataPos: ->
-							scrollHeight(viewport) - bottomPadding.paddingHeight()
-						topDataPos: ->
-							topPadding.paddingHeight()
+						bottomDataPos: -> scrollHeight(viewport) - bottomPadding.paddingHeight()
+						topDataPos: -> topPadding.paddingHeight()
 						insertElement: (e, sibling) -> insertElement(e, sibling || topPadding)
 						insertElementAnimated: (e, sibling) -> insertElementAnimated(e, sibling || topPadding)
 
 				viewport = builder.viewport
-
 				viewportScope = viewport.scope() || $rootScope
 
 				topVisible = (item) ->
@@ -206,6 +203,7 @@ angular.module('ui.scroll', [])
 					viewport.scrollTop()
 
 				shouldLoadBottom = ->
+					#log "bottom pos #{builder.bottomDataPos()} < bottom visible #{bottomVisiblePos()} + padding #{bufferPadding()} "
 					!eof && builder.bottomDataPos() < bottomVisiblePos() + bufferPadding()
 
 				clipBottom = ->
@@ -234,6 +232,7 @@ angular.module('ui.scroll', [])
 						#log 'clipped off bottom ' + overage + ' bottom padding ' + builder.bottomPadding()
 
 				shouldLoadTop = ->
+					#log "top pos #{builder.topDataPos()} > top visible #{topVisiblePos()} - padding #{bufferPadding()}"
 					!bof && (builder.topDataPos() > topVisiblePos() - bufferPadding())
 
 				clipTop = ->
@@ -259,7 +258,7 @@ angular.module('ui.scroll', [])
 						#log 'clipped off top ' + overage + ' top padding ' + builder.topPadding()
 
 				enqueueFetch = (rid, direction)->
-					if (!adapter.isLoading)
+					if !adapter.isLoading
 						loading(true)
 					if pending.push(direction) == 1
 						fetch(rid)
@@ -274,7 +273,7 @@ angular.module('ui.scroll', [])
 						wrapper.element = clone
 
 					# operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
-					if (operation%1 == 0) # it is an insert
+					if operation % 1 == 0 # it is an insert
 						wrapper.op = 'insert'
 						buffer.splice operation, 0, wrapper
 					else
@@ -283,89 +282,126 @@ angular.module('ui.scroll', [])
 							when 'append' then buffer.push wrapper
 							when 'prepend' then buffer.unshift wrapper
 
-				adjustBuffer = (rid, finalize) ->
+				isElementVisible = (wrapper) -> wrapper.element.height() && wrapper.element[0].offsetParent
 
+				visibilityWatcher = (wrapper) ->
+					if isElementVisible(wrapper)
+						for item in buffer
+							item.unregisterVisibilityWatcher()
+							delete item.unregisterVisibilityWatcher
+						adjustBuffer()
+
+				insertWrapperContent = (wrapper, sibling) ->
+					builder.insertElement wrapper.element, sibling
+					return true if isElementVisible(wrapper)
+					wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch () -> visibilityWatcher(wrapper)
+					false
+
+				processBufferedItems = (rid) ->
 					promises = []
 					toBePrepended = []
 					toBeRemoved = []
 
+					bottomPos = builder.bottomDataPos()
+					for wrapper, i in buffer
+						switch wrapper.op
+							when 'prepend' then toBePrepended.unshift wrapper
+							when 'append'
+								if (i == 0) # the first item in buffer is to be appended, therefore the buffer was empty
+									keepFetching = insertWrapperContent(wrapper) || keepFetching
+								else
+									keepFetching = insertWrapperContent(wrapper, buffer[i-1].element) || keepFetching
+								wrapper.op = 'none'
+							when 'insert'
+								if (i == 0)
+									promises = promises.concat (builder.insertElementAnimated wrapper.element)
+								else
+									promises = promises.concat (builder.insertElementAnimated wrapper.element, buffer[i-1].element)
+								wrapper.op = 'none'
+							when 'remove' then toBeRemoved.push wrapper
+
+					for wrapper in toBeRemoved
+						promises = promises.concat (removeItem wrapper)
+
+					# for anything other than prepend adjust the bottomPadding height
+					builder.bottomPadding(Math.max(0,builder.bottomPadding() - (builder.bottomDataPos() - bottomPos)))
+
+					if toBePrepended.length
+						bottomPos = builder.bottomDataPos()
+						for wrapper in toBePrepended
+							keepFetching = insertWrapperContent(wrapper) || keepFetching
+							wrapper.op = 'none'
+
+						heightIncrement = builder.bottomDataPos() - bottomPos
+
+						# adjust padding to prevent it from visually pushing everything down
+						if builder.topPadding() >= heightIncrement
+							# if possible, reduce topPadding
+							builder.topPadding(builder.topPadding() - heightIncrement)
+						else
+							# if not, increment scrollTop
+							viewport.scrollTop(viewport.scrollTop() + heightIncrement)
+
+					# re-index the buffer
+					item.scope.$index = first + i for item,i in buffer
+
+					# schedule another adjustBuffer after animation completion
+					if (promises.length)
+						$q.all(promises).then ->
+							#log "Animation completed rid #{rid}"
+							adjustBuffer rid
+
+					keepFetching
+
+				calculateTopProperties = ->
+					topHeight = 0
+					for item in buffer
+						itemTop = item.element.offset().top
+						newRow = rowTop isnt itemTop
+						rowTop = itemTop
+						itemHeight = item.element.outerHeight(true) if newRow
+						if newRow and (builder.topDataPos() + topHeight + itemHeight < topVisiblePos())
+							topHeight += itemHeight
+						else
+							topVisible(item) if newRow
+							break
+
+				adjustBuffer = (rid) ->
+
 					# We need the item bindings to be processed before we can do adjustment
 					$timeout ->
 
-						bottomPos = builder.bottomDataPos()
-						for wrapper, i in buffer
-							switch wrapper.op
-								when 'prepend' then toBePrepended.unshift wrapper
-								when 'append'
-									if (i == 0) # the first item in buffer is to be appended, therefore the buffer was empty
-										builder.insertElement wrapper.element
-									else
-										builder.insertElement wrapper.element, buffer[i-1].element
-									wrapper.op = 'none'
-								when 'insert'
-									if (i == 0)
-										promises = promises.concat (builder.insertElementAnimated wrapper.element)
-									else
-										promises = promises.concat (builder.insertElementAnimated wrapper.element, buffer[i-1].element)
-									wrapper.op = 'none'
-								when 'remove' then toBeRemoved.push wrapper
+						processBufferedItems(rid)
 
-						for wrapper in toBeRemoved
-							promises = promises.concat (removeItem wrapper)
-
-						# for anything other than prepend adjust the bottomPadding height
-						builder.bottomPadding(Math.max(0,builder.bottomPadding() - (builder.bottomDataPos() - bottomPos)))
-
-						if toBePrepended.length
-							bottomPos = builder.bottomDataPos()
-							for wrapper in toBePrepended
-								builder.insertElement wrapper.element
-								wrapper.op = 'none'
-							heightIncrement = builder.bottomDataPos() - bottomPos
-							# adjust padding to prevent it from visually pushing everything down
-							if builder.topPadding() >= heightIncrement
-								# if possible, reduce topPadding
-								builder.topPadding(builder.topPadding() - heightIncrement)
-							else
-								# if not, increment scrollTop
-								viewport.scrollTop(viewport.scrollTop() + heightIncrement)
-
-						# re-index the buffer
-						item.scope.$index = first + i for item,i in buffer
-
-						#log "top {actual=#{builder.topDataPos()} visible from=#{topVisiblePos()} bottom {visible through=#{bottomVisiblePos()} actual=#{builder.bottomDataPos()}}"
 						if shouldLoadBottom()
 							enqueueFetch(rid, true)
 						else
-							enqueueFetch(rid, false) if shouldLoadTop()
-						finalize(rid) if finalize
+							if shouldLoadTop()
+								enqueueFetch(rid, false)
 
-						#topVisible is not necessarily the first item in the buffer
 						if pending.length == 0
-							topHeight = 0
-							for item in buffer
-								itemTop = item.element.offset().top
-								newRow = rowTop isnt itemTop
-								rowTop = itemTop
-								itemHeight = item.element.outerHeight(true) if newRow
-								if newRow and (builder.topDataPos() + topHeight + itemHeight < topVisiblePos())
-									topHeight += itemHeight
-								else
-									topVisible(item) if newRow
-									break
+							calculateTopProperties()
 
-						# the promise from the timeout should be added to promises array
-						# I just could not make promises work with the jasmine tests
-						if (promises.length)
-							$q.all(promises).then ->
-								#log "Animation completed rid #{rid}"
-								adjustBuffer rid
+				adjustBufferAfterFetch = (rid) ->
 
-				finalize = (rid) ->
-					adjustBuffer rid, ->
+					# We need the item bindings to be processed before we can do adjustment
+					$timeout ->
+
+						keepFetching = processBufferedItems(rid)
+
+						if shouldLoadBottom()
+							# keepFetching = true means that at least one item app/prepended in the last batch had height > 0
+							enqueueFetch(rid, true) if keepFetching
+						else
+							if shouldLoadTop()
+								# pending[0] = true means that previous fetch was appending. We need to force at least one prepend
+								# BTW there will always be at least 1 element in the pending array because bottom is fetched first
+								enqueueFetch(rid, false) if keepFetching || pending[0]
+
 						pending.shift()
 						if pending.length == 0
 							loading(false)
+							calculateTopProperties()
 						else
 							fetch(rid)
 
@@ -373,7 +409,7 @@ angular.module('ui.scroll', [])
 					#log "Running fetch... #{{true:'bottom', false: 'top'}[direction]} pending #{pending.length}"
 					if pending[0] # scrolling down
 						if buffer.length && !shouldLoadBottom()
-							finalize rid
+							adjustBufferAfterFetch rid
 						else
 							#log "appending... requested #{bufferSize} records starting from #{next}"
 							datasource.get next, bufferSize,
@@ -389,10 +425,10 @@ angular.module('ui.scroll', [])
 										++next
 										insertItem 'append', item
 										#log 'appended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
-								finalize rid
+								adjustBufferAfterFetch rid
 					else
 						if buffer.length && !shouldLoadTop()
-							finalize rid
+							adjustBufferAfterFetch rid
 						else
 							#log "prepending... requested #{size} records starting from #{start}"
 							datasource.get first-bufferSize, bufferSize,
@@ -408,7 +444,7 @@ angular.module('ui.scroll', [])
 										--first
 										insertItem 'prepend', result[i]
 									#log 'prepended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
-								finalize rid
+								adjustBufferAfterFetch rid
 
 
 				# events and bindings

@@ -18,6 +18,8 @@ module.exports = function(config) {
             'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js',
             'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-mocks.js',
             '../src/ui-scroll*.coffee',
+            'datasources.js',
+            'scaffolding.js',
             '**/*Spec.js'
         ],
 

@@ -215,6 +215,9 @@ See [index.html](http://rawgithub.com/angular-ui/ui-scroll/master/demo/index.htm
 
 ###History
 
+###v1.3.2
+* Implemented logic for adjustBuffer triggering during invisible items became visible.
+
 ###v1.3.1
 * Changed the logic of viewport scroll/padding recalculation (to solve the problem [#8](https://github.com/angular-ui/ui-scroll/issues/8)).
 * Splitted test specifications.
