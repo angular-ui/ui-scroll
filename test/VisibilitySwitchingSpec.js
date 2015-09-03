@@ -1,4 +1,4 @@
-/*global describe, beforeEach, module, inject, it, spyOn, expect, $ */
+/*global describe, beforeEach, module, it, expect, runTest */
 describe('uiScroll', function () {
     'use strict';
 
@@ -83,7 +83,7 @@ describe('uiScroll', function () {
     });
 
     describe('items visibility changing', function () {
-        var scrollSettings = { datasource: 'myMultipageDatasource', viewportHeight: 200, itemHeight: "0", bufferSize: 3, adapter: 'adapter' };
+        var scrollSettings = { datasource: 'myMultipageDatasource', viewportHeight: 200, itemHeight: '0', bufferSize: 3, adapter: 'adapter' };
         var onePackItemsCount = 3 + 2;
         var twoPacksItemsCount = 3 * 2 + 2;
 
