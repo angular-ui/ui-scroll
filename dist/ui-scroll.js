@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.3.1 -- 2015-08-20T10:58:44.121Z
+ * Version: 1.3.2 -- 2015-09-03T13:52:16.202Z
  * License: MIT
  */
  
@@ -43,7 +43,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
       terminal: true,
       compile: function(elementTemplate, attr, linker) {
         return function($scope, element, $attr, controllers) {
-          var adapter, adapterOnScope, adjustBuffer, applyUpdate, bof, bottomVisiblePos, buffer, bufferPadding, bufferSize, builder, clipBottom, clipTop, datasource, datasourceName, dismissPendingRequests, enqueueFetch, eof, eventListener, fetch, finalize, first, insertElement, insertElementAnimated, insertItem, isDatasourceValid, itemName, loading, log, match, next, pending, reload, removeFromBuffer, removeItem, resizeAndScrollHandler, ridActual, scrollHeight, shouldLoadBottom, shouldLoadTop, topVisible, topVisiblePos, unsupportedMethod, viewport, viewportScope, wheelHandler;
+          var adapter, adapterOnScope, adjustBuffer, adjustBufferAfterFetch, applyUpdate, bof, bottomVisiblePos, buffer, bufferPadding, bufferSize, builder, calculateTopProperties, clipBottom, clipTop, datasource, datasourceName, dismissPendingRequests, enqueueFetch, eof, eventListener, fetch, first, insertElement, insertElementAnimated, insertItem, insertWrapperContent, isAngularVersionLessThen1_3, isDatasourceValid, isElementVisible, itemName, loading, log, match, next, pending, processBufferedItems, reload, removeFromBuffer, removeItem, resizeAndScrollHandler, ridActual, scrollHeight, shouldLoadBottom, shouldLoadTop, topVisible, topVisiblePos, unsupportedMethod, viewport, viewportScope, visibilityWatcher, wheelHandler;
           log = console.debug || console.log;
           if (!(match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/))) {
             throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \' + $attr.uiScroll + \'');
@@ -76,7 +76,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
           pending = [];
           eof = false;
           bof = false;
-          removeItem = $animate ? angular.version.minor === 2 ? function(wrapper) {
+          isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
+          removeItem = $animate ? isAngularVersionLessThen1_3 ? function(wrapper) {
             var deferred;
             buffer.splice(buffer.indexOf(wrapper), 1);
             deferred = $q.defer();
@@ -102,7 +103,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
             element.after.apply(previousElement, [newElement]);
             return [];
           };
-          insertElementAnimated = $animate ? angular.version.minor === 2 ? function(newElement, previousElement) {
+          insertElementAnimated = $animate ? isAngularVersionLessThen1_3 ? function(newElement, previousElement) {
             var deferred;
             deferred = $q.defer();
             $animate.enter(newElement, element, previousElement, function() {
@@ -329,63 +330,118 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
               }
             }
           };
-          adjustBuffer = function(rid, finalize) {
-            var promises, toBePrepended, toBeRemoved;
+          isElementVisible = function(wrapper) {
+            return wrapper.element.height() && wrapper.element[0].offsetParent;
+          };
+          visibilityWatcher = function(wrapper) {
+            var item, j, len;
+            if (isElementVisible(wrapper)) {
+              for (j = 0, len = buffer.length; j < len; j++) {
+                item = buffer[j];
+                item.unregisterVisibilityWatcher();
+                delete item.unregisterVisibilityWatcher;
+              }
+              return adjustBuffer();
+            }
+          };
+          insertWrapperContent = function(wrapper, sibling) {
+            builder.insertElement(wrapper.element, sibling);
+            if (isElementVisible(wrapper)) {
+              return true;
+            }
+            wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function() {
+              return visibilityWatcher(wrapper);
+            });
+            return false;
+          };
+          processBufferedItems = function(rid) {
+            var bottomPos, heightIncrement, i, item, j, k, keepFetching, l, len, len1, len2, len3, m, promises, toBePrepended, toBeRemoved, wrapper;
             promises = [];
             toBePrepended = [];
             toBeRemoved = [];
-            return $timeout(function() {
-              var bottomPos, heightIncrement, i, item, itemHeight, itemTop, j, k, l, len, len1, len2, len3, len4, m, n, newRow, rowTop, topHeight, wrapper;
-              bottomPos = builder.bottomDataPos();
-              for (i = j = 0, len = buffer.length; j < len; i = ++j) {
-                wrapper = buffer[i];
-                switch (wrapper.op) {
-                  case 'prepend':
-                    toBePrepended.unshift(wrapper);
-                    break;
-                  case 'append':
-                    if (i === 0) {
-                      builder.insertElement(wrapper.element);
-                    } else {
-                      builder.insertElement(wrapper.element, buffer[i - 1].element);
-                    }
-                    wrapper.op = 'none';
-                    break;
-                  case 'insert':
-                    if (i === 0) {
-                      promises = promises.concat(builder.insertElementAnimated(wrapper.element));
-                    } else {
-                      promises = promises.concat(builder.insertElementAnimated(wrapper.element, buffer[i - 1].element));
-                    }
-                    wrapper.op = 'none';
-                    break;
-                  case 'remove':
-                    toBeRemoved.push(wrapper);
-                }
-              }
-              for (k = 0, len1 = toBeRemoved.length; k < len1; k++) {
-                wrapper = toBeRemoved[k];
-                promises = promises.concat(removeItem(wrapper));
-              }
-              builder.bottomPadding(Math.max(0, builder.bottomPadding() - (builder.bottomDataPos() - bottomPos)));
-              if (toBePrepended.length) {
-                bottomPos = builder.bottomDataPos();
-                for (l = 0, len2 = toBePrepended.length; l < len2; l++) {
-                  wrapper = toBePrepended[l];
-                  builder.insertElement(wrapper.element);
+            bottomPos = builder.bottomDataPos();
+            for (i = j = 0, len = buffer.length; j < len; i = ++j) {
+              wrapper = buffer[i];
+              switch (wrapper.op) {
+                case 'prepend':
+                  toBePrepended.unshift(wrapper);
+                  break;
+                case 'append':
+                  if (i === 0) {
+                    keepFetching = insertWrapperContent(wrapper) || keepFetching;
+                  } else {
+                    keepFetching = insertWrapperContent(wrapper, buffer[i - 1].element) || keepFetching;
+                  }
                   wrapper.op = 'none';
-                }
-                heightIncrement = builder.bottomDataPos() - bottomPos;
-                if (builder.topPadding() >= heightIncrement) {
-                  builder.topPadding(builder.topPadding() - heightIncrement);
-                } else {
-                  viewport.scrollTop(viewport.scrollTop() + heightIncrement);
-                }
+                  break;
+                case 'insert':
+                  if (i === 0) {
+                    promises = promises.concat(builder.insertElementAnimated(wrapper.element));
+                  } else {
+                    promises = promises.concat(builder.insertElementAnimated(wrapper.element, buffer[i - 1].element));
+                  }
+                  wrapper.op = 'none';
+                  break;
+                case 'remove':
+                  toBeRemoved.push(wrapper);
               }
-              for (i = m = 0, len3 = buffer.length; m < len3; i = ++m) {
-                item = buffer[i];
-                item.scope.$index = first + i;
+            }
+            for (k = 0, len1 = toBeRemoved.length; k < len1; k++) {
+              wrapper = toBeRemoved[k];
+              promises = promises.concat(removeItem(wrapper));
+            }
+            builder.bottomPadding(Math.max(0, builder.bottomPadding() - (builder.bottomDataPos() - bottomPos)));
+            if (toBePrepended.length) {
+              bottomPos = builder.bottomDataPos();
+              for (l = 0, len2 = toBePrepended.length; l < len2; l++) {
+                wrapper = toBePrepended[l];
+                keepFetching = insertWrapperContent(wrapper) || keepFetching;
+                wrapper.op = 'none';
               }
+              heightIncrement = builder.bottomDataPos() - bottomPos;
+              if (builder.topPadding() >= heightIncrement) {
+                builder.topPadding(builder.topPadding() - heightIncrement);
+              } else {
+                viewport.scrollTop(viewport.scrollTop() + heightIncrement);
+              }
+            }
+            for (i = m = 0, len3 = buffer.length; m < len3; i = ++m) {
+              item = buffer[i];
+              item.scope.$index = first + i;
+            }
+            if (promises.length) {
+              $q.all(promises).then(function() {
+                return adjustBuffer(rid);
+              });
+            }
+            return keepFetching;
+          };
+          calculateTopProperties = function() {
+            var item, itemHeight, itemTop, j, len, newRow, results, rowTop, topHeight;
+            topHeight = 0;
+            results = [];
+            for (j = 0, len = buffer.length; j < len; j++) {
+              item = buffer[j];
+              itemTop = item.element.offset().top;
+              newRow = rowTop !== itemTop;
+              rowTop = itemTop;
+              if (newRow) {
+                itemHeight = item.element.outerHeight(true);
+              }
+              if (newRow && (builder.topDataPos() + topHeight + itemHeight < topVisiblePos())) {
+                results.push(topHeight += itemHeight);
+              } else {
+                if (newRow) {
+                  topVisible(item);
+                }
+                break;
+              }
+            }
+            return results;
+          };
+          adjustBuffer = function(rid) {
+            return $timeout(function() {
+              processBufferedItems(rid);
               if (shouldLoadBottom()) {
                 enqueueFetch(rid, true);
               } else {
@@ -393,41 +449,30 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
                   enqueueFetch(rid, false);
                 }
               }
-              if (finalize) {
-                finalize(rid);
-              }
               if (pending.length === 0) {
-                topHeight = 0;
-                for (n = 0, len4 = buffer.length; n < len4; n++) {
-                  item = buffer[n];
-                  itemTop = item.element.offset().top;
-                  newRow = rowTop !== itemTop;
-                  rowTop = itemTop;
-                  if (newRow) {
-                    itemHeight = item.element.outerHeight(true);
-                  }
-                  if (newRow && (builder.topDataPos() + topHeight + itemHeight < topVisiblePos())) {
-                    topHeight += itemHeight;
-                  } else {
-                    if (newRow) {
-                      topVisible(item);
-                    }
-                    break;
-                  }
-                }
-              }
-              if (promises.length) {
-                return $q.all(promises).then(function() {
-                  return adjustBuffer(rid);
-                });
+                return calculateTopProperties();
               }
             });
           };
-          finalize = function(rid) {
-            return adjustBuffer(rid, function() {
+          adjustBufferAfterFetch = function(rid) {
+            return $timeout(function() {
+              var keepFetching;
+              keepFetching = processBufferedItems(rid);
+              if (shouldLoadBottom()) {
+                if (keepFetching) {
+                  enqueueFetch(rid, true);
+                }
+              } else {
+                if (shouldLoadTop()) {
+                  if (keepFetching || pending[0]) {
+                    enqueueFetch(rid, false);
+                  }
+                }
+              }
               pending.shift();
               if (pending.length === 0) {
-                return loading(false);
+                loading(false);
+                return calculateTopProperties();
               } else {
                 return fetch(rid);
               }
@@ -436,7 +481,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
           fetch = function(rid) {
             if (pending[0]) {
               if (buffer.length && !shouldLoadBottom()) {
-                return finalize(rid);
+                return adjustBufferAfterFetch(rid);
               } else {
                 return datasource.get(next, bufferSize, function(result) {
                   var item, j, len;
@@ -455,12 +500,12 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
                       insertItem('append', item);
                     }
                   }
-                  return finalize(rid);
+                  return adjustBufferAfterFetch(rid);
                 });
               }
             } else {
               if (buffer.length && !shouldLoadTop()) {
-                return finalize(rid);
+                return adjustBufferAfterFetch(rid);
               } else {
                 return datasource.get(first - bufferSize, bufferSize, function(result) {
                   var i, j, ref;
@@ -480,7 +525,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function() {
                       insertItem('prepend', result[i]);
                     }
                   }
-                  return finalize(rid);
+                  return adjustBufferAfterFetch(rid);
                 });
               }
             }
