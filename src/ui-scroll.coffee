@@ -53,9 +53,7 @@ angular.module('ui.scroll', [])
 
 				bufferSize = Math.max(3, +$attr.bufferSize || 10)
 				bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +$attr.padding || 0.1) # some extra space to initiate preload
-
-				scrollHeight = (elem)->
-					elem[0].scrollHeight ? elem[0].document.documentElement.scrollHeight
+				scrollHeight = (elem) -> elem[0].scrollHeight ? elem[0].document.documentElement.scrollHeight
 
 				# initial settings
 
@@ -70,9 +68,11 @@ angular.module('ui.scroll', [])
 
 				# Element manipulation routines
 
+				isAngularVersionLessThen1_3 = angular.version.major == 1 and angular.version.minor < 3
+
 				removeItem =
 					if $animate
-						if angular.version.minor == 2
+						if isAngularVersionLessThen1_3
 							(wrapper) ->
 								buffer.splice buffer.indexOf(wrapper), 1
 								deferred = $q.defer()
@@ -100,7 +100,7 @@ angular.module('ui.scroll', [])
 
 				insertElementAnimated =
 					if $animate
-						if angular.version.minor == 2
+						if isAngularVersionLessThen1_3
 							(newElement, previousElement) ->
 								deferred = $q.defer()
 								$animate.enter newElement, element, previousElement, -> deferred.resolve()
@@ -152,15 +152,12 @@ angular.module('ui.scroll', [])
 						viewport: viewport
 						topPadding: -> topPadding.paddingHeight.apply(topPadding, arguments)
 						bottomPadding: -> bottomPadding.paddingHeight.apply(bottomPadding, arguments)
-						bottomDataPos: ->
-							scrollHeight(viewport) - bottomPadding.paddingHeight()
-						topDataPos: ->
-							topPadding.paddingHeight()
+						bottomDataPos: -> scrollHeight(viewport) - bottomPadding.paddingHeight()
+						topDataPos: -> topPadding.paddingHeight()
 						insertElement: (e, sibling) -> insertElement(e, sibling || topPadding)
 						insertElementAnimated: (e, sibling) -> insertElementAnimated(e, sibling || topPadding)
 
 				viewport = builder.viewport
-
 				viewportScope = viewport.scope() || $rootScope
 
 				topVisible = (item) ->
@@ -261,7 +258,7 @@ angular.module('ui.scroll', [])
 						#log 'clipped off top ' + overage + ' top padding ' + builder.topPadding()
 
 				enqueueFetch = (rid, direction)->
-					if (!adapter.isLoading)
+					if !adapter.isLoading
 						loading(true)
 					if pending.push(direction) == 1
 						fetch(rid)
@@ -276,7 +273,7 @@ angular.module('ui.scroll', [])
 						wrapper.element = clone
 
 					# operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
-					if (operation%1 == 0) # it is an insert
+					if operation % 1 == 0 # it is an insert
 						wrapper.op = 'insert'
 						buffer.splice operation, 0, wrapper
 					else
@@ -285,19 +282,20 @@ angular.module('ui.scroll', [])
 							when 'append' then buffer.push wrapper
 							when 'prepend' then buffer.unshift wrapper
 
+				isElementVisible = (wrapper) -> wrapper.element.height() && wrapper.element[0].offsetParent
+
+				visibilityWatcher = (wrapper) ->
+					if isElementVisible(wrapper)
+						for item in buffer
+							item.unregisterVisibilityWatcher()
+							delete item.unregisterVisibilityWatcher
+						adjustBuffer()
+
 				insertWrapperContent = (wrapper, sibling) ->
 					builder.insertElement wrapper.element, sibling
-					if wrapper.element.height() && wrapper.element[0].offsetParent
-						true
-					else
-						wrapper.unregister = wrapper.scope.$watch ->
-							if wrapper.element.height() && wrapper.element[0].offsetParent
-								# adjust buffer will be called multiple times - once per invisible item in the buffer
-								# only the first one of them is really necessary. I hope the rest of them will
-								# pretty much a noop. It is just that eliminating redundant calls is just too messy.
-								adjustBuffer()
-								wrapper.unregister()
-						false
+					return true if isElementVisible(wrapper)
+					wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch () -> visibilityWatcher(wrapper)
+					false
 
 				processBufferedItems = (rid) ->
 					promises = []
