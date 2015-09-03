@@ -287,8 +287,9 @@ angular.module('ui.scroll', [])
 				visibilityWatcher = (wrapper) ->
 					if isElementVisible(wrapper)
 						for item in buffer
-							item.unregisterVisibilityWatcher()
-							delete item.unregisterVisibilityWatcher
+							if angular.isFunction item.unregisterVisibilityWatcher
+								item.unregisterVisibilityWatcher()
+								delete item.unregisterVisibilityWatcher
 						adjustBuffer()
 
 				insertWrapperContent = (wrapper, sibling) ->
