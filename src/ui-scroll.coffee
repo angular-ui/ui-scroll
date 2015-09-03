@@ -282,16 +282,20 @@ angular.module('ui.scroll', [])
 							when 'append' then buffer.push wrapper
 							when 'prepend' then buffer.unshift wrapper
 
+				isElementVisible = (wrapper) -> wrapper.element.height() && wrapper.element[0].offsetParent
+
+				visibilityWatcher = (wrapper) ->
+					if isElementVisible(wrapper)
+						for item in buffer
+							item.unregisterVisibilityWatcher()
+							delete item.unregisterVisibilityWatcher
+						adjustBuffer()
+
 				insertWrapperContent = (wrapper, sibling) ->
 					builder.insertElement wrapper.element, sibling
-					if wrapper.element.height() && wrapper.element[0].offsetParent
-						true
-					else
-						wrapper.unregister = wrapper.scope.$watch ->
-							if wrapper.element.height() && wrapper.element[0].offsetParent
-								adjustBuffer() # adjust buffer will be called multiple times - once per invisible item in the buffer
-								wrapper.unregister()
-						false
+					return true if isElementVisible(wrapper)
+					wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch () -> visibilityWatcher(wrapper)
+					false
 
 				processBufferedItems = (rid) ->
 					promises = []
