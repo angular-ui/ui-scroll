@@ -55,43 +55,9 @@ angular.module('ui.scroll', [])
 				bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +$attr.padding || 0.1) # some extra space to initiate preload
 				scrollHeight = (elem) -> elem[0].scrollHeight ? elem[0].document.documentElement.scrollHeight
 
-				# initial settings
-
-				builder = null
-				ridActual = 0 # current data revision id
-				first = 1
-				next = 1
-				buffer = []
-				pending = []
-				eof = false
-				bof = false
-
-				# Element manipulation routines
-
 				isAngularVersionLessThen1_3 = angular.version.major == 1 and angular.version.minor < 3
 
-				removeItem =
-					if $animate
-						if isAngularVersionLessThen1_3
-							(wrapper) ->
-								buffer.splice buffer.indexOf(wrapper), 1
-								deferred = $q.defer()
-								$animate.leave wrapper.element, ->
-									wrapper.scope.$destroy()
-									deferred.resolve()
-								[deferred.promise]
-						else
-							(wrapper) ->
-								buffer.splice buffer.indexOf(wrapper), 1
-								[($animate.leave wrapper.element).then ->
-									wrapper.scope.$destroy()
-								]
-					else
-						(wrapper) ->
-							buffer.splice buffer.indexOf(wrapper), 1
-							wrapper.element.remove()
-							wrapper.scope.$destroy()
-							[]
+				# Element manipulation routines
 
 				insertElement =
 					(newElement, previousElement) ->
@@ -111,7 +77,64 @@ angular.module('ui.scroll', [])
 
 					else insertElement
 
-				# Element builder
+				# buffer object setup
+
+				Buffer = ->
+					buffer = Object.create Array.prototype
+
+					if $animate
+						if isAngularVersionLessThen1_3
+							remove = (wrapper) ->
+								buffer.splice buffer.indexOf(wrapper), 1
+								deferred = $q.defer()
+								$animate.leave wrapper.element, ->
+									wrapper.scope.$destroy()
+									deferred.resolve()
+								[deferred.promise]
+						else
+							remove = (wrapper) ->
+								buffer.splice buffer.indexOf(wrapper), 1
+								[($animate.leave wrapper.element).then ->
+									wrapper.scope.$destroy()
+								]
+					else
+						remove = (wrapper) ->
+							buffer.splice buffer.indexOf(wrapper), 1
+							wrapper.element.remove()
+							wrapper.scope.$destroy()
+							[]
+
+					# buffer object methods
+
+					buffer.remove = (arg1, arg2) ->
+						if angular.isNumber arg1
+							#removes items from arg1 (including) through arg2 (excluding)
+							for i in [arg1...arg2]
+								buffer[i].scope.$destroy()
+								buffer[i].element.remove()
+							buffer.splice arg1, arg2 - arg1
+						else
+							# removes single item(wrapper) from the buffer
+							remove arg1
+
+					#clears the buffer
+					buffer.clear = ->
+						buffer.remove(0, buffer.length)
+
+					buffer
+
+				# initial settings
+
+				builder = null
+				ridActual = 0 # current data revision id
+				first = 1
+				next = 1
+				buffer = new Buffer
+				pending = []
+				eof = false
+				bof = false
+
+				# Padding element builder
 				#
 				# Calling linker is the only way I found to get access to the tag name of the template
 				# to prevent the directive scope from pollution a new scope is created and destroyed
@@ -174,13 +197,6 @@ angular.module('ui.scroll', [])
 					$parse($attr.isLoading).assign($scope, value) if $attr.isLoading
 					datasource.loading(value) if angular.isFunction(datasource.loading)
 
-				#removes items from start (including) through stop (excluding)
-				removeFromBuffer = (start, stop)->
-					for i in [start...stop]
-						buffer[i].scope.$destroy()
-						buffer[i].element.remove()
-					buffer.splice start, stop - start
-
 				dismissPendingRequests = () ->
 					ridActual++
 					pending = []
@@ -189,7 +205,7 @@ angular.module('ui.scroll', [])
 					dismissPendingRequests()
 					first = 1
 					next = 1
-					removeFromBuffer(0, buffer.length)
+					buffer.clear()
 					builder.topPadding(0)
 					builder.bottomPadding(0)
 					eof = false
@@ -227,7 +243,7 @@ angular.module('ui.scroll', [])
 
 					if overage > 0
 						builder.bottomPadding(builder.bottomPadding() + bottomHeight)
-						removeFromBuffer(buffer.length - overage, buffer.length)
+						buffer.remove(buffer.length - overage, buffer.length)
 						next -= overage
 						#log 'clipped off bottom ' + overage + ' bottom padding ' + builder.bottomPadding()
 
@@ -253,7 +269,7 @@ angular.module('ui.scroll', [])
 							overage++
 					if overage > 0
 						builder.topPadding(builder.topPadding() + topHeight)
-						removeFromBuffer(0, overage)
+						buffer.remove(0, overage)
 						first += overage
 						#log 'clipped off top ' + overage + ' top padding ' + builder.topPadding()
 
@@ -263,6 +279,9 @@ angular.module('ui.scroll', [])
 					if pending.push(direction) == 1
 						fetch(rid)
 
+				# the first argument is either operation keyword (see below) or a number for operation 'insert'
+				# for insert the number is the index for the buffer element the new one have to be inserted after
+				# operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
 				insertItem = (operation, item) ->
 					itemScope = $scope.$new()
 					itemScope[itemName] = item
@@ -272,7 +291,6 @@ angular.module('ui.scroll', [])
 					linker itemScope, (clone) ->
 						wrapper.element = clone
 
-					# operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
 					if operation % 1 == 0 # it is an insert
 						wrapper.op = 'insert'
 						buffer.splice operation, 0, wrapper
@@ -322,7 +340,7 @@ angular.module('ui.scroll', [])
 							when 'remove' then toBeRemoved.push wrapper
 
 					for wrapper in toBeRemoved
-						promises = promises.concat (removeItem wrapper)
+						promises = promises.concat (buffer.remove wrapper)
 
 					# for anything other than prepend adjust the bottomPadding height
 					builder.bottomPadding(Math.max(0,builder.bottomPadding() - (builder.bottomDataPos() - bottomPos)))
@@ -468,9 +486,8 @@ angular.module('ui.scroll', [])
 				$scope.$watch datasource.revision, reload
 
 				$scope.$on '$destroy', ->
-					for item in buffer
-						item.scope.$destroy()
-						item.element.remove()
+					# clear the buffer. It is necessary to remove the elements and $destroy the scopes
+					buffer.clear()
 					viewport.unbind 'resize', resizeAndScrollHandler
 					viewport.unbind 'scroll', resizeAndScrollHandler
 					viewport.unbind 'mousewheel', wheelHandler

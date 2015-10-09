@@ -35,6 +35,9 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ngAnimate']).co
 					if scope.$index % 2 is 0
 						return []
 
+			$scope.refresh = ->
+				$scope.adapterContainer.adapter.reload()
+
 			idList = 1000
 
 			$scope.addToList = ->
