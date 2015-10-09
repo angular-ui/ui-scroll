@@ -40,7 +40,7 @@ angular.module('ui.scroll', [])
 				log = console.debug || console.log
 
 				unless match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/)
-					throw new Error 'Expected uiScroll in form of \'_item_ in _datasource_\' but got \' + $attr.uiScroll + \''
+					throw new Error 'Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\''
 				itemName = match[1]
 				datasourceName = match[2]
 
