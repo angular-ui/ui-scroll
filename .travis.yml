@@ -1,16 +1,20 @@
 language: node_js
+
 node_js:
-- '0.10.26'
+- '0.10'
+
 before_install:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
-- npm install -g npm
-- npm install -g bower
+
+before_script:
 - npm install -g grunt-cli
-- npm install -g karma@0.13.9
+- npm install -g karma
 - npm install
+
 script:
 - grunt travis
+
 deploy:
   provider: npm
   email: adrien.crivelli@gmail.com
