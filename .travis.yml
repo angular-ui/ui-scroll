@@ -1,11 +1,11 @@
 language: node_js
 node_js:
-- '0.12'
+- '0.10.20'
 before_install:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
 - npm install -g npm
-- npm install -g bower grunt-cli karma
+- npm install -g bower grunt-cli karma@0.10.0
 - npm install
 script:
 - grunt travis
