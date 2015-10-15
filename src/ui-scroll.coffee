@@ -34,8 +34,8 @@ angular.module('ui.scroll', [])
 		priority: 1000
 		terminal: true
 
-		compile: (elementTemplate, attr, linker) ->
-			($scope, element, $attr, controllers) ->
+		compile: (elementTemplate, attr) ->
+			pre: ($scope, element, $attr, controllers, linker) ->
 
 				log = console.debug || console.log
 
