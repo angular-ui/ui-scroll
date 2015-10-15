@@ -34,8 +34,11 @@ angular.module('ui.scroll', [])
 		priority: 1000
 		terminal: true
 
-		compile: (elementTemplate, attr, linker) ->
-			($scope, element, $attr, controllers) ->
+		compile: (elementTemplate, attr, compileLinker) ->
+			($scope, element, $attr, controllers, linker) ->
+
+				#starting from angular 1.2 compileLinker usage is deprecated
+				linker = linker || compileLinker
 
 				log = console.debug || console.log
 
