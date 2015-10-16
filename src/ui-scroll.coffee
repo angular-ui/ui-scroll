@@ -27,7 +27,92 @@ angular.module('ui.scroll', [])
 	'$log', '$injector', '$rootScope', '$timeout', '$q', '$parse'
 	(console, $injector, $rootScope, $timeout, $q, $parse) ->
 
+		# Element manipulation routines
+
+		insertElement =
+			(newElement, previousElement) ->
+				previousElement.after.apply(previousElement, [newElement])
+				[]
+
+		removeElement = (wrapper) ->
+			wrapper.element.remove()
+			wrapper.scope.$destroy()
+			[]
+
 		$animate = $injector.get('$animate') if $injector.has && $injector.has('$animate')
+		isAngularVersionLessThen1_3 = angular.version.major == 1 and angular.version.minor < 3
+
+		if not $animate
+			insertElementAnimated = insertElement
+			removeElementAnimated = removeElement
+		else
+			if isAngularVersionLessThen1_3
+				insertElementAnimated = (newElement, previousElement) ->
+					deferred = $q.defer()
+					# no need for parent - previous element is never null
+					$animate.enter newElement, null, previousElement, -> deferred.resolve()
+					[deferred.promise]
+				removeElementAnimated = (wrapper) ->
+					deferred = $q.defer()
+					$animate.leave wrapper.element, ->
+						wrapper.scope.$destroy()
+						deferred.resolve()
+					[deferred.promise]
+			else
+				insertElementAnimated = (newElement, previousElement) ->
+					# no need for parent - previous element is never null
+					[$animate.enter newElement, null, previousElement]
+				removeElementAnimated = (wrapper) ->
+					[($animate.leave wrapper.element).then ->
+						wrapper.scope.$destroy()
+					]
+
+
+		# buffer
+
+		Buffer = (itemName, $scope, linker)->
+
+			buffer = Object.create Array.prototype
+
+			# inserts wrapped element in the buffer
+			# the first argument is either operation keyword (see below) or a number for operation 'insert'
+			# for insert the number is the index for the buffer element the new one have to be inserted after
+			# operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
+			buffer.insert = (operation, item) ->
+				itemScope = $scope.$new()
+				itemScope[itemName] = item
+				wrapper =
+					scope: itemScope
+
+				linker itemScope, (clone) ->
+					wrapper.element = clone
+
+				if operation % 1 == 0 # it is an insert
+					wrapper.op = 'insert'
+					buffer.splice operation, 0, wrapper
+				else
+					wrapper.op = operation
+					switch operation
+						when 'append' then buffer.push wrapper
+						when 'prepend' then buffer.unshift wrapper
+
+			# removes elements from buffer
+			buffer.remove = (arg1, arg2) ->
+				if angular.isNumber arg1
+					#removes items from arg1 (including) through arg2 (excluding)
+					for i in [arg1...arg2]
+						removeElement buffer[i]
+					buffer.splice arg1, arg2 - arg1
+				else
+					# removes single item(wrapper) from the buffer
+					buffer.splice buffer.indexOf(arg1), 1
+					removeElementAnimated arg1
+
+			#clears the buffer
+			buffer.clear = ->
+				buffer.remove(0, buffer.length)
+
+			buffer
 
 		require: ['?^uiScrollViewport']
 		transclude: 'element'
@@ -35,17 +120,20 @@ angular.module('ui.scroll', [])
 		terminal: true
 
 		compile: (elementTemplate, attr, compileLinker) ->
+
+			log = console.debug || console.log
+
+			unless match = attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/)
+				throw new Error 'Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\''
+			itemName = match[1]
+			datasourceName = match[2]
+
+
+
 			($scope, element, $attr, controllers, linker) ->
 
 				#starting from angular 1.2 compileLinker usage is deprecated
 				linker = linker || compileLinker
-
-				log = console.debug || console.log
-
-				unless match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/)
-					throw new Error 'Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\''
-				itemName = match[1]
-				datasourceName = match[2]
 
 				datasource = $parse(datasourceName)($scope)
 				isDatasourceValid = () -> angular.isObject(datasource) and angular.isFunction(datasource.get)
@@ -58,73 +146,6 @@ angular.module('ui.scroll', [])
 				bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +$attr.padding || 0.1) # some extra space to initiate preload
 				scrollHeight = (elem) -> elem[0].scrollHeight ? elem[0].document.documentElement.scrollHeight
 
-				isAngularVersionLessThen1_3 = angular.version.major == 1 and angular.version.minor < 3
-
-				# Element manipulation routines
-
-				insertElement =
-					(newElement, previousElement) ->
-						element.after.apply(previousElement, [newElement])
-						[]
-
-				insertElementAnimated =
-					if $animate
-						if isAngularVersionLessThen1_3
-							(newElement, previousElement) ->
-								deferred = $q.defer()
-								$animate.enter newElement, element, previousElement, -> deferred.resolve()
-								[deferred.promise]
-						else
-							(newElement, previousElement) ->
-								[$animate.enter newElement, element, previousElement]
-
-					else insertElement
-
-				# buffer object setup
-
-				Buffer = ->
-					buffer = Object.create Array.prototype
-
-					if $animate
-						if isAngularVersionLessThen1_3
-							remove = (wrapper) ->
-								buffer.splice buffer.indexOf(wrapper), 1
-								deferred = $q.defer()
-								$animate.leave wrapper.element, ->
-									wrapper.scope.$destroy()
-									deferred.resolve()
-								[deferred.promise]
-						else
-							remove = (wrapper) ->
-								buffer.splice buffer.indexOf(wrapper), 1
-								[($animate.leave wrapper.element).then ->
-									wrapper.scope.$destroy()
-								]
-					else
-						remove = (wrapper) ->
-							buffer.splice buffer.indexOf(wrapper), 1
-							wrapper.element.remove()
-							wrapper.scope.$destroy()
-							[]
-
-					# buffer object methods
-
-					buffer.remove = (arg1, arg2) ->
-						if angular.isNumber arg1
-							#removes items from arg1 (including) through arg2 (excluding)
-							for i in [arg1...arg2]
-								buffer[i].scope.$destroy()
-								buffer[i].element.remove()
-							buffer.splice arg1, arg2 - arg1
-						else
-							# removes single item(wrapper) from the buffer
-							remove arg1
-
-					#clears the buffer
-					buffer.clear = ->
-						buffer.remove(0, buffer.length)
-
-					buffer
 
 				# initial settings
 
@@ -132,7 +153,7 @@ angular.module('ui.scroll', [])
 				ridActual = 0 # current data revision id
 				first = 1
 				next = 1
-				buffer = new Buffer
+				buffer = new Buffer(itemName, $scope, linker)
 				pending = []
 				eof = false
 				bof = false
@@ -282,27 +303,6 @@ angular.module('ui.scroll', [])
 					if pending.push(direction) == 1
 						fetch(rid)
 
-				# the first argument is either operation keyword (see below) or a number for operation 'insert'
-				# for insert the number is the index for the buffer element the new one have to be inserted after
-				# operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
-				insertItem = (operation, item) ->
-					itemScope = $scope.$new()
-					itemScope[itemName] = item
-					wrapper =
-						scope: itemScope
-
-					linker itemScope, (clone) ->
-						wrapper.element = clone
-
-					if operation % 1 == 0 # it is an insert
-						wrapper.op = 'insert'
-						buffer.splice operation, 0, wrapper
-					else
-						wrapper.op = operation
-						switch operation
-							when 'append' then buffer.push wrapper
-							when 'prepend' then buffer.unshift wrapper
-
 				isElementVisible = (wrapper) -> wrapper.element.height() && wrapper.element[0].offsetParent
 
 				visibilityWatcher = (wrapper) ->
@@ -445,7 +445,7 @@ angular.module('ui.scroll', [])
 									clipTop()
 									for item in result
 										++next
-										insertItem 'append', item
+										buffer.insert 'append', item
 										#log 'appended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
 								adjustBufferAfterFetch rid
 					else
@@ -464,7 +464,7 @@ angular.module('ui.scroll', [])
 									clipBottom() if buffer.length
 									for i in [result.length-1..0]
 										--first
-										insertItem 'prepend', result[i]
+										buffer.insert 'prepend', result[i]
 									#log 'prepended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
 								adjustBufferAfterFetch rid
 
@@ -510,7 +510,7 @@ angular.module('ui.scroll', [])
 								keepIt = true;
 								pos--
 							else
-								insertItem pos, newItem
+								buffer.insert pos, newItem
 						unless keepIt
 							wrapper.op = 'remove'
 
@@ -535,14 +535,14 @@ angular.module('ui.scroll', [])
 					dismissPendingRequests()
 					for item in newItems
 						++next
-						insertItem 'append', item
+						buffer.insert 'append', item
 					adjustBuffer ridActual
 
 				adapter.prepend = (newItems) ->
 					dismissPendingRequests()
 					for item in newItems.reverse()
 						--first
-						insertItem 'prepend', item
+						buffer.insert 'prepend', item
 					adjustBuffer ridActual
 
 				if $attr.adapter # so we have an adapter on $scope
