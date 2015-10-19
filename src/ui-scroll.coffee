@@ -113,6 +113,57 @@ angular.module('ui.scroll', [])
 
 			buffer
 
+		Padding = (tagName) ->
+
+			if tagName in ['dl']
+				throw new Error 'ui-scroll directive does not support <' + template.localName + '> as a repeating tag: ' + template.outerHTML
+			tagName = 'div' if tagName not in ['li', 'tr']
+
+			switch tagName
+				when 'tr'
+					table = angular.element('<table><tr><td><div></div></td></tr></table>')
+					div = table.find('div')
+					result = table.find('tr')
+				else
+					result = angular.element('<' + repeaterType + '></' + repeaterType + '>')
+			result
+
+
+
+		Viewport = (element, controllers) ->
+
+			self = this
+
+			viewport = if controllers[0] and controllers[0].viewport then controllers[0].viewport else angular.element(window)
+			viewport.css({'overflow-y': 'auto', 'display': 'block'})
+
+			topPadding = null
+
+			bottomPadding = null
+
+			self.createPaddingElements = (template) ->
+
+				topPadding = new Padding template.localName
+				element.before topPadding
+				self.topPadding = topPadding.height
+
+				bottomPadding = new Padding template.localName
+				element.after bottomPadding
+				self.bottomPadding = bottomPadding.height
+
+			self.bottomDataPos = ->
+				(viewport.scrollHeight ? viewport.document.documentElement.scrollHeight) - bottomPadding.height()
+
+			self.topDataPos = -> topPadding.height()
+
+			self.insertElement = (e, sibling) -> insertElement(e, sibling || topPadding)
+
+			self.insertElementAnimated = (e, sibling) -> insertElementAnimated(e, sibling || topPadding)
+
+			return
+
+
+
 		require: ['?^uiScrollViewport']
 		transclude: 'element'
 		priority: 1000
@@ -203,6 +254,8 @@ angular.module('ui.scroll', [])
 
 				viewport = builder.viewport
 				viewportScope = viewport.scope() || $rootScope
+
+				#v = new Viewport element, controllers
 
 				topVisible = (item) ->
 					adapter.topVisible = item.scope[itemName]
