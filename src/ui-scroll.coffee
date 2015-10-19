@@ -27,11 +27,13 @@ angular.module('ui.scroll', [])
 	'$log', '$injector', '$rootScope', '$timeout', '$q', '$parse'
 	(console, $injector, $rootScope, $timeout, $q, $parse) ->
 
+		log = console.debug || console.log
+
 		# Element manipulation routines
 
 		insertElement =
 			(newElement, previousElement) ->
-				previousElement.after.apply(previousElement, [newElement])
+				previousElement.after newElement
 				[]
 
 		removeElement = (wrapper) ->
@@ -66,9 +68,6 @@ angular.module('ui.scroll', [])
 					[($animate.leave wrapper.element).then ->
 						wrapper.scope.$destroy()
 					]
-
-
-		# buffer
 
 		Buffer = (itemName, $scope, linker)->
 
@@ -120,8 +119,6 @@ angular.module('ui.scroll', [])
 		terminal: true
 
 		compile: (elementTemplate, attr, compileLinker) ->
-
-			log = console.debug || console.log
 
 			unless match = attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/)
 				throw new Error 'Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\''
