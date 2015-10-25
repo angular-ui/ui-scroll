@@ -125,14 +125,12 @@ angular.module('ui.scroll', [])
 					div = table.find('div')
 					result = table.find('tr')
 				else
-					result = angular.element('<' + repeaterType + '></' + repeaterType + '>')
+					result = angular.element('<' + tagName + '></' + tagName + '>')
 			result
 
 
 
 		Viewport = (element, controllers) ->
-
-			self = this
 
 			viewport = if controllers[0] and controllers[0].viewport then controllers[0].viewport else angular.element(window)
 			viewport.css({'overflow-y': 'auto', 'display': 'block'})
@@ -141,27 +139,32 @@ angular.module('ui.scroll', [])
 
 			bottomPadding = null
 
-			self.createPaddingElements = (template) ->
+			viewport.createPaddingElements = (template) ->
 
 				topPadding = new Padding template.localName
 				element.before topPadding
-				self.topPadding = topPadding.height
+				viewport.topPadding = -> topPadding.height arguments
 
 				bottomPadding = new Padding template.localName
 				element.after bottomPadding
-				self.bottomPadding = bottomPadding.height
+				viewport.bottomPadding = -> bottomPadding.height arguments
 
-			self.bottomDataPos = ->
-				(viewport.scrollHeight ? viewport.document.documentElement.scrollHeight) - bottomPadding.height()
+			viewport.bottomDataPos = ->
+				(viewport[0].scrollHeight ? viewport[0].document.documentElement.scrollHeight) - bottomPadding.height()
 
-			self.topDataPos = -> topPadding.height()
+			viewport.topDataPos = -> topPadding.height()
 
-			self.insertElement = (e, sibling) -> insertElement(e, sibling || topPadding)
+			viewport.bottomVisiblePos = ->
+				viewport.scrollTop() + viewport.outerHeight()
 
-			self.insertElementAnimated = (e, sibling) -> insertElementAnimated(e, sibling || topPadding)
+			viewport.topVisiblePos = ->
+				viewport.scrollTop()
 
-			return
+			viewport.insertElement = (e, sibling) -> insertElement(e, sibling || topPadding)
 
+			viewport.insertElementAnimated = (e, sibling) -> insertElementAnimated(e, sibling || topPadding)
+
+			viewport
 
 
 		require: ['?^uiScrollViewport']
@@ -192,8 +195,6 @@ angular.module('ui.scroll', [])
 
 				bufferSize = Math.max(3, +$attr.bufferSize || 10)
 				bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +$attr.padding || 0.1) # some extra space to initiate preload
-				scrollHeight = (elem) -> elem[0].scrollHeight ? elem[0].document.documentElement.scrollHeight
-
 
 				# initial settings
 
@@ -206,53 +207,22 @@ angular.module('ui.scroll', [])
 				eof = false
 				bof = false
 
+				viewport = new Viewport element, controllers
+
 				# Padding element builder
 				#
 				# Calling linker is the only way I found to get access to the tag name of the template
 				# to prevent the directive scope from pollution a new scope is created and destroyed
 				# right after the builder creation is completed
 				linker $scope.$new(), (template, scope) ->
+
+					viewport.createPaddingElements(template[0])
+
 					# Destroy template's scope to remove any watchers on it.
 					scope.$destroy()
-
-					repeaterType = template[0].localName
-					if repeaterType in ['dl']
-						throw new Error 'ui-scroll directive does not support <' + template[0].localName + '> as a repeating tag: ' + template[0].outerHTML
-					repeaterType = 'div' if repeaterType not in ['li', 'tr']
-
-					viewport = if controllers[0] and controllers[0].viewport then controllers[0].viewport else angular.element(window)
-					viewport.css({'overflow-y': 'auto', 'display': 'block'})
-
-					padding = (repeaterType)->
-						switch repeaterType
-							when 'tr'
-								table = angular.element('<table><tr><td><div></div></td></tr></table>')
-								div = table.find('div')
-								result = table.find('tr')
-								result.paddingHeight = -> div.height.apply(div, arguments)
-							else
-								result = angular.element('<' + repeaterType + '></' + repeaterType + '>')
-								result.paddingHeight = result.height
-						result
-
-					topPadding = padding(repeaterType)
-					element.before topPadding
-
-					bottomPadding = padding(repeaterType)
-					element.after bottomPadding
-
+					# also remove the template when the directive scope is destroyed
 					$scope.$on '$destroy', -> template.remove()
 
-					builder =
-						viewport: viewport
-						topPadding: -> topPadding.paddingHeight.apply(topPadding, arguments)
-						bottomPadding: -> bottomPadding.paddingHeight.apply(bottomPadding, arguments)
-						bottomDataPos: -> scrollHeight(viewport) - bottomPadding.paddingHeight()
-						topDataPos: -> topPadding.paddingHeight()
-						insertElement: (e, sibling) -> insertElement(e, sibling || topPadding)
-						insertElementAnimated: (e, sibling) -> insertElementAnimated(e, sibling || topPadding)
-
-				viewport = builder.viewport
 				viewportScope = viewport.scope() || $rootScope
 
 				#v = new Viewport element, controllers
@@ -280,25 +250,19 @@ angular.module('ui.scroll', [])
 					first = 1
 					next = 1
 					buffer.clear()
-					builder.topPadding(0)
-					builder.bottomPadding(0)
+					viewport.topPadding(0)
+					viewport.bottomPadding(0)
 					eof = false
 					bof = false
 					adjustBuffer ridActual
 
-				bottomVisiblePos = ->
-					viewport.scrollTop() + viewport.outerHeight()
-
-				topVisiblePos = ->
-					viewport.scrollTop()
-
 				shouldLoadBottom = ->
-					#log "bottom pos #{builder.bottomDataPos()} < bottom visible #{bottomVisiblePos()} + padding #{bufferPadding()} "
-					!eof && builder.bottomDataPos() < bottomVisiblePos() + bufferPadding()
+					#log "bottom pos #{viewport.bottomDataPos()} < bottom visible #{bottomVisiblePos()} + padding #{bufferPadding()} "
+					!eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding()
 
 				clipBottom = ->
 					# clip the invisible items off the bottom
-					bottomHeight = 0 #builder.bottomPadding()
+					bottomHeight = 0
 					overage = 0
 
 					for i in [buffer.length-1..0]
@@ -307,7 +271,7 @@ angular.module('ui.scroll', [])
 						newRow = rowTop isnt itemTop
 						rowTop = itemTop
 						itemHeight = item.element.outerHeight(true) if newRow
-						if (builder.bottomDataPos() - bottomHeight - itemHeight > bottomVisiblePos() + bufferPadding())
+						if (viewport.bottomDataPos() - bottomHeight - itemHeight > viewport.bottomVisiblePos() + bufferPadding())
 							bottomHeight += itemHeight if newRow
 							overage++
 							eof = false
@@ -316,14 +280,14 @@ angular.module('ui.scroll', [])
 							overage++
 
 					if overage > 0
-						builder.bottomPadding(builder.bottomPadding() + bottomHeight)
+						viewport.bottomPadding(viewport.bottomPadding() + bottomHeight)
 						buffer.remove(buffer.length - overage, buffer.length)
 						next -= overage
-						#log 'clipped off bottom ' + overage + ' bottom padding ' + builder.bottomPadding()
+						#log 'clipped off bottom ' + overage + ' bottom padding ' + viewport.bottomPadding()
 
 				shouldLoadTop = ->
-					#log "top pos #{builder.topDataPos()} > top visible #{topVisiblePos()} - padding #{bufferPadding()}"
-					!bof && (builder.topDataPos() > topVisiblePos() - bufferPadding())
+					#log "top pos #{viewport.topDataPos()} > top visible #{topVisiblePos()} - padding #{bufferPadding()}"
+					!bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding())
 
 				clipTop = ->
 					# clip the invisible items off the top
@@ -334,7 +298,7 @@ angular.module('ui.scroll', [])
 						newRow = rowTop isnt itemTop
 						rowTop = itemTop
 						itemHeight = item.element.outerHeight(true) if newRow
-						if (builder.topDataPos() + topHeight + itemHeight < topVisiblePos() - bufferPadding())
+						if (viewport.topDataPos() + topHeight + itemHeight < viewport.topVisiblePos() - bufferPadding())
 							topHeight += itemHeight if newRow
 							overage++
 							bof = false
@@ -342,7 +306,7 @@ angular.module('ui.scroll', [])
 							break if newRow
 							overage++
 					if overage > 0
-						builder.topPadding(builder.topPadding() + topHeight)
+						viewport.topPadding(viewport.topPadding() + topHeight)
 						buffer.remove(0, overage)
 						first += overage
 						#log 'clipped off top ' + overage + ' top padding ' + builder.topPadding()
@@ -364,7 +328,7 @@ angular.module('ui.scroll', [])
 						adjustBuffer()
 
 				insertWrapperContent = (wrapper, sibling) ->
-					builder.insertElement wrapper.element, sibling
+					viewport.insertElement wrapper.element, sibling
 					return true if isElementVisible(wrapper)
 					wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch () -> visibilityWatcher(wrapper)
 					false
@@ -374,7 +338,7 @@ angular.module('ui.scroll', [])
 					toBePrepended = []
 					toBeRemoved = []
 
-					bottomPos = builder.bottomDataPos()
+					bottomPos = viewport.bottomDataPos()
 					for wrapper, i in buffer
 						switch wrapper.op
 							when 'prepend' then toBePrepended.unshift wrapper
@@ -386,9 +350,9 @@ angular.module('ui.scroll', [])
 								wrapper.op = 'none'
 							when 'insert'
 								if (i == 0)
-									promises = promises.concat (builder.insertElementAnimated wrapper.element)
+									promises = promises.concat (viewport.insertElementAnimated wrapper.element)
 								else
-									promises = promises.concat (builder.insertElementAnimated wrapper.element, buffer[i-1].element)
+									promises = promises.concat (viewport.insertElementAnimated wrapper.element, buffer[i-1].element)
 								wrapper.op = 'none'
 							when 'remove' then toBeRemoved.push wrapper
 
@@ -396,20 +360,20 @@ angular.module('ui.scroll', [])
 						promises = promises.concat (buffer.remove wrapper)
 
 					# for anything other than prepend adjust the bottomPadding height
-					builder.bottomPadding(Math.max(0,builder.bottomPadding() - (builder.bottomDataPos() - bottomPos)))
+					viewport.bottomPadding(Math.max(0,viewport.bottomPadding() - (viewport.bottomDataPos() - bottomPos)))
 
 					if toBePrepended.length
-						bottomPos = builder.bottomDataPos()
+						bottomPos = viewport.bottomDataPos()
 						for wrapper in toBePrepended
 							keepFetching = insertWrapperContent(wrapper) || keepFetching
 							wrapper.op = 'none'
 
-						heightIncrement = builder.bottomDataPos() - bottomPos
+						heightIncrement = viewport.bottomDataPos() - bottomPos
 
 						# adjust padding to prevent it from visually pushing everything down
-						if builder.topPadding() >= heightIncrement
+						if viewport.topPadding() >= heightIncrement
 							# if possible, reduce topPadding
-							builder.topPadding(builder.topPadding() - heightIncrement)
+							viewport.topPadding(viewport.topPadding() - heightIncrement)
 						else
 							# if not, increment scrollTop
 							viewport.scrollTop(viewport.scrollTop() + heightIncrement)
@@ -432,7 +396,7 @@ angular.module('ui.scroll', [])
 						newRow = rowTop isnt itemTop
 						rowTop = itemTop
 						itemHeight = item.element.outerHeight(true) if newRow
-						if newRow and (builder.topDataPos() + topHeight + itemHeight < topVisiblePos())
+						if newRow and (viewport.topDataPos() + topHeight + itemHeight < viewport.topVisiblePos())
 							topHeight += itemHeight
 						else
 							topVisible(item) if newRow
@@ -489,7 +453,7 @@ angular.module('ui.scroll', [])
 								return if (rid and rid isnt ridActual) or $scope.$$destroyed
 								if result.length < bufferSize
 									eof = true
-									builder.bottomPadding(0)
+									viewport.bottomPadding(0)
 									#log 'eof is reached'
 								if result.length > 0
 									clipTop()
@@ -508,7 +472,7 @@ angular.module('ui.scroll', [])
 								return if (rid and rid isnt ridActual) or $scope.$$destroyed
 								if result.length < bufferSize
 									bof = true
-									builder.topPadding(0)
+									viewport.topPadding(0)
 									#log 'bof is reached'
 								if result.length > 0
 									clipBottom() if buffer.length
