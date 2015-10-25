@@ -143,11 +143,11 @@ angular.module('ui.scroll', [])
 
 				topPadding = new Padding template.localName
 				element.before topPadding
-				viewport.topPadding = -> topPadding.height arguments
+				viewport.topPadding = (height) -> topPadding.height height
 
 				bottomPadding = new Padding template.localName
 				element.after bottomPadding
-				viewport.bottomPadding = -> bottomPadding.height arguments
+				viewport.bottomPadding = (height) -> bottomPadding.height height
 
 			viewport.bottomDataPos = ->
 				(viewport[0].scrollHeight ? viewport[0].document.documentElement.scrollHeight) - bottomPadding.height()
