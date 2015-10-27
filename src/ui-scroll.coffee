@@ -132,7 +132,7 @@ angular.module('ui.scroll', [])
 				ridActual = 0 # current data revision id
 				first = 1
 				next = 1
-				buffer = new Buffer
+				buffer = new Buffer()
 				pending = []
 				eof = false
 				bof = false
@@ -547,7 +547,7 @@ angular.module('ui.scroll', [])
 
 				if $attr.adapter # so we have an adapter on $scope
 					adapterOnScope = $parse($attr.adapter)($scope)
-					if not adapterOnScope
+					if not angular.isObject adapterOnScope
 						$parse($attr.adapter).assign($scope, {})
 						adapterOnScope = $parse($attr.adapter)($scope)
 					angular.extend(adapterOnScope, adapter)
