@@ -113,10 +113,10 @@ angular.module('ui.scroll', [])
 
 			buffer
 
-		Padding = (tagName) ->
-
+		Padding = (template) ->
+			tagName = template.localName
 			if tagName in ['dl']
-				throw new Error 'ui-scroll directive does not support <' + template.localName + '> as a repeating tag: ' + template.outerHTML
+				throw new Error 'ui-scroll directive does not support <' + tagName + '> as a repeating tag: ' + template.outerHTML
 			tagName = 'div' if tagName not in ['li', 'tr']
 
 			switch tagName
@@ -141,11 +141,11 @@ angular.module('ui.scroll', [])
 
 			viewport.createPaddingElements = (template) ->
 
-				topPadding = new Padding template.localName
+				topPadding = new Padding template
 				element.before topPadding
 				viewport.topPadding = (height) -> topPadding.height height
 
-				bottomPadding = new Padding template.localName
+				bottomPadding = new Padding template
 				element.after bottomPadding
 				viewport.bottomPadding = (height) -> bottomPadding.height height
 
@@ -175,7 +175,7 @@ angular.module('ui.scroll', [])
 		compile: (elementTemplate, attr, compileLinker) ->
 
 			unless match = attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/)
-				throw new Error 'Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\''
+				throw new Error 'Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + attr.uiScroll + '\''
 			itemName = match[1]
 			datasourceName = match[2]
 
@@ -561,7 +561,7 @@ angular.module('ui.scroll', [])
 
 				if $attr.adapter # so we have an adapter on $scope
 					adapterOnScope = $parse($attr.adapter)($scope)
-					if not adapterOnScope
+					if not angular.isObject adapterOnScope
 						$parse($attr.adapter).assign($scope, {})
 						adapterOnScope = $parse($attr.adapter)($scope)
 					angular.extend(adapterOnScope, adapter)
