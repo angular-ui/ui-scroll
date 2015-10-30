@@ -245,7 +245,7 @@ angular.module('ui.scroll', [])
 					ridActual++
 					pending = []
 
-				reload = ->
+				reloadImpl = ->
 					dismissPendingRequests()
 					first = 1
 					next = 1
@@ -257,7 +257,6 @@ angular.module('ui.scroll', [])
 					adjustBuffer ridActual
 
 				shouldLoadBottom = ->
-					#log "bottom pos #{viewport.bottomDataPos()} < bottom visible #{bottomVisiblePos()} + padding #{bufferPadding()} "
 					!eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding()
 
 				clipBottom = ->
@@ -286,7 +285,6 @@ angular.module('ui.scroll', [])
 						#log 'clipped off bottom ' + overage + ' bottom padding ' + viewport.bottomPadding()
 
 				shouldLoadTop = ->
-					#log "top pos #{viewport.topDataPos()} > top visible #{topVisiblePos()} - padding #{bufferPadding()}"
 					!bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding())
 
 				clipTop = ->
@@ -309,7 +307,6 @@ angular.module('ui.scroll', [])
 						viewport.topPadding(viewport.topPadding() + topHeight)
 						buffer.remove(0, overage)
 						first += overage
-						#log 'clipped off top ' + overage + ' top padding ' + builder.topPadding()
 
 				enqueueFetch = (rid, direction)->
 					if !adapter.isLoading
@@ -500,7 +497,7 @@ angular.module('ui.scroll', [])
 				viewport.bind 'scroll', resizeAndScrollHandler
 				viewport.bind 'mousewheel', wheelHandler
 
-				$scope.$watch datasource.revision, reload
+				$scope.$watch datasource.revision, reloadImpl
 
 				$scope.$on '$destroy', ->
 					# clear the buffer. It is necessary to remove the elements and $destroy the scopes
@@ -514,7 +511,7 @@ angular.module('ui.scroll', [])
 
 				adapter = {}
 				adapter.isLoading = false
-				adapter.reload = reload
+				adapter.reload = reloadImpl
 
 				applyUpdate = (wrapper, newItems) ->
 					if angular.isArray newItems
