@@ -129,8 +129,7 @@ angular.module('ui.scroll', [])
 			result
 
 
-
-		Viewport = (element, controllers) ->
+		Viewport = (buffer, element, controllers) ->
 
 			viewport = if controllers[0] and controllers[0].viewport then controllers[0].viewport else angular.element(window)
 			viewport.css({'overflow-y': 'auto', 'display': 'block'})
@@ -163,6 +162,59 @@ angular.module('ui.scroll', [])
 			viewport.insertElement = (e, sibling) -> insertElement(e, sibling || topPadding)
 
 			viewport.insertElementAnimated = (e, sibling) -> insertElementAnimated(e, sibling || topPadding)
+
+			viewport.shouldLoadBottom = ->
+				!buffer.eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding()
+
+			viewport.clipBottom = ->
+				# clip the invisible items off the bottom
+				bottomHeight = 0
+				overage = 0
+
+				for i in [buffer.length-1..0]
+					item = buffer[i]
+					itemTop = item.element.offset().top
+					newRow = rowTop isnt itemTop
+					rowTop = itemTop
+					itemHeight = item.element.outerHeight(true) if newRow
+					if (viewport.bottomDataPos() - bottomHeight - itemHeight > viewport.bottomVisiblePos() + bufferPadding())
+						bottomHeight += itemHeight if newRow
+						overage++
+						buffer.eof = false
+					else
+						break if newRow
+						overage++
+
+				if overage > 0
+					viewport.bottomPadding(viewport.bottomPadding() + bottomHeight)
+					buffer.remove(buffer.length - overage, buffer.length)
+					next -= overage
+
+			viewport.shouldLoadTop = ->
+				!buffer.bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding())
+
+			viewport.clipTop = ->
+				# clip the invisible items off the top
+				topHeight = 0
+				overage = 0
+				for item in buffer
+					itemTop = item.element.offset().top
+					newRow = rowTop isnt itemTop
+					rowTop = itemTop
+					itemHeight = item.element.outerHeight(true) if newRow
+					if (viewport.topDataPos() + topHeight + itemHeight < viewport.topVisiblePos() - bufferPadding())
+						topHeight += itemHeight if newRow
+						overage++
+						buffer.bof = false
+					else
+						break if newRow
+						overage++
+				if overage > 0
+					viewport.topPadding(viewport.topPadding() + topHeight)
+					buffer.remove(0, overage)
+					first += overage
+
+
 
 			viewport
 
@@ -198,7 +250,6 @@ angular.module('ui.scroll', [])
 
 				# initial settings
 
-				builder = null
 				ridActual = 0 # current data revision id
 				first = 1
 				next = 1
@@ -207,7 +258,7 @@ angular.module('ui.scroll', [])
 				eof = false
 				bof = false
 
-				viewport = new Viewport element, controllers
+				viewport = new Viewport(buffer, element, controllers)
 
 				# Padding element builder
 				#
@@ -224,8 +275,6 @@ angular.module('ui.scroll', [])
 					$scope.$on '$destroy', -> template.remove()
 
 				viewportScope = viewport.scope() || $rootScope
-
-				#v = new Viewport element, controllers
 
 				topVisible = (item) ->
 					adapter.topVisible = item.scope[itemName]
