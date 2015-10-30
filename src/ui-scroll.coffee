@@ -110,6 +110,18 @@ angular.module('ui.scroll', [])
 			#clears the buffer
 			buffer.clear = ->
 				buffer.remove(0, buffer.length)
+				buffer.eof = false
+				buffer.bof = false
+				buffer.first = 1
+				buffer.next = 1
+
+			buffer.eof = false
+
+			buffer.bof = false
+
+			buffer.first = 1
+
+			buffer.next = 1
 
 			buffer
 
@@ -129,7 +141,7 @@ angular.module('ui.scroll', [])
 			result
 
 
-		Viewport = (buffer, element, controllers) ->
+		Viewport = (buffer, element, controllers, padding) ->
 
 			viewport = if controllers[0] and controllers[0].viewport then controllers[0].viewport else angular.element(window)
 			viewport.css({'overflow-y': 'auto', 'display': 'block'})
@@ -137,6 +149,8 @@ angular.module('ui.scroll', [])
 			topPadding = null
 
 			bottomPadding = null
+
+			bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +padding || 0.1) # some extra space to initiate preload
 
 			viewport.createPaddingElements = (template) ->
 
@@ -188,7 +202,7 @@ angular.module('ui.scroll', [])
 				if overage > 0
 					viewport.bottomPadding(viewport.bottomPadding() + bottomHeight)
 					buffer.remove(buffer.length - overage, buffer.length)
-					next -= overage
+					buffer.next -= overage
 
 			viewport.shouldLoadTop = ->
 				!buffer.bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding())
@@ -212,7 +226,7 @@ angular.module('ui.scroll', [])
 				if overage > 0
 					viewport.topPadding(viewport.topPadding() + topHeight)
 					buffer.remove(0, overage)
-					first += overage
+					buffer.first += overage
 
 
 
@@ -251,14 +265,10 @@ angular.module('ui.scroll', [])
 				# initial settings
 
 				ridActual = 0 # current data revision id
-				first = 1
-				next = 1
-				buffer = new Buffer(itemName, $scope, linker)
 				pending = []
-				eof = false
-				bof = false
+				buffer = new Buffer(itemName, $scope, linker)
 
-				viewport = new Viewport(buffer, element, controllers)
+				viewport = new Viewport(buffer, element, controllers, $attr.padding)
 
 				# Padding element builder
 				#
@@ -296,66 +306,10 @@ angular.module('ui.scroll', [])
 
 				reloadImpl = ->
 					dismissPendingRequests()
-					first = 1
-					next = 1
 					buffer.clear()
 					viewport.topPadding(0)
 					viewport.bottomPadding(0)
-					eof = false
-					bof = false
 					adjustBuffer ridActual
-
-				shouldLoadBottom = ->
-					!eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding()
-
-				clipBottom = ->
-					# clip the invisible items off the bottom
-					bottomHeight = 0
-					overage = 0
-
-					for i in [buffer.length-1..0]
-						item = buffer[i]
-						itemTop = item.element.offset().top
-						newRow = rowTop isnt itemTop
-						rowTop = itemTop
-						itemHeight = item.element.outerHeight(true) if newRow
-						if (viewport.bottomDataPos() - bottomHeight - itemHeight > viewport.bottomVisiblePos() + bufferPadding())
-							bottomHeight += itemHeight if newRow
-							overage++
-							eof = false
-						else
-							break if newRow
-							overage++
-
-					if overage > 0
-						viewport.bottomPadding(viewport.bottomPadding() + bottomHeight)
-						buffer.remove(buffer.length - overage, buffer.length)
-						next -= overage
-						#log 'clipped off bottom ' + overage + ' bottom padding ' + viewport.bottomPadding()
-
-				shouldLoadTop = ->
-					!bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding())
-
-				clipTop = ->
-					# clip the invisible items off the top
-					topHeight = 0
-					overage = 0
-					for item in buffer
-						itemTop = item.element.offset().top
-						newRow = rowTop isnt itemTop
-						rowTop = itemTop
-						itemHeight = item.element.outerHeight(true) if newRow
-						if (viewport.topDataPos() + topHeight + itemHeight < viewport.topVisiblePos() - bufferPadding())
-							topHeight += itemHeight if newRow
-							overage++
-							bof = false
-						else
-							break if newRow
-							overage++
-					if overage > 0
-						viewport.topPadding(viewport.topPadding() + topHeight)
-						buffer.remove(0, overage)
-						first += overage
 
 				enqueueFetch = (rid, direction)->
 					if !adapter.isLoading
@@ -425,7 +379,7 @@ angular.module('ui.scroll', [])
 							viewport.scrollTop(viewport.scrollTop() + heightIncrement)
 
 					# re-index the buffer
-					item.scope.$index = first + i for item,i in buffer
+					item.scope.$index = buffer.first + i for item,i in buffer
 
 					# schedule another adjustBuffer after animation completion
 					if (promises.length)
@@ -455,10 +409,10 @@ angular.module('ui.scroll', [])
 
 						processBufferedItems(rid)
 
-						if shouldLoadBottom()
+						if viewport.shouldLoadBottom()
 							enqueueFetch(rid, true)
 						else
-							if shouldLoadTop()
+							if viewport.shouldLoadTop()
 								enqueueFetch(rid, false)
 
 						if pending.length == 0
@@ -471,11 +425,11 @@ angular.module('ui.scroll', [])
 
 						keepFetching = processBufferedItems(rid)
 
-						if shouldLoadBottom()
+						if viewport.shouldLoadBottom()
 							# keepFetching = true means that at least one item app/prepended in the last batch had height > 0
 							enqueueFetch(rid, true) if keepFetching
 						else
-							if shouldLoadTop()
+							if viewport.shouldLoadTop()
 								# pending[0] = true means that previous fetch was appending. We need to force at least one prepend
 								# BTW there will always be at least 1 element in the pending array because bottom is fetched first
 								enqueueFetch(rid, false) if keepFetching || pending[0]
@@ -490,40 +444,40 @@ angular.module('ui.scroll', [])
 				fetch = (rid) ->
 					#log "Running fetch... #{{true:'bottom', false: 'top'}[direction]} pending #{pending.length}"
 					if pending[0] # scrolling down
-						if buffer.length && !shouldLoadBottom()
+						if buffer.length && !viewport.shouldLoadBottom()
 							adjustBufferAfterFetch rid
 						else
 							#log "appending... requested #{bufferSize} records starting from #{next}"
-							datasource.get next, bufferSize,
+							datasource.get buffer.next, bufferSize,
 							(result) ->
 								return if (rid and rid isnt ridActual) or $scope.$$destroyed
 								if result.length < bufferSize
-									eof = true
+									buffer.eof = true
 									viewport.bottomPadding(0)
 									#log 'eof is reached'
 								if result.length > 0
-									clipTop()
+									viewport.clipTop()
 									for item in result
-										++next
+										++buffer.next
 										buffer.insert 'append', item
 										#log 'appended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
 								adjustBufferAfterFetch rid
 					else
-						if buffer.length && !shouldLoadTop()
+						if buffer.length && !viewport.shouldLoadTop()
 							adjustBufferAfterFetch rid
 						else
 							#log "prepending... requested #{size} records starting from #{start}"
-							datasource.get first-bufferSize, bufferSize,
+							datasource.get buffer.first-bufferSize, bufferSize,
 							(result) ->
 								return if (rid and rid isnt ridActual) or $scope.$$destroyed
 								if result.length < bufferSize
-									bof = true
+									buffer.bof = true
 									viewport.topPadding(0)
 									#log 'bof is reached'
 								if result.length > 0
-									clipBottom() if buffer.length
+									viewport.clipBottom() if buffer.length
 									for i in [result.length-1..0]
-										--first
+										--buffer.first
 										buffer.insert 'prepend', result[i]
 									#log 'prepended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
 								adjustBufferAfterFetch rid
@@ -539,7 +493,7 @@ angular.module('ui.scroll', [])
 				wheelHandler = (event) ->
 					scrollTop = viewport[0].scrollTop
 					yMax = viewport[0].scrollHeight - viewport[0].clientHeight
-					if (scrollTop is 0 and not bof) or (scrollTop is yMax and not eof)
+					if (scrollTop is 0 and not buffer.bof) or (scrollTop is yMax and not buffer.eof)
 						event.preventDefault()
 
 				viewport.bind 'resize', resizeAndScrollHandler
@@ -585,8 +539,8 @@ angular.module('ui.scroll', [])
 					else
 						# arg1 is item index, arg2 is the newItems array
 						if arg1%1 == 0 # checking if it is an integer
-							if 0 <= arg1-first < buffer.length
-								applyUpdate buffer[arg1 - first], arg2
+							if 0 <= arg1-buffer.first < buffer.length
+								applyUpdate buffer[arg1 - buffer.first], arg2
 						else
 							throw new Error 'applyUpdates - ' + arg1 + ' is not a valid index'
 					adjustBuffer ridActual
@@ -594,14 +548,14 @@ angular.module('ui.scroll', [])
 				adapter.append = (newItems) ->
 					dismissPendingRequests()
 					for item in newItems
-						++next
+						++buffer.next
 						buffer.insert 'append', item
 					adjustBuffer ridActual
 
 				adapter.prepend = (newItems) ->
 					dismissPendingRequests()
 					for item in newItems.reverse()
-						--first
+						--buffer.first
 						buffer.insert 'prepend', item
 					adjustBuffer ridActual
 
