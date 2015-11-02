@@ -229,10 +229,52 @@ angular.module('ui.scroll', [])
 					buffer.remove(0, overage)
 					buffer.first += overage
 
-
-
 			viewport
 
+		Adapter = (buffer, adjustBuffer) ->
+			this.isLoading = false
+
+			applyUpdate = (wrapper, newItems) ->
+				if angular.isArray newItems
+					pos = (buffer.indexOf wrapper) + 1
+					for newItem,i in newItems.reverse()
+						if newItem == wrapper.item
+							keepIt = true;
+							pos--
+						else
+							buffer.insert pos, newItem
+					unless keepIt
+						wrapper.op = 'remove'
+
+			this.applyUpdates = (arg1, arg2) ->
+				if angular.isFunction arg1
+					# arg1 is the updater function, arg2 is ignored
+					bufferClone = buffer.slice(0)
+					for wrapper,i in bufferClone  # we need to do it on the buffer clone, because buffer content
+						# may change as we iterate through
+						applyUpdate wrapper, arg1(wrapper.item, wrapper.scope, wrapper.element)
+				else
+					# arg1 is item index, arg2 is the newItems array
+					if arg1%1 == 0 # checking if it is an integer
+						if 0 <= arg1-buffer.first < buffer.length
+							applyUpdate buffer[arg1 - buffer.first], arg2
+					else
+						throw new Error 'applyUpdates - ' + arg1 + ' is not a valid index'
+				adjustBuffer()
+
+			this.append = (newItems) ->
+				for item in newItems
+					++buffer.next
+					buffer.insert 'append', item
+				adjustBuffer()
+
+			this.prepend = (newItems) ->
+				for item in newItems.reverse()
+					--buffer.first
+					buffer.insert 'prepend', item
+				adjustBuffer()
+
+			return
 
 		require: ['?^uiScrollViewport']
 		transclude: 'element'
@@ -261,7 +303,6 @@ angular.module('ui.scroll', [])
 						throw new Error datasourceName + ' is not a valid datasource'
 
 				bufferSize = Math.max(3, +$attr.bufferSize || 10)
-				bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +$attr.padding || 0.1) # some extra space to initiate preload
 
 				# initial settings
 
@@ -270,6 +311,19 @@ angular.module('ui.scroll', [])
 				buffer = new Buffer(itemName, $scope, linker)
 
 				viewport = new Viewport(buffer, element, controllers, $attr.padding)
+
+				adapter = new Adapter buffer,
+					->
+						dismissPendingRequests()
+						adjustBuffer ridActual
+
+				if $attr.adapter # so we have an adapter on $scope
+					adapterOnScope = $parse($attr.adapter)($scope)
+					if not angular.isObject adapterOnScope
+						$parse($attr.adapter).assign($scope, {})
+						adapterOnScope = $parse($attr.adapter)($scope)
+					angular.extend(adapterOnScope, adapter)
+					adapter = adapterOnScope
 
 				# Padding element builder
 				#
@@ -305,12 +359,14 @@ angular.module('ui.scroll', [])
 					ridActual++
 					pending = []
 
-				reloadImpl = ->
+				reload = ->
 					dismissPendingRequests()
 					buffer.clear()
 					viewport.topPadding(0)
 					viewport.bottomPadding(0)
 					adjustBuffer ridActual
+
+				adapter.reload = reload
 
 				enqueueFetch = (rid, direction)->
 					if !adapter.isLoading
@@ -501,7 +557,7 @@ angular.module('ui.scroll', [])
 				viewport.bind 'scroll', resizeAndScrollHandler
 				viewport.bind 'mousewheel', wheelHandler
 
-				$scope.$watch datasource.revision, reloadImpl
+				$scope.$watch datasource.revision, reload
 
 				$scope.$on '$destroy', ->
 					# clear the buffer. It is necessary to remove the elements and $destroy the scopes
@@ -509,68 +565,6 @@ angular.module('ui.scroll', [])
 					viewport.unbind 'resize', resizeAndScrollHandler
 					viewport.unbind 'scroll', resizeAndScrollHandler
 					viewport.unbind 'mousewheel', wheelHandler
-
-
-				# adapter setup
-
-				Adapter = (buffer, adjustBuffer) ->
-					this.isLoading = false
-					this.reload = reloadImpl
-
-					applyUpdate = (wrapper, newItems) ->
-						if angular.isArray newItems
-							pos = (buffer.indexOf wrapper) + 1
-							for newItem,i in newItems.reverse()
-								if newItem == wrapper.item
-									keepIt = true;
-									pos--
-								else
-									buffer.insert pos, newItem
-							unless keepIt
-								wrapper.op = 'remove'
-
-					this.applyUpdates = (arg1, arg2) ->
-						if angular.isFunction arg1
-							# arg1 is the updater function, arg2 is ignored
-							bufferClone = buffer.slice(0)
-							for wrapper,i in bufferClone  # we need to do it on the buffer clone, because buffer content
-								# may change as we iterate through
-								applyUpdate wrapper, arg1(wrapper.item, wrapper.scope, wrapper.element)
-						else
-							# arg1 is item index, arg2 is the newItems array
-							if arg1%1 == 0 # checking if it is an integer
-								if 0 <= arg1-buffer.first < buffer.length
-									applyUpdate buffer[arg1 - buffer.first], arg2
-							else
-								throw new Error 'applyUpdates - ' + arg1 + ' is not a valid index'
-						adjustBuffer()
-
-					this.append = (newItems) ->
-						for item in newItems
-							++buffer.next
-							buffer.insert 'append', item
-						adjustBuffer()
-
-					this.prepend = (newItems) ->
-						for item in newItems.reverse()
-							--buffer.first
-							buffer.insert 'prepend', item
-						adjustBuffer()
-
-					return
-
-				adapter = new Adapter buffer,
-					->
-						dismissPendingRequests()
-						adjustBuffer ridActual
-
-				if $attr.adapter # so we have an adapter on $scope
-					adapterOnScope = $parse($attr.adapter)($scope)
-					if not angular.isObject adapterOnScope
-						$parse($attr.adapter).assign($scope, {})
-						adapterOnScope = $parse($attr.adapter)($scope)
-					angular.extend(adapterOnScope, adapter)
-					adapter = adapterOnScope
 
 				# update events (deprecated since v1.1.0, unsupported since 1.2.0)
 
