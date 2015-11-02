@@ -82,6 +82,7 @@ angular.module('ui.scroll', [])
 				itemScope[itemName] = item
 				wrapper =
 					scope: itemScope
+					item: item
 
 				linker itemScope, (clone) ->
 					wrapper.element = clone
@@ -287,7 +288,7 @@ angular.module('ui.scroll', [])
 				viewportScope = viewport.scope() || $rootScope
 
 				topVisible = (item) ->
-					adapter.topVisible = item.scope[itemName]
+					adapter.topVisible = item.item
 					adapter.topVisibleElement = item.element
 					adapter.topVisibleScope = item.scope
 					$parse($attr.topVisible).assign(viewportScope, adapter.topVisible) if $attr.topVisible
@@ -512,52 +513,56 @@ angular.module('ui.scroll', [])
 
 				# adapter setup
 
-				adapter = {}
-				adapter.isLoading = false
-				adapter.reload = reloadImpl
+				Adapter = (buffer, adjustBuffer) ->
+					this.isLoading = false
+					this.reload = reloadImpl
 
-				applyUpdate = (wrapper, newItems) ->
-					if angular.isArray newItems
-						pos = (buffer.indexOf wrapper) + 1
-						for newItem,i in newItems.reverse()
-							if newItem == wrapper.scope[itemName]
-								keepIt = true;
-								pos--
-							else
-								buffer.insert pos, newItem
-						unless keepIt
-							wrapper.op = 'remove'
+					applyUpdate = (wrapper, newItems) ->
+						if angular.isArray newItems
+							pos = (buffer.indexOf wrapper) + 1
+							for newItem,i in newItems.reverse()
+								if newItem == wrapper.item
+									keepIt = true;
+									pos--
+								else
+									buffer.insert pos, newItem
+							unless keepIt
+								wrapper.op = 'remove'
 
-				adapter.applyUpdates = (arg1, arg2) ->
-					dismissPendingRequests()
-					if angular.isFunction arg1
-						# arg1 is the updater function, arg2 is ignored
-						bufferClone = buffer.slice(0)
-						for wrapper,i in bufferClone  # we need to do it on the buffer clone, because buffer content
-							# may change as we iterate through
-							applyUpdate wrapper, arg1(wrapper.scope[itemName], wrapper.scope, wrapper.element)
-					else
-						# arg1 is item index, arg2 is the newItems array
-						if arg1%1 == 0 # checking if it is an integer
-							if 0 <= arg1-buffer.first < buffer.length
-								applyUpdate buffer[arg1 - buffer.first], arg2
+					this.applyUpdates = (arg1, arg2) ->
+						if angular.isFunction arg1
+							# arg1 is the updater function, arg2 is ignored
+							bufferClone = buffer.slice(0)
+							for wrapper,i in bufferClone  # we need to do it on the buffer clone, because buffer content
+								# may change as we iterate through
+								applyUpdate wrapper, arg1(wrapper.item, wrapper.scope, wrapper.element)
 						else
-							throw new Error 'applyUpdates - ' + arg1 + ' is not a valid index'
-					adjustBuffer ridActual
+							# arg1 is item index, arg2 is the newItems array
+							if arg1%1 == 0 # checking if it is an integer
+								if 0 <= arg1-buffer.first < buffer.length
+									applyUpdate buffer[arg1 - buffer.first], arg2
+							else
+								throw new Error 'applyUpdates - ' + arg1 + ' is not a valid index'
+						adjustBuffer()
 
-				adapter.append = (newItems) ->
-					dismissPendingRequests()
-					for item in newItems
-						++buffer.next
-						buffer.insert 'append', item
-					adjustBuffer ridActual
+					this.append = (newItems) ->
+						for item in newItems
+							++buffer.next
+							buffer.insert 'append', item
+						adjustBuffer()
 
-				adapter.prepend = (newItems) ->
-					dismissPendingRequests()
-					for item in newItems.reverse()
-						--buffer.first
-						buffer.insert 'prepend', item
-					adjustBuffer ridActual
+					this.prepend = (newItems) ->
+						for item in newItems.reverse()
+							--buffer.first
+							buffer.insert 'prepend', item
+						adjustBuffer()
+
+					return
+
+				adapter = new Adapter buffer,
+					->
+						dismissPendingRequests()
+						adjustBuffer ridActual
 
 				if $attr.adapter # so we have an adapter on $scope
 					adapterOnScope = $parse($attr.adapter)($scope)
@@ -566,7 +571,6 @@ angular.module('ui.scroll', [])
 						adapterOnScope = $parse($attr.adapter)($scope)
 					angular.extend(adapterOnScope, adapter)
 					adapter = adapterOnScope
-
 
 				# update events (deprecated since v1.1.0, unsupported since 1.2.0)
 
