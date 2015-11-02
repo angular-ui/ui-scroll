@@ -231,7 +231,7 @@ angular.module('ui.scroll', [])
 
 			viewport
 
-		Adapter = (buffer, adjustBuffer) ->
+		Adapter = ($attr, viewportScope, buffer, adjustBuffer) ->
 			this.isLoading = false
 
 			applyUpdate = (wrapper, newItems) ->
@@ -274,6 +274,29 @@ angular.module('ui.scroll', [])
 					buffer.insert 'prepend', item
 				adjustBuffer()
 
+			if $attr.topVisible
+				setTopVisible = $parse($attr.topVisible).assign
+			else
+				setTopVisible = ->
+
+			if $attr.topVisibleElement
+				setTopVisibleElement = $parse($attr.topVisibleElement).assign
+			else
+				setTopVisibleElement = ->
+
+			if $attr.topVisibleScope
+				setTopVisibleScope = $parse($attr.topVisibleScope).assign
+			else
+				setTopVisibleScope = ->
+
+			this.setTopVisible = (item) ->
+				this.topVisible = item.item
+				this.topVisibleElement = item.element
+				this.topVisibleScope = item.scope
+				setTopVisible(viewportScope, item.item)
+				setTopVisibleElement(viewportScope, item.element)
+				setTopVisibleScope(viewportScope, item.scope)
+
 			return
 
 		require: ['?^uiScrollViewport']
@@ -312,7 +335,7 @@ angular.module('ui.scroll', [])
 
 				viewport = new Viewport(buffer, element, controllers, $attr.padding)
 
-				adapter = new Adapter buffer,
+				adapter = new Adapter $attr, viewport.scope() || $rootScope, buffer,
 					->
 						dismissPendingRequests()
 						adjustBuffer ridActual
@@ -324,6 +347,35 @@ angular.module('ui.scroll', [])
 						adapterOnScope = $parse($attr.adapter)($scope)
 					angular.extend(adapterOnScope, adapter)
 					adapter = adapterOnScope
+				###
+				setTopVisible = (item) ->
+
+					viewportScope = viewport.scope() || $rootScope
+
+					adapter.topVisible = item.item
+					adapter.topVisibleElement = item.element
+					adapter.topVisibleScope = item.scope
+					$parse($attr.topVisible).assign(viewportScope, adapter.topVisible) if $attr.topVisible
+					$parse($attr.topVisibleElement).assign(viewportScope, adapter.topVisibleElement) if $attr.topVisibleElement
+					$parse($attr.topVisibleScope).assign(viewportScope, adapter.topVisibleScope) if $attr.topVisibleScope
+					datasource.topVisible(item) if angular.isFunction(datasource.topVisible)
+				###
+				calculateProperties = ->
+					if (buffer.length > 0)
+						buffer.elementHeight = (buffer[buffer.length-1].element.offset().top +
+							buffer[buffer.length-1].element.outerHeight(true) -
+							buffer[0].element.offset().top) / buffer.length
+					topHeight = 0
+					for item in buffer
+						itemTop = item.element.offset().top
+						newRow = rowTop isnt itemTop
+						rowTop = itemTop
+						itemHeight = item.element.outerHeight(true) if newRow
+						if newRow and (viewport.topDataPos() + topHeight + itemHeight < viewport.topVisiblePos())
+							topHeight += itemHeight
+						else
+							adapter.setTopVisible(item) if newRow
+							break
 
 				# Padding element builder
 				#
@@ -338,17 +390,6 @@ angular.module('ui.scroll', [])
 					scope.$destroy()
 					# also remove the template when the directive scope is destroyed
 					$scope.$on '$destroy', -> template.remove()
-
-				viewportScope = viewport.scope() || $rootScope
-
-				topVisible = (item) ->
-					adapter.topVisible = item.item
-					adapter.topVisibleElement = item.element
-					adapter.topVisibleScope = item.scope
-					$parse($attr.topVisible).assign(viewportScope, adapter.topVisible) if $attr.topVisible
-					$parse($attr.topVisibleElement).assign(viewportScope, adapter.topVisibleElement) if $attr.topVisibleElement
-					$parse($attr.topVisibleScope).assign(viewportScope, adapter.topVisibleScope) if $attr.topVisibleScope
-					datasource.topVisible(item) if angular.isFunction(datasource.topVisible)
 
 				loading = (value) ->
 					adapter.isLoading = value
@@ -446,19 +487,6 @@ angular.module('ui.scroll', [])
 
 					keepFetching
 
-				calculateTopProperties = ->
-					topHeight = 0
-					for item in buffer
-						itemTop = item.element.offset().top
-						newRow = rowTop isnt itemTop
-						rowTop = itemTop
-						itemHeight = item.element.outerHeight(true) if newRow
-						if newRow and (viewport.topDataPos() + topHeight + itemHeight < viewport.topVisiblePos())
-							topHeight += itemHeight
-						else
-							topVisible(item) if newRow
-							break
-
 				adjustBuffer = (rid) ->
 
 					# We need the item bindings to be processed before we can do adjustment
@@ -473,7 +501,7 @@ angular.module('ui.scroll', [])
 								enqueueFetch(rid, false)
 
 						if pending.length == 0
-							calculateTopProperties()
+							calculateProperties()
 
 				adjustBufferAfterFetch = (rid) ->
 
@@ -494,7 +522,7 @@ angular.module('ui.scroll', [])
 						pending.shift()
 						if pending.length == 0
 							loading(false)
-							calculateTopProperties()
+							calculateProperties()
 						else
 							fetch(rid)
 
