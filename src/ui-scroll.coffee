@@ -124,6 +124,8 @@ angular.module('ui.scroll', [])
 
 			buffer.next = 1
 
+
+
 			buffer
 
 		Padding = (template) ->
@@ -297,6 +299,15 @@ angular.module('ui.scroll', [])
 				setTopVisibleElement(viewportScope, item.element)
 				setTopVisibleScope(viewportScope, item.scope)
 
+			if $attr.isLoading
+				setIsLoading = $parse($attr.isLoading).assign
+			else
+				setIsLoading = ->
+
+			this.loading = (value) ->
+				this.isLoading = value
+				setIsLoading viewportScope, value
+
 			return
 
 		require: ['?^uiScrollViewport']
@@ -311,7 +322,7 @@ angular.module('ui.scroll', [])
 			itemName = match[1]
 			datasourceName = match[2]
 
-
+			bufferSize = Math.max(3, +attr.bufferSize || 10)
 
 			($scope, element, $attr, controllers, linker) ->
 
@@ -325,12 +336,10 @@ angular.module('ui.scroll', [])
 					if !isDatasourceValid()
 						throw new Error datasourceName + ' is not a valid datasource'
 
-				bufferSize = Math.max(3, +$attr.bufferSize || 10)
-
-				# initial settings
-
 				ridActual = 0 # current data revision id
+
 				pending = []
+
 				buffer = new Buffer(itemName, $scope, linker)
 
 				viewport = new Viewport(buffer, element, controllers, $attr.padding)
@@ -347,19 +356,7 @@ angular.module('ui.scroll', [])
 						adapterOnScope = $parse($attr.adapter)($scope)
 					angular.extend(adapterOnScope, adapter)
 					adapter = adapterOnScope
-				###
-				setTopVisible = (item) ->
 
-					viewportScope = viewport.scope() || $rootScope
-
-					adapter.topVisible = item.item
-					adapter.topVisibleElement = item.element
-					adapter.topVisibleScope = item.scope
-					$parse($attr.topVisible).assign(viewportScope, adapter.topVisible) if $attr.topVisible
-					$parse($attr.topVisibleElement).assign(viewportScope, adapter.topVisibleElement) if $attr.topVisibleElement
-					$parse($attr.topVisibleScope).assign(viewportScope, adapter.topVisibleScope) if $attr.topVisibleScope
-					datasource.topVisible(item) if angular.isFunction(datasource.topVisible)
-				###
 				calculateProperties = ->
 					if (buffer.length > 0)
 						buffer.elementHeight = (buffer[buffer.length-1].element.offset().top +
@@ -376,8 +373,9 @@ angular.module('ui.scroll', [])
 						else
 							adapter.setTopVisible(item) if newRow
 							break
+					console.log "min=#{datasource.minIndex} max=#{datasource.maxIndex}"
 
-				# Padding element builder
+				# Build padding elements
 				#
 				# Calling linker is the only way I found to get access to the tag name of the template
 				# to prevent the directive scope from pollution a new scope is created and destroyed
@@ -390,11 +388,6 @@ angular.module('ui.scroll', [])
 					scope.$destroy()
 					# also remove the template when the directive scope is destroyed
 					$scope.$on '$destroy', -> template.remove()
-
-				loading = (value) ->
-					adapter.isLoading = value
-					$parse($attr.isLoading).assign($scope, value) if $attr.isLoading
-					datasource.loading(value) if angular.isFunction(datasource.loading)
 
 				dismissPendingRequests = () ->
 					ridActual++
@@ -411,7 +404,7 @@ angular.module('ui.scroll', [])
 
 				enqueueFetch = (rid, direction)->
 					if !adapter.isLoading
-						loading(true)
+						adapter.loading(true)
 					if pending.push(direction) == 1
 						fetch(rid)
 
@@ -521,7 +514,7 @@ angular.module('ui.scroll', [])
 
 						pending.shift()
 						if pending.length == 0
-							loading(false)
+							adapter.loading(false)
 							calculateProperties()
 						else
 							fetch(rid)
@@ -546,6 +539,10 @@ angular.module('ui.scroll', [])
 										++buffer.next
 										buffer.insert 'append', item
 										#log 'appended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
+								if buffer.eof
+									datasource.maxIndex = buffer.next-1
+								else
+									datasource.maxIndex = Math.max buffer.next-1, datasource.maxIndex || Number.MIN_VALUE
 								adjustBufferAfterFetch rid
 					else
 						if buffer.length && !viewport.shouldLoadTop()
@@ -565,6 +562,10 @@ angular.module('ui.scroll', [])
 										--buffer.first
 										buffer.insert 'prepend', result[i]
 									#log 'prepended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
+								if buffer.bof
+									datasource.minIndex = buffer.first
+								else
+									datasource.minIndex = Math.min buffer.first, datasource.minIndex || Number.MAX_VALUE
 								adjustBufferAfterFetch rid
 
 
