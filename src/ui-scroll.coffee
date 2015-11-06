@@ -233,8 +233,11 @@ angular.module('ui.scroll', [])
 
 			viewport
 
-		Adapter = ($attr, viewportScope, buffer, adjustBuffer) ->
+		Adapter = ($attr, viewport, buffer, adjustBuffer) ->
+
 			this.isLoading = false
+
+			viewportScope = viewport.scope() || $rootScope
 
 			applyUpdate = (wrapper, newItems) ->
 				if angular.isArray newItems
@@ -291,14 +294,6 @@ angular.module('ui.scroll', [])
 			else
 				setTopVisibleScope = ->
 
-			this.setTopVisible = (item) ->
-				this.topVisible = item.item
-				this.topVisibleElement = item.element
-				this.topVisibleScope = item.scope
-				setTopVisible(viewportScope, item.item)
-				setTopVisibleElement(viewportScope, item.element)
-				setTopVisibleScope(viewportScope, item.scope)
-
 			if $attr.isLoading
 				setIsLoading = $parse($attr.isLoading).assign
 			else
@@ -307,6 +302,30 @@ angular.module('ui.scroll', [])
 			this.loading = (value) ->
 				this.isLoading = value
 				setIsLoading viewportScope, value
+
+			this.calculateProperties = ->
+				if (buffer.length > 0)
+					buffer.elementHeight = (buffer[buffer.length-1].element.offset().top +
+						buffer[buffer.length-1].element.outerHeight(true) -
+						buffer[0].element.offset().top) / buffer.length
+				topHeight = 0
+				for item in buffer
+					itemTop = item.element.offset().top
+					newRow = rowTop isnt itemTop
+					rowTop = itemTop
+					itemHeight = item.element.outerHeight(true) if newRow
+					if newRow and (viewport.topDataPos() + topHeight + itemHeight < viewport.topVisiblePos())
+						topHeight += itemHeight
+					else
+						if newRow
+							this.topVisible = item.item
+							this.topVisibleElement = item.element
+							this.topVisibleScope = item.scope
+							setTopVisible(viewportScope, item.item)
+							setTopVisibleElement(viewportScope, item.element)
+							setTopVisibleScope(viewportScope, item.scope)
+						break
+
 
 			return
 
@@ -344,7 +363,7 @@ angular.module('ui.scroll', [])
 
 				viewport = new Viewport(buffer, element, controllers, $attr.padding)
 
-				adapter = new Adapter $attr, viewport.scope() || $rootScope, buffer,
+				adapter = new Adapter $attr, viewport, buffer,
 					->
 						dismissPendingRequests()
 						adjustBuffer ridActual
@@ -357,33 +376,13 @@ angular.module('ui.scroll', [])
 					angular.extend(adapterOnScope, adapter)
 					adapter = adapterOnScope
 
-				calculateProperties = ->
-					if (buffer.length > 0)
-						buffer.elementHeight = (buffer[buffer.length-1].element.offset().top +
-							buffer[buffer.length-1].element.outerHeight(true) -
-							buffer[0].element.offset().top) / buffer.length
-					topHeight = 0
-					for item in buffer
-						itemTop = item.element.offset().top
-						newRow = rowTop isnt itemTop
-						rowTop = itemTop
-						itemHeight = item.element.outerHeight(true) if newRow
-						if newRow and (viewport.topDataPos() + topHeight + itemHeight < viewport.topVisiblePos())
-							topHeight += itemHeight
-						else
-							adapter.setTopVisible(item) if newRow
-							break
-					console.log "min=#{datasource.minIndex} max=#{datasource.maxIndex}"
-
 				# Build padding elements
 				#
 				# Calling linker is the only way I found to get access to the tag name of the template
 				# to prevent the directive scope from pollution a new scope is created and destroyed
 				# right after the builder creation is completed
 				linker $scope.$new(), (template, scope) ->
-
 					viewport.createPaddingElements(template[0])
-
 					# Destroy template's scope to remove any watchers on it.
 					scope.$destroy()
 					# also remove the template when the directive scope is destroyed
@@ -481,28 +480,21 @@ angular.module('ui.scroll', [])
 					keepFetching
 
 				adjustBuffer = (rid) ->
-
 					# We need the item bindings to be processed before we can do adjustment
 					$timeout ->
-
 						processBufferedItems(rid)
-
 						if viewport.shouldLoadBottom()
 							enqueueFetch(rid, true)
 						else
 							if viewport.shouldLoadTop()
 								enqueueFetch(rid, false)
-
 						if pending.length == 0
-							calculateProperties()
+							adapter.calculateProperties()
 
 				adjustBufferAfterFetch = (rid) ->
-
 					# We need the item bindings to be processed before we can do adjustment
 					$timeout ->
-
 						keepFetching = processBufferedItems(rid)
-
 						if viewport.shouldLoadBottom()
 							# keepFetching = true means that at least one item app/prepended in the last batch had height > 0
 							enqueueFetch(rid, true) if keepFetching
@@ -511,11 +503,10 @@ angular.module('ui.scroll', [])
 								# pending[0] = true means that previous fetch was appending. We need to force at least one prepend
 								# BTW there will always be at least 1 element in the pending array because bottom is fetched first
 								enqueueFetch(rid, false) if keepFetching || pending[0]
-
 						pending.shift()
 						if pending.length == 0
 							adapter.loading(false)
-							calculateProperties()
+							adapter.calculateProperties()
 						else
 							fetch(rid)
 
