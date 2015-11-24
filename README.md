@@ -47,7 +47,7 @@ File ui-scroll-jqlite.coffee houses implementations of the above methods and als
 'ui.scroll.jqlite' and this name should also be included in the dependency list of the main module. The implementation currently supports missing methods
 only as necessary for the directive. It is tested on IE8 and up as well as on the Chrome 28 and Firefox 20.
 
-This module is only necessary if you plan to use ui-scroll without jQuery. If jQuery implementation is present it will not override them.
+This module is only necessary if you plan to use ui-scroll without jQuery. If full jQuery is loaded, uiScroll will use the jQuery implementatin of the above methods, the ui.scroll.jqlite implementation of them will be ignored.
 If you plan to use ui-scroll over jQuery feel free to skip ui-scroll-jqlite.
 
 ###Usage
