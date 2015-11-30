@@ -69,9 +69,11 @@ angular.module('ui.scroll', [])
 						wrapper.scope.$destroy()
 					]
 
-		Buffer = (itemName, $scope, linker, datasource)->
+		Buffer = (itemName, $scope, linker, datasource, bufferSize)->
 
 			buffer = Object.create Array.prototype
+
+			buffer.size = bufferSize
 
 			# inserts wrapped element in the buffer
 			# the first argument is either operation keyword (see below) or a number for operation 'insert'
@@ -108,20 +110,20 @@ angular.module('ui.scroll', [])
 					buffer.splice buffer.indexOf(arg1), 1
 					removeElementAnimated arg1
 
-			#clears the buffer
-			buffer.clear = ->
-				buffer.remove(0, buffer.length)
+			reset = ->
 				buffer.eof = false
 				buffer.bof = false
 				buffer.first = 1
 				buffer.next = 1
 
-			buffer.clear()
+			# clears the buffer
+			buffer.clear = ->
+				buffer.remove(0, buffer.length)
+				reset()
 
-			buffer.minIndex = -> datasource.minIndex || 0
-
-			buffer.maxIndex = -> datasource.maxIndex || 0
-
+			reset()
+			buffer.minIndex = -> datasource.minIndex || 1
+			buffer.maxIndex  = -> datasource.maxIndex || 1
 			buffer
 
 		Padding = (template) ->
@@ -146,31 +148,24 @@ angular.module('ui.scroll', [])
 			viewport.css({'overflow-y': 'auto', 'display': 'block'})
 
 			topPadding = null
-
 			bottomPadding = null
 
 			bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +padding || 0.1) # some extra space to initiate preload
 
 			viewport.createPaddingElements = (template) ->
-
 				topPadding = new Padding template
-				element.before topPadding
-				#viewport.topPadding = -> topPadding.height.apply(topPadding, arguments)
-
 				bottomPadding = new Padding template
+				element.before topPadding
 				element.after bottomPadding
-				#viewport.bottomPadding = -> bottomPadding.height.apply(bottomPadding, arguments)
 
 			viewport.bottomDataPos = ->
 				(viewport[0].scrollHeight ? viewport[0].document.documentElement.scrollHeight) - bottomPadding.height()
 
 			viewport.topDataPos = -> topPadding.height()
 
-			viewport.bottomVisiblePos = ->
-				viewport.scrollTop() + viewport.outerHeight()
+			viewport.bottomVisiblePos = -> viewport.scrollTop() + viewport.outerHeight()
 
-			viewport.topVisiblePos = ->
-				viewport.scrollTop()
+			viewport.topVisiblePos = -> viewport.scrollTop()
 
 			viewport.insertElement = (e, sibling) -> insertElement(e, sibling || topPadding)
 
@@ -181,77 +176,63 @@ angular.module('ui.scroll', [])
 
 			viewport.clipBottom = ->
 				# clip the invisible items off the bottom
-				bottomHeight = 0
 				overage = 0
-
+				calculateAverageItemHeight()
+				overageBottom = viewport.outerHeight() + viewport.averageItemHeight * (buffer.size)
 				for i in [buffer.length-1..0]
 					item = buffer[i]
-					itemTop = item.element.offset().top
-					newRow = rowTop isnt itemTop
-					rowTop = itemTop
-					itemHeight = item.element.outerHeight(true) if newRow
-					if (viewport.bottomDataPos() - bottomHeight - itemHeight > viewport.bottomVisiblePos() + bufferPadding())
-						bottomHeight += itemHeight if newRow
+					if item.element.offset().top > overageBottom
 						overage++
-						buffer.eof = false
-					else
-						break if newRow
-						overage++
-
+					else break
 				if overage > 0
-					#viewport.bottomPadding(viewport.bottomPadding() + bottomHeight)
 					buffer.remove(buffer.length - overage, buffer.length)
 					buffer.next -= overage
+					viewport.adjustPadding()
 
 			viewport.shouldLoadTop = ->
 				!buffer.bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding())
 
 			viewport.clipTop = ->
 				# clip the invisible items off the top
-				topHeight = 0
 				overage = 0
+				heightIncrement = 0
+				calculateAverageItemHeight()
+				overageTop = (-1) * viewport.averageItemHeight * buffer.size
 				for item in buffer
-					itemTop = item.element.offset().top
-					newRow = rowTop isnt itemTop
-					rowTop = itemTop
-					itemHeight = item.element.outerHeight(true) if newRow
-					if (viewport.topDataPos() + topHeight + itemHeight < viewport.topVisiblePos() - bufferPadding())
-						topHeight += itemHeight if newRow
+					if item.element.offset().top < overageTop
+						heightIncrement += item.element.outerHeight()
 						overage++
-						buffer.bof = false
-					else
-						break if newRow
-						overage++
+					else break
 				if overage > 0
-					#viewport.topPadding(viewport.topPadding() + topHeight)
 					buffer.remove(0, overage)
 					buffer.first += overage
+					viewport.adjustPadding()
+					viewport.adjustScrollTop { height: heightIncrement, clipTop: true }
 
-			viewport.adjustPadding = (heightIncrement) ->
-				if (buffer.length > 0)
-					elementHeight = (buffer[buffer.length-1].element.offset().top +
-						buffer[buffer.length-1].element.outerHeight(true) -
-						buffer[0].element.offset().top) / buffer.length
-				topPaddingHeight = (buffer.first - buffer.minIndex()) * elementHeight
-				#if !buffer.bof
-					#topPaddingHeight += bufferPadding()
-				topPadding.height topPaddingHeight
-				bottomPaddingHeight = (buffer.maxIndex() - buffer.next) * elementHeight
-				if !buffer.eof
-					bottomPaddingHeight += bufferPadding()
-				bottomPadding.height bottomPaddingHeight
-				console.log "top=#{topPaddingHeight} bottom=#{bottomPaddingHeight}"
-				if (heightIncrement)
-					# adjust padding to prevent it from visually pushing everything down
-					if topPadding.height() >= heightIncrement
-						# if possible, reduce topPadding
-						topPadding.height(topPadding.height() - heightIncrement)
-					else
-						# if not, increment scrollTop
-						viewport.scrollTop(viewport.scrollTop() + heightIncrement)
+			calculateAverageItemHeight = () ->
+				viewport.averageItemHeight = 0
+				return if not buffer.length
+				viewport.averageItemHeight = (buffer[buffer.length-1].element.offset().top +
+					buffer[buffer.length-1].element.outerHeight(true) -
+					buffer[0].element.offset().top) / buffer.length
 
+			viewport.adjustPadding = () ->
+				return if not buffer.length
+				calculateAverageItemHeight()
+				topPadding.height (buffer.first - buffer.minIndex()) * viewport.averageItemHeight
+				bottomPadding.height (buffer.maxIndex() - buffer.next + 1) * viewport.averageItemHeight
+
+			viewport.adjustScrollTop = (options) ->
+				return if not options or not options.height
+				# edge case 1, scroll up from the very top position
+				if options.prepend and viewport.scrollTop() < options.height
+					viewport.scrollTop viewport.scrollTop() + options.height
+				# edge case 2, scroll down from the very bottom position
+				if options.clipTop and options.height - bottomPadding.height() > 0
+					viewport.scrollTop viewport.scrollTop() + options.height - bottomPadding.height()
 
 			viewport
+
 
 		Adapter = ($attr, viewport, buffer, adjustBuffer) ->
 
@@ -299,25 +280,10 @@ angular.module('ui.scroll', [])
 					buffer.insert 'prepend', item
 				adjustBuffer()
 
-			if $attr.topVisible
-				setTopVisible = $parse($attr.topVisible).assign
-			else
-				setTopVisible = ->
-
-			if $attr.topVisibleElement
-				setTopVisibleElement = $parse($attr.topVisibleElement).assign
-			else
-				setTopVisibleElement = ->
-
-			if $attr.topVisibleScope
-				setTopVisibleScope = $parse($attr.topVisibleScope).assign
-			else
-				setTopVisibleScope = ->
-
-			if $attr.isLoading
-				setIsLoading = $parse($attr.isLoading).assign
-			else
-				setIsLoading = ->
+			setTopVisible = if $attr.topVisible then $parse($attr.topVisible).assign else ->
+			setTopVisibleElement = if $attr.topVisibleElement then $parse($attr.topVisibleElement).assign else ->
+			setTopVisibleScope = if $attr.topVisibleScope then $parse($attr.topVisibleScope).assign else ->
+			setIsLoading = if $attr.isLoading then $parse($attr.isLoading).assign else ->
 
 			this.loading = (value) ->
 				this.isLoading = value
@@ -375,7 +341,7 @@ angular.module('ui.scroll', [])
 
 				pending = []
 
-				buffer = new Buffer(itemName, $scope, linker, datasource)
+				buffer = new Buffer(itemName, $scope, linker, datasource, bufferSize)
 
 				viewport = new Viewport(buffer, element, controllers, $attr.padding)
 
@@ -411,8 +377,6 @@ angular.module('ui.scroll', [])
 				reload = ->
 					dismissPendingRequests()
 					buffer.clear()
-					#viewport.topPadding(0)
-					#viewport.bottomPadding(0)
 					adjustBuffer ridActual
 
 				adapter.reload = reload
@@ -444,50 +408,34 @@ angular.module('ui.scroll', [])
 					toBePrepended = []
 					toBeRemoved = []
 
-					bottomPos = viewport.bottomDataPos()
+					getPreSibling = (i) -> if i > 0 then buffer[i-1].element else undefined
+
 					for wrapper, i in buffer
 						switch wrapper.op
 							when 'prepend' then toBePrepended.unshift wrapper
 							when 'append'
-								if (i == 0) # the first item in buffer is to be appended, therefore the buffer was empty
-									keepFetching = insertWrapperContent(wrapper) || keepFetching
-								else
-									keepFetching = insertWrapperContent(wrapper, buffer[i-1].element) || keepFetching
+								keepFetching = insertWrapperContent(wrapper, getPreSibling(i)) || keepFetching
 								wrapper.op = 'none'
 							when 'insert'
-								if (i == 0)
-									promises = promises.concat (viewport.insertElementAnimated wrapper.element)
-								else
-									promises = promises.concat (viewport.insertElementAnimated wrapper.element, buffer[i-1].element)
+								promises = promises.concat (viewport.insertElementAnimated wrapper.element, getPreSibling(i))
 								wrapper.op = 'none'
 							when 'remove' then toBeRemoved.push wrapper
 
 					for wrapper in toBeRemoved
 						promises = promises.concat (buffer.remove wrapper)
 
-					# for anything other than prepend adjust the bottomPadding height
-					#viewport.bottomPadding(Math.max(0,viewport.bottomPadding() - (viewport.bottomDataPos() - bottomPos)))
-
 					if toBePrepended.length
-						bottomPos = viewport.bottomDataPos()
+						adjustPaddingSettings = { height: 0, prepend: true }
 						for wrapper in toBePrepended
 							keepFetching = insertWrapperContent(wrapper) || keepFetching
 							wrapper.op = 'none'
-
-						viewport.adjustPadding viewport.bottomDataPos() - bottomPos
-
-						###
-						# adjust padding to prevent it from visually pushing everything down
-						if viewport.topPadding() >= heightIncrement
-							# if possible, reduce topPadding
-							viewport.topPadding(viewport.topPadding() - heightIncrement)
-						else
-							# if not, increment scrollTop
-							viewport.scrollTop(viewport.scrollTop() + heightIncrement)
-						###
+							adjustPaddingSettings.height += wrapper.element.height()
 
 					# re-index the buffer
 					item.scope.$index = buffer.first + i for item,i in buffer
+
+					viewport.adjustPadding()
+					viewport.adjustScrollTop(adjustPaddingSettings)
 
 					# schedule another adjustBuffer after animation completion
 					if (promises.length)
@@ -506,9 +454,7 @@ angular.module('ui.scroll', [])
 						else
 							if viewport.shouldLoadTop()
 								enqueueFetch(rid, false)
-						if pending.length == 0
-							adapter.calculateProperties()
-						viewport.adjustPadding()
+						adapter.calculateProperties() if not pending.length
 
 				adjustBufferAfterFetch = (rid) ->
 					# We need the item bindings to be processed before we can do adjustment
@@ -523,12 +469,11 @@ angular.module('ui.scroll', [])
 								# BTW there will always be at least 1 element in the pending array because bottom is fetched first
 								enqueueFetch(rid, false) if keepFetching || pending[0]
 						pending.shift()
-						if pending.length == 0
+						if not pending.length
 							adapter.loading(false)
 							adapter.calculateProperties()
 						else
 							fetch(rid)
-						viewport.adjustPadding()
 
 				fetch = (rid) ->
 					#log "Running fetch... #{{true:'bottom', false: 'top'}[direction]} pending #{pending.length}"
@@ -542,7 +487,6 @@ angular.module('ui.scroll', [])
 								return if (rid and rid isnt ridActual) or $scope.$$destroyed
 								if result.length < bufferSize
 									buffer.eof = true
-									#viewport.bottomPadding(0)
 									#log 'eof is reached'
 								if result.length > 0
 									viewport.clipTop()
@@ -565,7 +509,6 @@ angular.module('ui.scroll', [])
 								return if (rid and rid isnt ridActual) or $scope.$$destroyed
 								if result.length < bufferSize
 									buffer.bof = true
-									#viewport.topPadding(0)
 									#log 'bof is reached'
 								if result.length > 0
 									viewport.clipBottom() if buffer.length
