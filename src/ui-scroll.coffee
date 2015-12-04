@@ -185,6 +185,7 @@ angular.module('ui.scroll', [])
 						overage++
 					else break
 				if overage > 0
+					buffer.eof = false
 					buffer.remove(buffer.length - overage, buffer.length)
 					buffer.next -= overage
 					viewport.adjustPadding()
@@ -204,6 +205,7 @@ angular.module('ui.scroll', [])
 						overage++
 					else break
 				if overage > 0
+					buffer.bof = false
 					buffer.remove(0, overage)
 					buffer.first += overage
 					viewport.adjustPadding()
