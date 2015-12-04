@@ -221,20 +221,13 @@ angular.module('ui.scroll', [])
 				topPadding.height (buffer.first - buffer.minIndex()) * viewport.averageItemHeight
 				bottomPadding.height (buffer.maxIndex() - buffer.next + 1) * viewport.averageItemHeight
 
-			viewport.adjustScrollTop = (options) ->
-				return if not options or not options.height
-				# edge case 1, scroll up from the very top position
-				if options.prepend
-					paddingHeight = topPadding.height() - options.height
-					if paddingHeight >= 0
-						topPadding.height paddingHeight
-					else
-						topPadding.height 0
-						viewport.scrollTop viewport.scrollTop() - paddingHeight
-
-				# edge case 2, scroll down from the very bottom position
-				#if options.clipTop and options.height - bottomPadding.height() > 0
-					#viewport.scrollTop viewport.scrollTop() + options.height - bottomPadding.height()
+			viewport.adjustScrollTop = (height) ->
+				paddingHeight = topPadding.height() - height
+				if paddingHeight >= 0
+					topPadding.height paddingHeight
+				else
+					topPadding.height 0
+					viewport.scrollTop viewport.scrollTop() - paddingHeight
 
 			viewport
 
@@ -430,12 +423,12 @@ angular.module('ui.scroll', [])
 						promises = promises.concat (buffer.remove wrapper)
 
 					if toBePrepended.length
-						adjustPaddingSettings = { height: 0, prepend: true }
+						adjustedPaddingHeight = 0
 						for wrapper in toBePrepended
 							keepFetching = insertWrapperContent(wrapper) || keepFetching
 							wrapper.op = 'none'
-							adjustPaddingSettings.height += wrapper.element.height()
-						viewport.adjustScrollTop(adjustPaddingSettings)
+							adjustedPaddingHeight += wrapper.element.height()
+						viewport.adjustScrollTop(adjustedPaddingHeight)
 
 					# re-index the buffer
 					item.scope.$index = buffer.first + i for item,i in buffer
