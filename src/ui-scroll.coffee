@@ -188,7 +188,6 @@ angular.module('ui.scroll', [])
 					buffer.eof = false
 					buffer.remove(buffer.length - overage, buffer.length)
 					buffer.next -= overage
-					viewport.adjustPadding()
 
 			viewport.shouldLoadTop = ->
 				!buffer.bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding())
@@ -208,8 +207,6 @@ angular.module('ui.scroll', [])
 					buffer.bof = false
 					buffer.remove(0, overage)
 					buffer.first += overage
-					viewport.adjustPadding()
-					viewport.adjustScrollTop { height: heightIncrement, clipTop: true }
 
 			calculateAverageItemHeight = () ->
 				viewport.averageItemHeight = 0
@@ -227,11 +224,17 @@ angular.module('ui.scroll', [])
 			viewport.adjustScrollTop = (options) ->
 				return if not options or not options.height
 				# edge case 1, scroll up from the very top position
-				if options.prepend and viewport.scrollTop() < options.height
-					viewport.scrollTop viewport.scrollTop() + options.height
+				if options.prepend
+					paddingHeight = topPadding.height() - options.height
+					if paddingHeight >= 0
+						topPadding.height paddingHeight
+					else
+						topPadding.height 0
+						viewport.scrollTop viewport.scrollTop() - paddingHeight
+
 				# edge case 2, scroll down from the very bottom position
-				if options.clipTop and options.height - bottomPadding.height() > 0
-					viewport.scrollTop viewport.scrollTop() + options.height - bottomPadding.height()
+				#if options.clipTop and options.height - bottomPadding.height() > 0
+					#viewport.scrollTop viewport.scrollTop() + options.height - bottomPadding.height()
 
 			viewport
 
@@ -432,12 +435,12 @@ angular.module('ui.scroll', [])
 							keepFetching = insertWrapperContent(wrapper) || keepFetching
 							wrapper.op = 'none'
 							adjustPaddingSettings.height += wrapper.element.height()
+						viewport.adjustScrollTop(adjustPaddingSettings)
 
 					# re-index the buffer
 					item.scope.$index = buffer.first + i for item,i in buffer
 
 					viewport.adjustPadding()
-					viewport.adjustScrollTop(adjustPaddingSettings)
 
 					# schedule another adjustBuffer after animation completion
 					if (promises.length)
