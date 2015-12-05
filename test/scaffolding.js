@@ -18,6 +18,10 @@ var runTest = function (scrollSettings, run, options) {
     inject(function ($rootScope, $compile, $window, $timeout) {
             var scroller = angular.element(createHtml(scrollSettings));
             var scope = $rootScope.$new();
+
+            //if (angular.element(document).find('body').find('div').children().length)
+                //debugger
+
             angular.element(document).find('body').append(scroller);
 
             $compile(scroller)(scope);
@@ -25,13 +29,16 @@ var runTest = function (scrollSettings, run, options) {
             scope.$apply();
             $timeout.flush();
 
-            run(scroller, scope, $timeout);
+            try {
+                run(scroller, scope, $timeout);
+            } finally {
+                scroller.remove();
 
-            scroller.remove();
-
-            if (options && typeof options.cleanupTest === 'function') {
-                options.cleanupTest(scroller, scope, $timeout);
+                if (options && typeof options.cleanupTest === 'function') {
+                    options.cleanupTest(scroller, scope, $timeout);
+                }
             }
+
         }
     );
 };
