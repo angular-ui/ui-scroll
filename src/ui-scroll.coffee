@@ -73,6 +73,9 @@ angular.module('ui.scroll', [])
 
 			buffer = Object.create Array.prototype
 
+			# starting index for initial load
+			origin = 1
+
 			buffer.size = bufferSize
 
 			# inserts wrapped element in the buffer
@@ -113,8 +116,9 @@ angular.module('ui.scroll', [])
 			reset = ->
 				buffer.eof = false
 				buffer.bof = false
-				buffer.first = 1
-				buffer.next = 1
+				buffer.first = origin
+				buffer.next = origin
+				buffer.localMinIndex = origin
 
 			# clears the buffer
 			buffer.clear = ->
@@ -122,8 +126,25 @@ angular.module('ui.scroll', [])
 				reset()
 
 			reset()
-			buffer.minIndex = -> datasource.minIndex || 1
-			buffer.maxIndex  = -> datasource.maxIndex || 1
+
+			buffer.minIndex = (value) ->
+				#console.log "before ds #{datasource.minIndex} local #{buffer.localMinIndex}"
+				if arguments.length
+					if buffer.bof
+						datasource.minIndex = value
+					else
+						datasource.minIndex = Math.min value, datasource.minIndex || Number.MAX_VALUE
+					buffer.localMinIndex = datasource.minIndex
+					#console.log "after ds #{datasource.minIndex} local #{buffer.localMinIndex}"
+				else
+					offset = buffer.localMinIndex - (datasource.minIndex || origin)
+					buffer.localMinIndex -= offset
+					#console.log "after ds #{datasource.minIndex} local #{buffer.localMinIndex} , #{offset}"
+					offset: offset
+					value: buffer.localMinIndex
+
+			buffer.maxIndex  = -> datasource.maxIndex || origin
+
 			buffer
 
 		Padding = (template) ->
@@ -177,7 +198,7 @@ angular.module('ui.scroll', [])
 			viewport.clipBottom = ->
 				# clip the invisible items off the bottom
 				overage = 0
-				calculateAverageItemHeight()
+				#calculateAverageItemHeight()
 				overageBottom = viewport.outerHeight() + viewport.averageItemHeight * (buffer.size)
 				for i in [buffer.length-1..0]
 					item = buffer[i]
@@ -196,7 +217,7 @@ angular.module('ui.scroll', [])
 				# clip the invisible items off the top
 				overage = 0
 				heightIncrement = 0
-				calculateAverageItemHeight()
+				#calculateAverageItemHeight()
 				overageTop = (-1) * viewport.averageItemHeight * buffer.size
 				for item in buffer
 					if item.element.offset().top < overageTop
@@ -214,11 +235,15 @@ angular.module('ui.scroll', [])
 				viewport.averageItemHeight = (buffer[buffer.length-1].element.offset().top +
 					buffer[buffer.length-1].element.outerHeight(true) -
 					buffer[0].element.offset().top) / buffer.length
+				console.log "avg #{viewport.averageItemHeight}"
 
 			viewport.adjustPadding = () ->
 				return if not buffer.length
 				calculateAverageItemHeight()
-				topPadding.height (buffer.first - buffer.minIndex()) * viewport.averageItemHeight
+				minIndex = buffer.minIndex()
+				#console.log "offs #{minIndex.offset}"
+				viewport.adjustScrollTop(minIndex.offset * viewport.averageItemHeight)
+				topPadding.height (buffer.first - minIndex.value) * viewport.averageItemHeight
 				bottomPadding.height (buffer.maxIndex() - buffer.next + 1) * viewport.averageItemHeight
 
 			viewport.adjustScrollTop = (height) ->
@@ -433,13 +458,14 @@ angular.module('ui.scroll', [])
 					# re-index the buffer
 					item.scope.$index = buffer.first + i for item,i in buffer
 
-					viewport.adjustPadding()
-
 					# schedule another adjustBuffer after animation completion
 					if (promises.length)
 						$q.all(promises).then ->
+							viewport.adjustPadding()
 							#log "Animation completed rid #{rid}"
 							adjustBuffer rid
+					else
+						viewport.adjustPadding()
 
 					keepFetching
 
@@ -514,10 +540,7 @@ angular.module('ui.scroll', [])
 										--buffer.first
 										buffer.insert 'prepend', result[i]
 									#log 'prepended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
-								if buffer.bof
-									datasource.minIndex = buffer.first
-								else
-									datasource.minIndex = Math.min buffer.first, datasource.minIndex || Number.MAX_VALUE
+								buffer.minIndex buffer.first
 								adjustBufferAfterFetch rid
 
 
