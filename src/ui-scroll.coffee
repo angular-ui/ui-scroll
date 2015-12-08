@@ -69,7 +69,7 @@ angular.module('ui.scroll', [])
 						wrapper.scope.$destroy()
 					]
 
-		Buffer = (itemName, $scope, linker, datasource, bufferSize)->
+		Buffer = (itemName, $scope, linker, bufferSize)->
 
 			buffer = Object.create Array.prototype
 
@@ -77,6 +77,16 @@ angular.module('ui.scroll', [])
 			origin = 1
 
 			buffer.size = bufferSize
+
+			buffer.append = (items) ->
+				for item in items
+					++buffer.next
+					buffer.insert 'append', item
+
+			buffer.prepend = (items) ->
+				for item in items.reverse()
+					--buffer.first
+					buffer.insert 'prepend', item
 
 			# inserts wrapped element in the buffer
 			# the first argument is either operation keyword (see below) or a number for operation 'insert'
@@ -113,6 +123,10 @@ angular.module('ui.scroll', [])
 					buffer.splice buffer.indexOf(arg1), 1
 					removeElementAnimated arg1
 
+
+			minIndex = Number.MAX_VALUE
+			maxIndex = Number.MIN_VALUE
+
 			reset = ->
 				buffer.eof = false
 				buffer.bof = false
@@ -120,27 +134,31 @@ angular.module('ui.scroll', [])
 				buffer.next = origin
 				buffer.localMinIndex = origin
 
+				minIndex = Number.MAX_VALUE
+				maxIndex = Number.MIN_VALUE
+
+			buffer.setUpper = ->
+				if buffer.eof
+					maxIndex = buffer.next-1
+				else
+					maxIndex = Math.max buffer.next-1, maxIndex
+
+			buffer.maxIndex  = -> maxIndex
+
+			buffer.setLower = ->
+				if buffer.bof
+					minIndex = buffer.first
+				else
+					minIndex = Math.min buffer.first, minIndex
+
+			buffer.minIndex = -> minIndex
+
 			# clears the buffer
 			buffer.clear = ->
 				buffer.remove(0, buffer.length)
 				reset()
 
 			reset()
-
-			buffer.minIndex = (value) ->
-				if arguments.length
-					if buffer.bof
-						datasource.minIndex = value
-					else
-						datasource.minIndex = Math.min value, datasource.minIndex || Number.MAX_VALUE
-					buffer.localMinIndex = datasource.minIndex
-				else
-					offset = buffer.localMinIndex - (datasource.minIndex || origin)
-					buffer.localMinIndex -= offset
-					offset: offset #if minIndex is decremented outside of the scroller offset value is by how much
-					value: buffer.localMinIndex
-
-			buffer.maxIndex  = -> datasource.maxIndex || origin
 
 			buffer
 
@@ -160,7 +178,7 @@ angular.module('ui.scroll', [])
 			result
 
 
-		Viewport = (buffer, element, controllers, padding) ->
+		Viewport = (buffer, element, controllers, attrs) ->
 
 			viewport = if controllers[0] and controllers[0].viewport then controllers[0].viewport else angular.element(window)
 			viewport.css({'overflow-y': 'auto', 'display': 'block'})
@@ -168,7 +186,7 @@ angular.module('ui.scroll', [])
 			topPadding = null
 			bottomPadding = null
 
-			bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +padding.padding || 0.1) # some extra space to initiate preload
+			bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +attrs.padding || 0.1) # some extra space to initiate preload
 
 			viewport.createPaddingElements = (template) ->
 				topPadding = new Padding template
@@ -195,7 +213,7 @@ angular.module('ui.scroll', [])
 			viewport.clipBottom = ->
 				# clip the invisible items off the bottom
 				overage = 0
-				overageBottom = viewport.outerHeight() + viewport.averageItemHeight * (buffer.size)
+				overageBottom = viewport.bottomVisiblePos() + viewport.averageItemHeight * (buffer.size)
 				for i in [buffer.length-1..0]
 					item = buffer[i]
 					if item.element.offset().top > overageBottom
@@ -213,7 +231,7 @@ angular.module('ui.scroll', [])
 				# clip the invisible items off the top
 				overage = 0
 				heightIncrement = 0
-				overageTop = (-1) * viewport.averageItemHeight * buffer.size
+				overageTop = viewport.topVisiblePos() - viewport.averageItemHeight * buffer.size
 				for item in buffer
 					if item.element.offset().top < overageTop
 						heightIncrement += item.element.outerHeight()
@@ -224,17 +242,34 @@ angular.module('ui.scroll', [])
 					buffer.remove(0, overage)
 					buffer.first += overage
 
-			viewport.adjustPadding = () ->
+			###
+			buffer.minIndex = (value) ->
+				if arguments.length
+					if buffer.bof
+						datasource.minIndex = value
+					else
+						datasource.minIndex = Math.min value, datasource.minIndex || Number.MAX_VALUE
+					buffer.localMinIndex = datasource.minIndex
+				else
+					offset = buffer.localMinIndex - (datasource.minIndex || origin)
+					buffer.localMinIndex -= offset
+					offset: offset #if minIndex is decremented outside of the scroller offset value is by how much
+					value: buffer.localMinIndex
+  		###
+
+
+			viewport.adjustPadding = ->
 				return if not buffer.length
 				viewport.averageItemHeight = (buffer[buffer.length-1].element.offset().top +
 					buffer[buffer.length-1].element.outerHeight(true) -
 					buffer[0].element.offset().top) / buffer.length
+				topPadding.height (buffer.first - buffer.minIndex()) * viewport.averageItemHeight
+				bottomPadding.height (buffer.maxIndex() - buffer.next + 1) * viewport.averageItemHeight
+
+			viewport.syncDatasource = ->
 				minIndex = buffer.minIndex()
-				topPadding.height (buffer.first - minIndex.value) * viewport.averageItemHeight
 				if minIndex.offset
 					viewport.scrollTop(minIndex.offset * viewport.averageItemHeight)
-				#console.log "id #{padding.id} min #{minIndex.value} top #{viewport.scrollTop()} offs #{minIndex.offset * viewport.averageItemHeight}"
-				bottomPadding.height (buffer.maxIndex() - buffer.next + 1) * viewport.averageItemHeight
 
 			viewport.adjustScrollTop = (height) ->
 				paddingHeight = topPadding.height() - height
@@ -282,15 +317,11 @@ angular.module('ui.scroll', [])
 				adjustBuffer()
 
 			this.append = (newItems) ->
-				for item in newItems
-					++buffer.next
-					buffer.insert 'append', item
+				buffer.append newItems
 				adjustBuffer()
 
 			this.prepend = (newItems) ->
-				for item in newItems.reverse()
-					--buffer.first
-					buffer.insert 'prepend', item
+				buffer.prepend newItems
 				adjustBuffer()
 
 			setTopVisible = if $attr.topVisible then $parse($attr.topVisible).assign else ->
@@ -354,7 +385,7 @@ angular.module('ui.scroll', [])
 
 				pending = []
 
-				buffer = new Buffer(itemName, $scope, linker, datasource, bufferSize)
+				buffer = new Buffer(itemName, $scope, linker, bufferSize)
 
 				viewport = new Viewport(buffer, element, controllers, $attr)
 
@@ -456,6 +487,8 @@ angular.module('ui.scroll', [])
 							adjustBuffer rid
 					else
 						viewport.adjustPadding()
+						if not pending.length
+							viewport.syncDatasource datasource
 
 					keepFetching
 
@@ -490,12 +523,10 @@ angular.module('ui.scroll', [])
 							fetch(rid)
 
 				fetch = (rid) ->
-					#log "Running fetch... #{{true:'bottom', false: 'top'}[direction]} pending #{pending.length}"
 					if pending[0] # scrolling down
 						if buffer.length && !viewport.shouldLoadBottom()
 							adjustBufferAfterFetch rid
 						else
-							#log "appending... requested #{bufferSize} records starting from #{next}"
 							datasource.get buffer.next, bufferSize,
 							(result) ->
 								return if (rid and rid isnt ridActual) or $scope.$$destroyed
@@ -504,20 +535,13 @@ angular.module('ui.scroll', [])
 									#log 'eof is reached'
 								if result.length > 0
 									viewport.clipTop()
-									for item in result
-										++buffer.next
-										buffer.insert 'append', item
-										#log 'appended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
-								if buffer.eof
-									datasource.maxIndex = buffer.next-1
-								else
-									datasource.maxIndex = Math.max buffer.next-1, datasource.maxIndex || Number.MIN_VALUE
+									buffer.append result
+								buffer.setUpper()
 								adjustBufferAfterFetch rid
 					else
 						if buffer.length && !viewport.shouldLoadTop()
 							adjustBufferAfterFetch rid
 						else
-							#log "prepending... requested #{size} records starting from #{start}"
 							datasource.get buffer.first-bufferSize, bufferSize,
 							(result) ->
 								return if (rid and rid isnt ridActual) or $scope.$$destroyed
@@ -526,11 +550,8 @@ angular.module('ui.scroll', [])
 									#log 'bof is reached'
 								if result.length > 0
 									viewport.clipBottom() if buffer.length
-									for i in [result.length-1..0]
-										--buffer.first
-										buffer.insert 'prepend', result[i]
-									#log 'prepended: requested ' + bufferSize + ' received ' + result.length + ' buffer size ' + buffer.length + ' first ' + first + ' next ' + next
-								buffer.minIndex buffer.first
+									buffer.prepend result
+								buffer.setLower()
 								adjustBufferAfterFetch rid
 
 				# events and bindings
