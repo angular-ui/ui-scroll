@@ -132,7 +132,6 @@ angular.module('ui.scroll', [])
 				buffer.bof = false
 				buffer.first = origin
 				buffer.next = origin
-				buffer.localMinIndex = origin
 
 				minIndex = Number.MAX_VALUE
 				maxIndex = Number.MIN_VALUE
@@ -152,6 +151,13 @@ angular.module('ui.scroll', [])
 					minIndex = Math.min buffer.first, minIndex
 
 			buffer.minIndex = -> minIndex
+
+			buffer.syncDatasource = (datasource)->
+				offset = minIndex - (Math.min minIndex, datasource.minIndex || Number.MAX_VALUE)
+				datasource.minIndex = (minIndex -= offset)
+				datasource.maxIndex = maxIndex = Math.max maxIndex, datasource.maxIndex || Number.MIN_VALUE
+				console.log "offset #{offset}"
+				offset
 
 			# clears the buffer
 			buffer.clear = ->
@@ -242,22 +248,6 @@ angular.module('ui.scroll', [])
 					buffer.remove(0, overage)
 					buffer.first += overage
 
-			###
-			buffer.minIndex = (value) ->
-				if arguments.length
-					if buffer.bof
-						datasource.minIndex = value
-					else
-						datasource.minIndex = Math.min value, datasource.minIndex || Number.MAX_VALUE
-					buffer.localMinIndex = datasource.minIndex
-				else
-					offset = buffer.localMinIndex - (datasource.minIndex || origin)
-					buffer.localMinIndex -= offset
-					offset: offset #if minIndex is decremented outside of the scroller offset value is by how much
-					value: buffer.localMinIndex
-  		###
-
-
 			viewport.adjustPadding = ->
 				return if not buffer.length
 				viewport.averageItemHeight = (buffer[buffer.length-1].element.offset().top +
@@ -266,10 +256,11 @@ angular.module('ui.scroll', [])
 				topPadding.height (buffer.first - buffer.minIndex()) * viewport.averageItemHeight
 				bottomPadding.height (buffer.maxIndex() - buffer.next + 1) * viewport.averageItemHeight
 
-			viewport.syncDatasource = ->
-				minIndex = buffer.minIndex()
-				if minIndex.offset
-					viewport.scrollTop(minIndex.offset * viewport.averageItemHeight)
+			viewport.syncDatasource = (datasource) ->
+				delta = buffer.syncDatasource(datasource) * viewport.averageItemHeight
+				topPadding.height topPadding.height() + delta
+				viewport.scrollTop viewport.scrollTop() + delta
+				viewport.adjustPadding()
 
 			viewport.adjustScrollTop = (height) ->
 				paddingHeight = topPadding.height() - height
