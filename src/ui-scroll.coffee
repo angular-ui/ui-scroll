@@ -257,6 +257,7 @@ angular.module('ui.scroll', [])
 				bottomPadding.height (buffer.maxIndex() - buffer.next + 1) * viewport.averageItemHeight
 
 			viewport.syncDatasource = (datasource) ->
+				return if not buffer.length
 				delta = buffer.syncDatasource(datasource) * viewport.averageItemHeight
 				topPadding.height topPadding.height() + delta
 				viewport.scrollTop viewport.scrollTop() + delta
