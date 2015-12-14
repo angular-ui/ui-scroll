@@ -72,9 +72,16 @@ angular.module('ui.scroll', [])
 		Buffer = (itemName, $scope, linker, bufferSize)->
 
 			buffer = Object.create Array.prototype
+			
+			origin = 1 # starting index for initial load
 
-			# starting index for initial load
-			origin = 1
+			reset = ->
+				buffer.eof = false
+				buffer.bof = false
+				buffer.first = origin
+				buffer.next = origin
+				buffer.minIndex = Number.MAX_VALUE
+				buffer.maxIndex = Number.MIN_VALUE
 
 			buffer.size = bufferSize
 
@@ -123,39 +130,16 @@ angular.module('ui.scroll', [])
 					buffer.splice buffer.indexOf(arg1), 1
 					removeElementAnimated arg1
 
-
-			minIndex = Number.MAX_VALUE
-			maxIndex = Number.MIN_VALUE
-
-			reset = ->
-				buffer.eof = false
-				buffer.bof = false
-				buffer.first = origin
-				buffer.next = origin
-
-				minIndex = Number.MAX_VALUE
-				maxIndex = Number.MIN_VALUE
-
 			buffer.setUpper = ->
-				if buffer.eof
-					maxIndex = buffer.next-1
-				else
-					maxIndex = Math.max buffer.next-1, maxIndex
-
-			buffer.maxIndex  = -> maxIndex
+					buffer.maxIndex = if buffer.eof then buffer.next - 1 else Math.max buffer.next - 1, buffer.maxIndex
 
 			buffer.setLower = ->
-				if buffer.bof
-					minIndex = buffer.first
-				else
-					minIndex = Math.min buffer.first, minIndex
-
-			buffer.minIndex = -> minIndex
+				buffer.minIndex = if buffer.bof then buffer.minIndex = buffer.first else Math.min buffer.first, buffer.minIndex
 
 			buffer.syncDatasource = (datasource)->
-				offset = minIndex - (Math.min minIndex, datasource.minIndex || Number.MAX_VALUE)
-				datasource.minIndex = (minIndex -= offset)
-				datasource.maxIndex = maxIndex = Math.max maxIndex, datasource.maxIndex || Number.MIN_VALUE
+				offset = buffer.minIndex - (Math.min buffer.minIndex, datasource.minIndex || Number.MAX_VALUE)
+				datasource.minIndex = (buffer.minIndex -= offset)
+				datasource.maxIndex = buffer.maxIndex = Math.max buffer.maxIndex, datasource.maxIndex || Number.MIN_VALUE
 				console.log "offset #{offset}"
 				offset
 
@@ -253,8 +237,8 @@ angular.module('ui.scroll', [])
 				viewport.averageItemHeight = (buffer[buffer.length-1].element.offset().top +
 					buffer[buffer.length-1].element.outerHeight(true) -
 					buffer[0].element.offset().top) / buffer.length
-				topPadding.height (buffer.first - buffer.minIndex()) * viewport.averageItemHeight
-				bottomPadding.height (buffer.maxIndex() - buffer.next + 1) * viewport.averageItemHeight
+				topPadding.height (buffer.first - buffer.minIndex) * viewport.averageItemHeight
+				bottomPadding.height (buffer.maxIndex - buffer.next + 1) * viewport.averageItemHeight
 
 			viewport.syncDatasource = (datasource) ->
 				return if not buffer.length
