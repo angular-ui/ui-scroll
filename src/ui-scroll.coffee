@@ -230,13 +230,10 @@ angular.module('ui.scroll', [])
 				if overage > 0
 					# we need to adjust top padding element before items are removed from top
 					# to avoid strange behaviour of scroll bar during remove top items when we are at the very bottom
-					viewport.adjustTopPaddingIntro overageHeight
+					topPadding.height topPadding.height() + overageHeight
 					buffer.bof = false
 					buffer.remove(0, overage)
 					buffer.first += overage
-
-			viewport.adjustTopPaddingIntro = (height) ->
-				topPadding.height topPadding.height() + height
 
 			viewport.adjustPadding = () ->
 				return if not buffer.length
