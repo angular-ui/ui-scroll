@@ -72,7 +72,7 @@ angular.module('ui.scroll', [])
 		Buffer = (itemName, $scope, linker, bufferSize)->
 
 			buffer = Object.create Array.prototype
-			
+
 			origin = 1 # starting index for initial load
 
 			reset = ->
@@ -175,6 +175,7 @@ angular.module('ui.scroll', [])
 
 			topPadding = null
 			bottomPadding = null
+			averageItemHeight = 0
 
 			bufferPadding = -> viewport.outerHeight() * Math.max(0.1, +attrs.padding || 0.1) # some extra space to initiate preload
 
@@ -203,16 +204,16 @@ angular.module('ui.scroll', [])
 			viewport.clipBottom = ->
 				# clip the invisible items off the bottom
 				overage = 0
-				overageBottom = viewport.bottomVisiblePos() + viewport.averageItemHeight * (buffer.size)
 				for i in [buffer.length-1..0]
 					item = buffer[i]
-					if item.element.offset().top > overageBottom
+					if item.element.offset().top - viewport.offset().top > viewport.outerHeight() + bufferPadding()
 						overage++
 					else break
 				if overage > 0
 					buffer.eof = false
 					buffer.remove(buffer.length - overage, buffer.length)
 					buffer.next -= overage
+					viewport.adjustPadding()
 
 			viewport.shouldLoadTop = ->
 				!buffer.bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding())
@@ -220,29 +221,34 @@ angular.module('ui.scroll', [])
 			viewport.clipTop = ->
 				# clip the invisible items off the top
 				overage = 0
-				heightIncrement = 0
-				overageTop = viewport.topVisiblePos() - viewport.averageItemHeight * buffer.size
+				overageHeight = 0
 				for item in buffer
-					if item.element.offset().top < overageTop
-						heightIncrement += item.element.outerHeight()
+					if item.element.offset().top - viewport.offset().top + item.element.outerHeight(true) < (-1) * bufferPadding()
+						overageHeight += item.element.outerHeight(true)
 						overage++
 					else break
 				if overage > 0
+					# we need to adjust top padding element before items are removed from top
+					# to avoid strange behaviour of scroll bar during remove top items when we are at the very bottom
+					viewport.adjustTopPaddingIntro overageHeight
 					buffer.bof = false
 					buffer.remove(0, overage)
 					buffer.first += overage
 
-			viewport.adjustPadding = ->
+			viewport.adjustTopPaddingIntro = (height) ->
+				topPadding.height topPadding.height() + height
+
+			viewport.adjustPadding = () ->
 				return if not buffer.length
-				viewport.averageItemHeight = (buffer[buffer.length-1].element.offset().top +
-					buffer[buffer.length-1].element.outerHeight(true) -
+				averageItemHeight = (buffer[buffer.length - 1].element.offset().top +
+					buffer[buffer.length - 1].element.outerHeight(true) -
 					buffer[0].element.offset().top) / buffer.length
-				topPadding.height (buffer.first - buffer.minIndex) * viewport.averageItemHeight
-				bottomPadding.height (buffer.maxIndex - buffer.next + 1) * viewport.averageItemHeight
+				topPadding.height (buffer.first - buffer.minIndex) * averageItemHeight
+				bottomPadding.height (buffer.maxIndex - buffer.next + 1) * averageItemHeight
 
 			viewport.syncDatasource = (datasource) ->
 				return if not buffer.length
-				delta = buffer.syncDatasource(datasource) * viewport.averageItemHeight
+				delta = buffer.syncDatasource(datasource) * averageItemHeight
 				topPadding.height topPadding.height() + delta
 				viewport.scrollTop viewport.scrollTop() + delta
 				viewport.adjustPadding()
