@@ -140,7 +140,6 @@ angular.module('ui.scroll', [])
 				offset = buffer.minIndex - (Math.min buffer.minIndex, datasource.minIndex || Number.MAX_VALUE)
 				datasource.minIndex = (buffer.minIndex -= offset)
 				datasource.maxIndex = buffer.maxIndex = Math.max buffer.maxIndex, datasource.maxIndex || Number.MIN_VALUE
-				console.log "offset #{offset}"
 				offset
 
 			# clears the buffer
@@ -201,12 +200,14 @@ angular.module('ui.scroll', [])
 			viewport.shouldLoadBottom = ->
 				!buffer.eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding()
 
+			viewportOffset = if viewport.offset() then -> viewport.offset() else -> {top:0}
+
 			viewport.clipBottom = ->
 				# clip the invisible items off the bottom
 				overage = 0
 				for i in [buffer.length-1..0]
 					item = buffer[i]
-					if item.element.offset().top - viewport.offset().top > viewport.outerHeight() + bufferPadding()
+					if item.element.offset().top - viewportOffset().top > viewport.outerHeight() + bufferPadding()
 						overage++
 					else break
 				if overage > 0
@@ -223,7 +224,7 @@ angular.module('ui.scroll', [])
 				overage = 0
 				overageHeight = 0
 				for item in buffer
-					if item.element.offset().top - viewport.offset().top + item.element.outerHeight(true) < (-1) * bufferPadding()
+					if item.element.offset().top - viewportOffset().top + item.element.outerHeight(true) < (-1) * bufferPadding()
 						overageHeight += item.element.outerHeight(true)
 						overage++
 					else break
