@@ -73,9 +73,7 @@ angular.module('ui.scroll', [])
 
 			buffer = Object.create Array.prototype
 
-			origin = 1 # starting index for initial load
-
-			reset = ->
+			reset = (origin)->
 				buffer.eof = false
 				buffer.bof = false
 				buffer.first = origin
@@ -145,9 +143,12 @@ angular.module('ui.scroll', [])
 			# clears the buffer
 			buffer.clear = ->
 				buffer.remove(0, buffer.length)
-				reset()
+				if arguments.length
+					reset arguments[0]
+				else
+					reset(1)
 
-			reset()
+			reset(1)
 
 			buffer
 
@@ -400,7 +401,10 @@ angular.module('ui.scroll', [])
 
 				reload = ->
 					dismissPendingRequests()
-					buffer.clear()
+					if arguments.length
+						buffer.clear arguments[0]
+					else
+						buffer.clear()
 					adjustBuffer ridActual
 
 				adapter.reload = reload
@@ -551,7 +555,7 @@ angular.module('ui.scroll', [])
 				viewport.bind 'scroll', resizeAndScrollHandler
 				viewport.bind 'mousewheel', wheelHandler
 
-				$scope.$watch datasource.revision, reload
+				$scope.$watch datasource.revision, -> reload()
 
 				$scope.$on '$destroy', ->
 					# clear the buffer. It is necessary to remove the elements and $destroy the scopes
