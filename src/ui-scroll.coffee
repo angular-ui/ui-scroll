@@ -506,13 +506,27 @@ angular.module('ui.scroll', [])
 						else
 							fetch(rid)
 
+				if datasource.get.length == 2
+					fetchNext = (success) -> datasource.get
+							index: buffer.next
+							append: if buffer.length then buffer[buffer.length-1].item else undefined
+							count: bufferSize
+							success
+					fetchPrevious = (success) -> datasource.get
+							index: buffer.first-bufferSize
+							prepend: if buffer.length then buffer[0].item else undefined
+							count: bufferSize
+							success
+				else
+					fetchNext = (success) -> datasource.get buffer.next, bufferSize, success
+					fetchPrevious = (success) -> datasource.get buffer.first-bufferSize, bufferSize, success
+
 				fetch = (rid) ->
 					if pending[0] # scrolling down
 						if buffer.length && !viewport.shouldLoadBottom()
 							adjustBufferAfterFetch rid
 						else
-							datasource.get buffer.next, bufferSize,
-							(result) ->
+							fetchNext (result) ->
 								return if (rid and rid isnt ridActual) or $scope.$$destroyed
 								if result.length < bufferSize
 									buffer.eof = true
@@ -526,8 +540,7 @@ angular.module('ui.scroll', [])
 						if buffer.length && !viewport.shouldLoadTop()
 							adjustBufferAfterFetch rid
 						else
-							datasource.get buffer.first-bufferSize, bufferSize,
-							(result) ->
+							fetchPrevious (result) ->
 								return if (rid and rid isnt ridActual) or $scope.$$destroyed
 								if result.length < bufferSize
 									buffer.bof = true

@@ -161,8 +161,6 @@ describe('uiScroll', function () {
         it('should clip 3 divs from the top and add 3 more divs to the bottom (9 divs total) (+ 2 padding divs)', function () {
             runTest(scrollSettings,
                 function (viewport, scope, $timeout) {
-// padding calculations are different now, besides the specific number of elements clipped
-// is not that important and a test for cliptop/bottom methods of the viewport object is more appropriate
                     viewport.scrollTop(100);
                     viewport.trigger('scroll');
                     $timeout.flush();

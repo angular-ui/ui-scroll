@@ -10,6 +10,16 @@ angular.module('ui.scroll.test.datasources', [])
         }
     ])
 
+    .factory('myNewEmptyDatasource', [
+        '$log', '$timeout', '$rootScope', function () {
+            return {
+                get: function (descriptor, success) {
+                    success([]);
+                }
+            };
+        }
+    ])
+
     .factory('myOnePageDatasource', [
         '$log', '$timeout', '$rootScope', function () {
             return {

@@ -5,9 +5,11 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite']).controller('mai
 
 				datasource = {}
 
-				datasource.get = (index, count, success)->
+				datasource.get = (descriptor, success)->
 					$timeout(
 						->
+							index = descriptor.index
+							count = descriptor.count
 							result = []
 							for i in [index..index + count-1]
 								result.push "item ##{i}"
