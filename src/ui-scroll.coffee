@@ -508,15 +508,15 @@ angular.module('ui.scroll', [])
 
 				if datasource.get.length == 2
 					fetchNext = (success) -> datasource.get
-							index: buffer.next
-							append: if buffer.length then buffer[buffer.length-1].item else undefined
-							count: bufferSize
-							success
+						index: buffer.next
+						append: if buffer.length then buffer[buffer.length-1].item else undefined
+						count: bufferSize
+						success
 					fetchPrevious = (success) -> datasource.get
-							index: buffer.first-bufferSize
-							prepend: if buffer.length then buffer[0].item else undefined
-							count: bufferSize
-							success
+						index: buffer.first-bufferSize
+						prepend: if buffer.length then buffer[0].item else undefined
+						count: bufferSize
+						success
 				else
 					fetchNext = (success) -> datasource.get buffer.next, bufferSize, success
 					fetchPrevious = (success) -> datasource.get buffer.first-bufferSize, bufferSize, success
