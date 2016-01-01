@@ -74,12 +74,11 @@ describe('uiScroll', function () {
     describe('basic setup (new datasource get signature)', function () {
         var scrollSettings = {datasource: 'myNewEmptyDatasource'};
 
-        return;
         // this does not work because spy always return 0 for the number of parameters (spy.length)
         it('should call get on the datasource 2 times ', function () {
             var spy;
             inject(function (myNewEmptyDatasource) {
-                spy = spyOn(myNewEmptyDatasource, 'get').and.callThrough();
+                spy = spyOn(myNewEmptyDatasource, 'actualGet').and.callThrough();
             });
             runTest(scrollSettings,
                 function () {
@@ -87,8 +86,8 @@ describe('uiScroll', function () {
                     expect(spy.calls.all()[0].args.length).toBe(2);
                     expect(spy.calls.all()[0].args[0].index).toBe(1);
                     expect(spy.calls.all()[0].args[0].count).toBe(10);
-                    expect(spy.calls.all()[0].args.length).toBe(2);
-                    expect(spy.calls.all()[1].args[0]).index.toBe(-9);
+                    expect(spy.calls.all()[1].args.length).toBe(2);
+                    expect(spy.calls.all()[1].args[0].index).toBe(-9);
                     expect(spy.calls.all()[1].args[0].count).toBe(10);
                 }
             );
