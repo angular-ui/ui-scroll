@@ -42,6 +42,36 @@ describe('uiScroll', function () {
         });
     });
 
+    describe('datasource with 3 elements and buffersize 3 (new get signature)', function() {
+        var scrollSettings = { datasource: 'myNewOnePageDatasource', bufferSize: 3 };
+
+        it('should call get on the datasource 3 times ', function () {
+            var spy;
+            inject(function (myNewOnePageDatasource) {
+                spy = spyOn(myNewOnePageDatasource, 'actualGet').and.callThrough();
+                runTest(scrollSettings,
+                    function () {
+                        expect(spy.calls.all().length).toBe(3);
+                        expect(spy.calls.all()[0].args[0].index).toBe(1);  // gets 3 rows (no eof)
+                        expect(spy.calls.all()[0].args[0].count).toBe(3);
+                        expect('append' in spy.calls.all()[0].args[0]).toBe(true);
+                        expect(spy.calls.all()[0].args[0].append).toBeUndefined();
+                        expect('prepend' in spy.calls.all()[0].args[0]).toBe(false);
+                        expect(spy.calls.all()[1].args[0].index).toBe(4); // gets 0 rows (and eof)
+                        expect(spy.calls.all()[1].args[0].count).toBe(3);
+                        expect('append' in spy.calls.all()[1].args[0]).toBe(true);
+                        expect(spy.calls.all()[1].args[0].append).toBe('three');
+                        expect('prepend' in spy.calls.all()[1].args[0]).toBe(false);
+                        expect(spy.calls.all()[2].args[0].index).toBe(-2); // gets 0 rows (and bof)
+                        expect(spy.calls.all()[2].args[0].count).toBe(3);
+                        expect('append' in spy.calls.all()[2].args[0]).toBe(false);
+                        expect('prepend' in spy.calls.all()[2].args[0]).toBe(true);
+                        expect(spy.calls.all()[2].args[0].prepend).toBe('one');
+                    });
+            });
+        });
+    });
+
     describe('datasource with only 3 elements (negative index)', function () {
         var scrollSettings = { datasource: 'anotherDatasource' };
         it('should create 3 divs with data (+ 2 padding divs)', function () {

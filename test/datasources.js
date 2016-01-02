@@ -43,6 +43,29 @@ angular.module('ui.scroll.test.datasources', [])
         }
     ])
 
+    .factory('myNewOnePageDatasource', [
+        '$log', '$timeout', '$rootScope', function () {
+
+            // another layer of indirection introduced by the actualGet
+            // is a workaround for the jasmine issue #1007 https://github.com/jasmine/jasmine/issues/1007
+            result = {
+                get: function (descriptor, success) {
+                    result.actualGet(descriptor, success);
+                },
+                actualGet: function (descriptor, success) {
+                    if (descriptor.index === 1) {
+                        success(['one', 'two', 'three']);
+                    } else {
+                        success([]);
+                    }
+                }
+            };
+
+            return result;
+
+        }
+    ])
+
     .factory('myObjectDatasource', [
         '$log', '$timeout', '$rootScope', function () {
             return {
