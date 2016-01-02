@@ -139,9 +139,16 @@ Adapater object implements the following methods
 * Method `reload` 
 
         reload()
+     or
+
+        reload(startIndex)
 
    #### Description
-    calling this method reinitializes and reloads the scroller content. This method is introduced as a replacement for the revision method of the datasource, which is now deprecated.
+    Calling this method reinitializes and reloads the scroller content. `startIndex` is an integer indicating what item index the scroller will use to start the load process. Calling `reload()` is equivalent to calling `reload(1)`.
+    
+    **important: `startIndex` should fall within underlying datset boundaries** The scroller will request two batches of items one starting from the `startIndex` and another one preceding the first one (starting from `startIndex - bufferSize`). If both requests come back empty, the scroller will consider the dataset to be empty and will place no further data requests. 
+    
+    This method is introduced as a replacement for the revision method of the datasource, which is now deprecated.
     
 * Method `applyUpdates` 
 
