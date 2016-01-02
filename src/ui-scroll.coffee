@@ -321,7 +321,7 @@ angular.module('ui.scroll', [])
 					newRow = rowTop isnt itemTop
 					rowTop = itemTop
 					itemHeight = item.element.outerHeight(true) if newRow
-					if newRow and (viewport.topDataPos() + topHeight + itemHeight < viewport.topVisiblePos())
+					if newRow and (viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos())
 						topHeight += itemHeight
 					else
 						if newRow

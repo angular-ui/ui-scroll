@@ -1062,4 +1062,66 @@ describe('uiScroll', function () {
 
     });
 
+    describe('adapter reload tests', function () {
+        var scrollSettings = {datasource: 'myInfiniteDatasource', adapter: 'adapter'};
+
+        it ('initial load should be positioned at item#1', function () {
+            runTest (scrollSettings,
+                function (viewport, scope, $timeout) {
+                    expect(scope.adapter.topVisible).toBe('item1');
+                }
+            );
+        })
+
+        it ('reload(100) should position it at item#100', function () {
+            runTest (scrollSettings,
+                function (viewport, scope, $timeout) {
+                    expect(scope.adapter.topVisible).toBe('item1');
+
+                    scope.adapter.reload(100);
+                    $timeout.flush();
+
+                    expect(scope.adapter.topVisible).toBe('item100');
+                }
+            );
+        })
+
+        it ('reload() should position it at item#1', function () {
+            runTest (scrollSettings,
+                function (viewport, scope, $timeout) {
+                    expect(scope.adapter.topVisible).toBe('item1');
+
+                    scope.adapter.reload(100);
+                    $timeout.flush();
+
+                    expect(scope.adapter.topVisible).toBe('item100');
+
+                    scope.adapter.reload();
+                    $timeout.flush();
+
+                    expect(scope.adapter.topVisible).toBe('item1');
+                }
+            );
+        })
+
+        it ('reload(0) should position it at item#0', function () {
+            runTest (scrollSettings,
+                function (viewport, scope, $timeout) {
+                    expect(scope.adapter.topVisible).toBe('item1');
+
+                    scope.adapter.reload(100);
+                    $timeout.flush();
+
+                    expect(scope.adapter.topVisible).toBe('item100');
+
+                    scope.adapter.reload(0);
+                    $timeout.flush();
+
+                    expect(scope.adapter.topVisible).toBe('item0');
+                }
+            );
+        })
+
+    });
+
 });
