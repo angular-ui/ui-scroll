@@ -198,7 +198,6 @@ marked with uiScrollViewport directive, the browser window object will be used a
 </ANY>
 ```
 
-
 ###Examples
 
 Examples ([look here](https://github.com/angular-ui/ui-scroll/tree/master/demo/examples)) consist of several pages (.html files) showing various ways to use the ui-scroll directive. Each page relays on its own datasource service (called `datasource`) defined in the coffescript file with the same name and .coffee extension.
