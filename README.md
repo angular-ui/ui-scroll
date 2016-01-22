@@ -114,16 +114,6 @@ exactly `count` elements unless it hit eof/bof
 
 **Deprecated:** Method `loading` is deprecated - use `is-loading` attribute instead
 
-
-* Method `revision`
-
-        revision()
-
-    #### Description
-    this is an optional method. If supplied the scroller will $watch its value and will refresh the content if the value has changed
-
-**Deprecated:** Method `revision` is deprecated - use `reload()` method on the adapter instead
-
 ###Adapter
 The adapter object is an internal object created for every instance of the scroller. Properties and methods of the adapter can be used to manipulate and assess the scroller the adapter was created for. Adapter based API replaces old (undocumented) event based API introduced earlier for this purpose. The event based API is now deprecated and no longer supported.
 
@@ -147,8 +137,6 @@ Adapater object implements the following methods
     Calling this method reinitializes and reloads the scroller content. `startIndex` is an integer indicating what item index the scroller will use to start the load process. Calling `reload()` is equivalent to calling `reload(1)`.
     
     **important: `startIndex` should fall within underlying datset boundaries** The scroller will request two batches of items one starting from the `startIndex` and another one preceding the first one (starting from `startIndex - bufferSize`). If both requests come back empty, the scroller will consider the dataset to be empty and will place no further data requests. 
-    
-    This method is introduced as a replacement for the revision method of the datasource, which is now deprecated.
     
 * Method `applyUpdates` 
 
