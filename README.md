@@ -105,15 +105,6 @@ The datasource object implements methods and properties to be used by the direct
 **Important:** Make sure to respect the `index` and `count` parameters of the request. The array passed to the success method should have
 exactly `count` elements unless it hit eof/bof
 
-* Method `loading`
-
-        loading(value)
-
-    #### Description
-    this is an optional method. If supplied this function will be called with a value indicating whether there is data loading request pending
-
-**Deprecated:** Method `loading` is deprecated - use `is-loading` attribute instead
-
 ###Adapter
 The adapter object is an internal object created for every instance of the scroller. Properties and methods of the adapter can be used to manipulate and assess the scroller the adapter was created for. Adapter based API replaces old (undocumented) event based API introduced earlier for this purpose. The event based API is now deprecated and no longer supported.
 
