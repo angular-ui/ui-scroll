@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Scroller Demo (multiple lists) </title>
+    <script src="http://coffeescript.org/extras/coffee-script.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.js"></script>
+    <script src="../../src/ui-scroll.coffee" type="text/coffeescript"></script>
+    <script src="../../src/ui-scroll-jqlite.coffee" type="text/coffeescript"></script>
+    <script src="repro.coffee" type="text/coffeescript"></script>
+</head>
+<body ng-controller="mainController">
+<h2 style="position: fixed; left: 150px; top: 0;">is loading: {{loading}}; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../index.html"> browse sample code</a></h2>
+<h2> The list </h2>
+<div id="div" ui-scroll-viewport style="height:200px">
+    <div id="1" ui-scroll="item in datasource" adapter="adapter" is-loading="loading" buffer-size='4'>*one {{item}}*</div>
+</div>
+<button ng-click="updateMinIndex()">update minIndex</button>
+<button id="scroll">scroll</button>
+
+</body>
+</html>
