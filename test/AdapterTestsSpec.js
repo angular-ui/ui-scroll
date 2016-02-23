@@ -1067,11 +1067,11 @@ describe('uiScroll', function () {
 
         it ('initial load should be positioned at item#1', function () {
             runTest (scrollSettings,
-                function (viewport, scope, $timeout) {
+                function (viewport, scope) {
                     expect(scope.adapter.topVisible).toBe('item1');
                 }
             );
-        })
+        });
 
         it ('reload(100) should position it at item#100', function () {
             runTest (scrollSettings,
@@ -1084,7 +1084,7 @@ describe('uiScroll', function () {
                     expect(scope.adapter.topVisible).toBe('item100');
                 }
             );
-        })
+        });
 
         it ('reload() should position it at item#1', function () {
             runTest (scrollSettings,
@@ -1102,7 +1102,7 @@ describe('uiScroll', function () {
                     expect(scope.adapter.topVisible).toBe('item1');
                 }
             );
-        })
+        });
 
         it ('reload(0) should position it at item#0', function () {
             runTest (scrollSettings,
@@ -1120,7 +1120,7 @@ describe('uiScroll', function () {
                     expect(scope.adapter.topVisible).toBe('item0');
                 }
             );
-        })
+        });
 
     });
 
