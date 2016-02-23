@@ -1,6 +1,7 @@
 // Build configurations.
 module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-karma');
+  grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-coffee');
@@ -49,6 +50,24 @@ module.exports = function (grunt) {
           runnerPort: 9100,
           singleRun: true
         }
+      }
+    },
+    babel: {
+      options: {
+        //sourceMap: true,
+        babelrc: false,
+        presets: ['es2015']
+      },
+      dist: {
+        files: [
+          {
+            expand: true,
+            cwd: 'src/',
+            src: ['**/*.js'],
+            dest: 'temp/',
+            ext: '.js'
+          }
+        ]
       }
     },
     coffee: {
@@ -160,7 +179,7 @@ module.exports = function (grunt) {
   grunt.registerTask('build', [
     'jshint:test',
     'karma:travis',
-    'coffee:build',
+    'babel',
     'concat',
     'jshint:dist',
     'uglify:common'

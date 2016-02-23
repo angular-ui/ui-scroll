@@ -27,6 +27,7 @@
     "test": "grunt test"
   },
   "devDependencies": {
+    "babel-preset-es2015": "^6.5.0",
     "coffee-script": "~1.9.3",
     "express": "~3.4.8",
     "grunt": "~0.4.5",
