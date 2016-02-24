@@ -3,6 +3,7 @@
 	"browser": true,
 	"eqnull": true,
 	"expr": true,
+	"esversion": 6,
 	"immed": true,
 	"laxbreak": true,
 	"loopfunc": true,
