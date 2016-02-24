@@ -4,7 +4,6 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
-  grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -68,22 +67,6 @@ module.exports = function (grunt) {
             ext: '.js'
           }
         ]
-      }
-    },
-    coffee: {
-      build: {
-        files: [
-          {
-            cwd: './src',
-            src: '*.coffee',
-            dest: './temp/',
-            expand: true,
-            ext: '.js'
-          }
-        ],
-        options: {
-          bare: true
-        }
       }
     },
     concat: {
@@ -174,7 +157,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('default', ['server']);
 
-  grunt.registerTask('test', ['karma:unit']);
+  grunt.registerTask('test', ['babel', 'karma:unit']);
 
   grunt.registerTask('build', [
     'jshint:test',
