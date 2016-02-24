@@ -88,7 +88,7 @@ module.exports = function (grunt) {
     },
     concat: {
       options: {
-        banner: '<%= releaseData %> \n\n (function () {\n\'use strict\';\n',
+        banner: '<%= releaseData %> \n\n (function () {\n',
         footer: '}());',
         stripBanners: true,
         process: function (src, filepath) {
