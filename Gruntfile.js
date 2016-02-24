@@ -178,12 +178,12 @@ module.exports = function (grunt) {
 
   grunt.registerTask('build', [
     'jshint:test',
-    'karma:travis',
     'babel',
+    'karma:travis',
     'concat',
     'jshint:dist',
     'uglify:common'
   ]);
 
-  grunt.registerTask('travis', ['karma:travis']);
+  grunt.registerTask('travis', ['babel', 'karma:travis']);
 };
