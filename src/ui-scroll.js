@@ -33,7 +33,7 @@ angular.module('ui.scroll', [])
     function (console, $injector, $rootScope, $timeout, $q, $parse) {
       const $animate = ($injector.has && $injector.has('$animate')) ? $injector.get('$animate') : null;
       const isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
-      const log = console.debug || console.log;
+      //const log = console.debug || console.log;
 
       return {
         require: ['?^uiScrollViewport'],
@@ -91,117 +91,108 @@ angular.module('ui.scroll', [])
       }
 
       function Buffer(itemName, $scope, linker, bufferSize) {
-        var buffer, reset;
+        const buffer = Object.create(Array.prototype);
 
-        buffer = Object.create(Array.prototype);
-
-        reset = function (origin) {
+        function reset(origin) {
           buffer.eof = false;
           buffer.bof = false;
           buffer.first = origin;
           buffer.next = origin;
           buffer.minIndex = Number.MAX_VALUE;
           return buffer.maxIndex = Number.MIN_VALUE;
-        };
+        }
 
-        buffer.size = bufferSize;
+        angular.extend(buffer, {
+          size: bufferSize,
 
-        buffer.append = function (items) {
-          var item, j, len, results;
-          results = [];
-          for (j = 0, len = items.length; j < len; j++) {
-            item = items[j];
-            ++buffer.next;
-            results.push(buffer.insert('append', item));
-          }
-          return results;
-        };
+          append(items) {
+            items.forEach((item) => {
+              ++buffer.next;
+              buffer.insert('append', item);
+            });
+          },
 
-        buffer.prepend = function (items) {
-          var item, j, len, ref, results;
-          ref = items.reverse();
-          results = [];
-          for (j = 0, len = ref.length; j < len; j++) {
-            item = ref[j];
-            --buffer.first;
-            results.push(buffer.insert('prepend', item));
-          }
-          return results;
-        };
+          prepend(items) {
+            items.reverse().forEach((item) => {
+              --buffer.first;
+              buffer.insert('prepend', item);
+            });
+          },
 
-        /**
-         * inserts wrapped element in the buffer
-         * the first argument is either operation keyword (see below) or a number for operation 'insert'
-         * for insert the number is the index for the buffer element the new one have to be inserted after
-         * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
-         */
-        buffer.insert = function (operation, item) {
-          var itemScope, wrapper;
-          itemScope = $scope.$new();
-          itemScope[itemName] = item;
-          wrapper = {
-            scope: itemScope,
-            item: item
-          };
-          linker(itemScope, function (clone) {
-            return wrapper.element = clone;
-          });
-          if (operation % 1 === 0) {// it is an insert
-            wrapper.op = 'insert';
-            return buffer.splice(operation, 0, wrapper);
-          } else {
-            wrapper.op = operation;
-            switch (operation) {
-              case 'append':
-                return buffer.push(wrapper);
-              case 'prepend':
-                return buffer.unshift(wrapper);
+          /**
+           * inserts wrapped element in the buffer
+           * the first argument is either operation keyword (see below) or a number for operation 'insert'
+           * for insert the number is the index for the buffer element the new one have to be inserted after
+           * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
+           */
+          insert(operation, item) {
+            const itemScope = $scope.$new();
+            const wrapper = {
+              item,
+              scope: itemScope
+            };
+
+            itemScope[itemName] = item;
+
+            linker(itemScope, (clone) => wrapper.element = clone);
+
+            if (operation % 1 === 0) {// it is an insert
+              wrapper.op = 'insert';
+              buffer.splice(operation, 0, wrapper);
+            } else {
+              wrapper.op = operation;
+              switch (operation) {
+                case 'append':
+                  buffer.push(wrapper);
+                  break;
+                case 'prepend':
+                  buffer.unshift(wrapper);
+                  break;
+              }
             }
-          }
-        };
+          },
 
-        // removes elements from buffer
-        buffer.remove = function (arg1, arg2) {
-          var i, j, ref, ref1;
-          if (angular.isNumber(arg1)) {
-            // removes items from arg1 (including) through arg2 (excluding)
-            for (i = j = ref = arg1, ref1 = arg2; ref <= ref1 ? j < ref1 : j > ref1; i = ref <= ref1 ? ++j : --j) {
-              removeElement(buffer[i]);
+          // removes elements from buffer
+          remove(arg1, arg2) {
+            if (angular.isNumber(arg1)) {
+              // removes items from arg1 (including) through arg2 (excluding)
+              for (var i = arg1; i < arg2; i++) {
+                removeElement(buffer[i]);
+              }
+              return buffer.splice(arg1, arg2 - arg1);
             }
-            return buffer.splice(arg1, arg2 - arg1);
-          } else {
             // removes single item(wrapper) from the buffer
             buffer.splice(buffer.indexOf(arg1), 1);
+
             return removeElementAnimated(arg1);
+          },
+
+          setUpper() {
+            buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
+          },
+
+          setLower() {
+            buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
+          },
+
+          syncDatasource(datasource) {
+            const offset = buffer.minIndex - (Math.min(buffer.minIndex, datasource.minIndex || Number.MAX_VALUE));
+
+            datasource.minIndex = (buffer.minIndex -= offset);
+            datasource.maxIndex = buffer.maxIndex = Math.max(buffer.maxIndex, datasource.maxIndex || Number.MIN_VALUE);
+
+            return offset;
+          },
+
+          // clears the buffer
+          clear() {
+            buffer.remove(0, buffer.length);
+            arguments.length ? reset(arguments[0]) : reset(1);
           }
-        };
+        });
 
-        buffer.setUpper = function () {
-          return buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
-        };
-
-        buffer.setLower = function () {
-          return buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
-        };
-
-        buffer.syncDatasource = function (datasource) {
-          var offset;
-          offset = buffer.minIndex - (Math.min(buffer.minIndex, datasource.minIndex || Number.MAX_VALUE));
-          datasource.minIndex = (buffer.minIndex -= offset);
-          datasource.maxIndex = buffer.maxIndex = Math.max(buffer.maxIndex, datasource.maxIndex || Number.MIN_VALUE);
-          return offset;
-        };
-
-        // clears the buffer
-        buffer.clear = function () {
-          buffer.remove(0, buffer.length);
-          if (arguments.length) {
-            return reset(arguments[0]);
-          } else {
-            return reset(1);
-          }
-        };
         reset(1);
+
         return buffer;
       }
 
