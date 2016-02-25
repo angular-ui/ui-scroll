@@ -218,20 +218,21 @@ angular.module('ui.scroll', [])
       }
 
       function Viewport(buffer, element, controllers, attrs) {
-        var averageItemHeight, bottomPadding, bufferPadding, topPadding, viewport, viewportOffset;
+        let topPadding = null;
+        let bottomPadding = null;
+        let averageItemHeight = 0;
+        const viewport = controllers[0] && controllers[0].viewport ? controllers[0].viewport : angular.element(window);
 
-        viewport = controllers[0] && controllers[0].viewport ? controllers[0].viewport : angular.element(window);
         viewport.css({
           'overflow-y': 'auto',
           'display': 'block'
         });
-        topPadding = null;
-        bottomPadding = null;
-        averageItemHeight = 0;
 
-        bufferPadding = function () {
+        let viewportOffset = viewport.offset() ? () => viewport.offset() : () => ({top: 0});
+
+        function bufferPadding() {
           return viewport.outerHeight() * Math.max(0.1, +attrs.padding || 0.1); // some extra space to initiate preload
-        };
+        }
 
         viewport.createPaddingElements = function (template) {
           topPadding = new Padding(template);
@@ -267,14 +268,6 @@ angular.module('ui.scroll', [])
 
         viewport.shouldLoadBottom = function () {
           return !buffer.eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding();
-        };
-
-        viewportOffset = viewport.offset() ? function () {
-          return viewport.offset();
-        } : function () {
-          return {
-            top: 0
-          };
         };
 
         viewport.clipBottom = function () {
@@ -355,6 +348,7 @@ angular.module('ui.scroll', [])
             return viewport.scrollTop(viewport.scrollTop() - paddingHeight);
           }
         };
+
         return viewport;
       }
 
