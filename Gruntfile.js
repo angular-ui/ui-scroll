@@ -118,6 +118,15 @@ module.exports = function (grunt) {
           jshintrc: '.jshintrc'
         }
       },
+      src: {
+        files: {
+          src: [
+            './src/ui-scroll.js',
+            './src/ui-scroll-jqlite.js'
+          ]
+        },
+        options: grunt.util._.extend({}, grunt.file.readJSON('.jshintrc'), grunt.file.readJSON('./src/.jshintrc'))
+      },
       test: {
         files: {
           src: ['./test/*Spec.js']
@@ -157,16 +166,22 @@ module.exports = function (grunt) {
 
   grunt.registerTask('default', ['server']);
 
-  grunt.registerTask('test', ['babel', 'karma:unit']);
+  grunt.registerTask('test', [
+    'babel',
+    'karma:unit'
+  ]);
 
   grunt.registerTask('build', [
     'jshint:test',
+    'jshint:src',
     'babel',
     'karma:travis',
     'concat',
-    'jshint:dist',
     'uglify:common'
   ]);
 
-  grunt.registerTask('travis', ['babel', 'karma:travis']);
+  grunt.registerTask('travis', [
+    'babel',
+    'karma:travis'
+  ]);
 };
