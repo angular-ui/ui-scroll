@@ -197,25 +197,21 @@ angular.module('ui.scroll', [])
       }
 
       function Padding(template) {
-        var div, result, table, tagName;
-        tagName = template.localName;
-
-        if (tagName === 'dl') {
-          throw new Error('ui-scroll directive does not support <' + tagName + '> as a repeating tag: ' + template.outerHTML);
-        }
-
-        if (tagName !== 'li' && tagName !== 'tr') {
-          tagName = 'div';
-        }
+        let result;
+        let tagName = template.localName;
 
         switch (tagName) {
+          case 'dl':
+            throw new Error(`ui-scroll directive does not support <${tagName}> as a repeating tag: ${template.outerHTML}`);
           case 'tr':
-            table = angular.element('<table><tr><td><div></div></td></tr></table>');
-            div = table.find('div');
+            let table = angular.element('<table><tr><td><div></div></td></tr></table>');
             result = table.find('tr');
             break;
+          case 'li':
+            result = angular.element('<li></li>');
+            break;
           default:
-            result = angular.element('<' + tagName + '></' + tagName + '>');
+            result = angular.element('<div></div>');
         }
 
         return result;
