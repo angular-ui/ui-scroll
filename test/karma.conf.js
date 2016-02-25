@@ -17,25 +17,11 @@ module.exports = function(config) {
             'http://code.jquery.com/jquery-1.9.1.js',
             'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js',
             'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-mocks.js',
-            '../src/ui-scroll*.coffee',
+            '../temp/ui-scroll*.js',
             'datasources.js',
             'scaffolding.js',
             '**/*Spec.js'
         ],
-
-        preprocessors: {
-            '../src/ui-scroll*.coffee': ['coffee']
-        },
-
-        coffeePreprocessor: {
-          options: {
-              bare: true,
-              sourceMap: false
-          },
-          transformPath: function(path) {
-            return path.replace(/\.js$/, '.coffee');
-          }
-        },
 
         // list of files to exclude
         exclude: [
