@@ -31,54 +31,9 @@ angular.module('ui.scroll', [])
     '$q',
     '$parse',
     function (console, $injector, $rootScope, $timeout, $q, $parse) {
-      var $animate, insertElementAnimated, isAngularVersionLessThen1_3, log, removeElementAnimated;
-
-      log = console.debug || console.log;
-
-      if ($injector.has && $injector.has('$animate')) {
-        $animate = $injector.get('$animate');
-      }
-
-      isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
-
-      if (!$animate) {
-        insertElementAnimated = insertElement;
-        removeElementAnimated = removeElement;
-      } else {
-        if (isAngularVersionLessThen1_3) {
-          insertElementAnimated = function (newElement, previousElement) {
-            var deferred;
-            deferred = $q.defer();
-            // no need for parent - previous element is never null
-            $animate.enter(newElement, null, previousElement, function () {
-              return deferred.resolve();
-            });
-            return [deferred.promise];
-          };
-
-          removeElementAnimated = function (wrapper) {
-            var deferred;
-            deferred = $q.defer();
-            $animate.leave(wrapper.element, function () {
-              wrapper.scope.$destroy();
-              return deferred.resolve();
-            });
-            return [deferred.promise];
-          };
-        } else {
-          insertElementAnimated = function (newElement, previousElement) {
-            // no need for parent - previous element is never null
-            return [$animate.enter(newElement, null, previousElement)];
-          };
-          removeElementAnimated = function (wrapper) {
-            return [
-              ($animate.leave(wrapper.element)).then(function () {
-                return wrapper.scope.$destroy();
-              })
-            ];
-          };
-        }
-      }
+      const $animate = ($injector.has && $injector.has('$animate')) ? $injector.get('$animate') : null;
+      const isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
+      const log = console.debug || console.log;
 
       return {
         require: ['?^uiScrollViewport'],
@@ -98,6 +53,41 @@ angular.module('ui.scroll', [])
         wrapper.element.remove();
         wrapper.scope.$destroy();
         return [];
+      }
+
+      function insertElementAnimated(newElement, previousElement) {
+        if (!$animate) {
+          return insertElement(newElement, previousElement);
+        }
+
+        if (isAngularVersionLessThen1_3) {
+          const deferred = $q.defer();
+          // no need for parent - previous element is never null
+          $animate.enter(newElement, null, previousElement, () => deferred.resolve());
+
+          return [deferred.promise];
+        }
+
+        // no need for parent - previous element is never null
+        return [$animate.enter(newElement, null, previousElement)];
+      }
+
+      function removeElementAnimated(wrapper) {
+        if (!$animate) {
+          return removeElement(wrapper);
+        }
+
+        if (isAngularVersionLessThen1_3) {
+          const deferred = $q.defer();
+          $animate.leave(wrapper.element, () => {
+            wrapper.scope.$destroy();
+            return deferred.resolve();
+          });
+
+          return [deferred.promise];
+        }
+
+        return [($animate.leave(wrapper.element)).then(() => wrapper.scope.$destroy())];
       }
 
       function Buffer(itemName, $scope, linker, bufferSize) {
