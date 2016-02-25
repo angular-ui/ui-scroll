@@ -31,21 +31,9 @@ angular.module('ui.scroll', [])
     '$q',
     '$parse',
     function (console, $injector, $rootScope, $timeout, $q, $parse) {
-      var $animate, Adapter, Buffer, Padding, Viewport, insertElement, insertElementAnimated, isAngularVersionLessThen1_3, log, removeElement, removeElementAnimated;
+      var $animate, insertElementAnimated, isAngularVersionLessThen1_3, log, removeElementAnimated;
 
       log = console.debug || console.log;
-
-      // Element manipulation routines
-      insertElement = function (newElement, previousElement) {
-        previousElement.after(newElement);
-        return [];
-      };
-
-      removeElement = function (wrapper) {
-        wrapper.element.remove();
-        wrapper.scope.$destroy();
-        return [];
-      };
 
       if ($injector.has && $injector.has('$animate')) {
         $animate = $injector.get('$animate');
@@ -92,7 +80,27 @@ angular.module('ui.scroll', [])
         }
       }
 
-      Buffer = function (itemName, $scope, linker, bufferSize) {
+      return {
+        require: ['?^uiScrollViewport'],
+        transclude: 'element',
+        priority: 1000,
+        terminal: true,
+        compile
+      };
+
+      // Element manipulation routines
+      function insertElement(newElement, previousElement) {
+        previousElement.after(newElement);
+        return [];
+      }
+
+      function removeElement(wrapper) {
+        wrapper.element.remove();
+        wrapper.scope.$destroy();
+        return [];
+      }
+
+      function Buffer(itemName, $scope, linker, bufferSize) {
         var buffer, reset;
 
         buffer = Object.create(Array.prototype);
@@ -205,9 +213,9 @@ angular.module('ui.scroll', [])
         };
         reset(1);
         return buffer;
-      };
+      }
 
-      Padding = function (template) {
+      function Padding(template) {
         var div, result, table, tagName;
         tagName = template.localName;
 
@@ -230,9 +238,9 @@ angular.module('ui.scroll', [])
         }
 
         return result;
-      };
+      }
 
-      Viewport = function (buffer, element, controllers, attrs) {
+      function Viewport(buffer, element, controllers, attrs) {
         var averageItemHeight, bottomPadding, bufferPadding, topPadding, viewport, viewportOffset;
 
         viewport = controllers[0] && controllers[0].viewport ? controllers[0].viewport : angular.element(window);
@@ -371,9 +379,9 @@ angular.module('ui.scroll', [])
           }
         };
         return viewport;
-      };
+      }
 
-      Adapter = function ($attr, viewport, buffer, adjustBuffer) {
+      function Adapter($attr, viewport, buffer, adjustBuffer) {
         var applyUpdate, setIsLoading, setTopVisible, setTopVisibleElement, setTopVisibleScope, viewportScope;
         this.isLoading = false;
 
@@ -475,373 +483,368 @@ angular.module('ui.scroll', [])
           }
           return results;
         };
-      };
-      return {
-        require: ['?^uiScrollViewport'],
-        transclude: 'element',
-        priority: 1000,
-        terminal: true,
-        compile: function (elementTemplate, attr, compileLinker) {
-          var bufferSize, datasourceName, itemName, match;
+      }
 
-          if (!(match = attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/))) {
-            throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + attr.uiScroll + '\'');
+      function compile(elementTemplate, attr, compileLinker) {
+        var bufferSize, datasourceName, itemName, match;
+
+        if (!(match = attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/))) {
+          throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + attr.uiScroll + '\'');
+        }
+
+        itemName = match[1];
+        datasourceName = match[2];
+        bufferSize = Math.max(3, +attr.bufferSize || 10);
+
+        return function ($scope, element, $attr, controllers, linker) {
+          var adapter, adapterOnScope, adjustBuffer, adjustBufferAfterFetch, buffer, datasource, dismissPendingRequests, enqueueFetch, eventListener, fetch, fetchNext, fetchPrevious, insertWrapperContent, isDatasourceValid, isElementVisible, pending, processBufferedItems, reload, resizeAndScrollHandler, ridActual, unsupportedMethod, viewport, visibilityWatcher, wheelHandler;
+
+          // starting from angular 1.2 compileLinker usage is deprecated
+          linker = linker || compileLinker;
+
+          datasource = $parse(datasourceName)($scope);
+
+          isDatasourceValid = function () {
+            // then try to inject datasource as service
+            return angular.isObject(datasource) && angular.isFunction(datasource.get);
+          };
+
+          if (!isDatasourceValid()) {
+            datasource = $injector.get(datasourceName);
+            if (!isDatasourceValid()) {
+              throw new Error(datasourceName + ' is not a valid datasource');
+            }
+          }
+          ridActual = 0;// current data revision id
+          pending = [];
+          buffer = new Buffer(itemName, $scope, linker, bufferSize);
+          viewport = new Viewport(buffer, element, controllers, $attr);
+          adapter = new Adapter($attr, viewport, buffer, function () {
+            dismissPendingRequests();
+            return adjustBuffer(ridActual);
+          });
+
+          if ($attr.adapter) {
+            // so we have an adapter on $scope
+            adapterOnScope = $parse($attr.adapter)($scope);
+            if (!angular.isObject(adapterOnScope)) {
+              $parse($attr.adapter).assign($scope, {});
+              adapterOnScope = $parse($attr.adapter)($scope);
+            }
+            angular.extend(adapterOnScope, adapter);
+            adapter = adapterOnScope;
           }
 
-          itemName = match[1];
-          datasourceName = match[2];
-          bufferSize = Math.max(3, +attr.bufferSize || 10);
-
-          return function ($scope, element, $attr, controllers, linker) {
-            var adapter, adapterOnScope, adjustBuffer, adjustBufferAfterFetch, buffer, datasource, dismissPendingRequests, enqueueFetch, eventListener, fetch, fetchNext, fetchPrevious, insertWrapperContent, isDatasourceValid, isElementVisible, pending, processBufferedItems, reload, resizeAndScrollHandler, ridActual, unsupportedMethod, viewport, visibilityWatcher, wheelHandler;
-
-            // starting from angular 1.2 compileLinker usage is deprecated
-            linker = linker || compileLinker;
-
-            datasource = $parse(datasourceName)($scope);
-
-            isDatasourceValid = function () {
-              // then try to inject datasource as service
-              return angular.isObject(datasource) && angular.isFunction(datasource.get);
-            };
-
-            if (!isDatasourceValid()) {
-              datasource = $injector.get(datasourceName);
-              if (!isDatasourceValid()) {
-                throw new Error(datasourceName + ' is not a valid datasource');
-              }
-            }
-            ridActual = 0;// current data revision id
-            pending = [];
-            buffer = new Buffer(itemName, $scope, linker, bufferSize);
-            viewport = new Viewport(buffer, element, controllers, $attr);
-            adapter = new Adapter($attr, viewport, buffer, function () {
-              dismissPendingRequests();
-              return adjustBuffer(ridActual);
+          /**
+           * Build padding elements
+           *
+           * Calling linker is the only way I found to get access to the tag name of the template
+           * to prevent the directive scope from pollution a new scope is created and destroyed
+           * right after the builder creation is completed
+           */
+          linker($scope.$new(), function (template, scope) {
+            viewport.createPaddingElements(template[0]);
+            // Destroy template's scope to remove any watchers on it.
+            scope.$destroy();
+            // also remove the template when the directive scope is destroyed
+            return $scope.$on('$destroy', function () {
+              return template.remove();
             });
+          });
 
-            if ($attr.adapter) {
-              // so we have an adapter on $scope
-              adapterOnScope = $parse($attr.adapter)($scope);
-              if (!angular.isObject(adapterOnScope)) {
-                $parse($attr.adapter).assign($scope, {});
-                adapterOnScope = $parse($attr.adapter)($scope);
-              }
-              angular.extend(adapterOnScope, adapter);
-              adapter = adapterOnScope;
+          dismissPendingRequests = function () {
+            ridActual++;
+            return pending = [];
+          };
+
+          reload = function () {
+            dismissPendingRequests();
+            if (arguments.length) {
+              buffer.clear(arguments[0]);
+            } else {
+              buffer.clear();
             }
+            return adjustBuffer(ridActual);
+          };
 
-            /**
-             * Build padding elements
-             *
-             * Calling linker is the only way I found to get access to the tag name of the template
-             * to prevent the directive scope from pollution a new scope is created and destroyed
-             * right after the builder creation is completed
-             */
-            linker($scope.$new(), function (template, scope) {
-              viewport.createPaddingElements(template[0]);
-              // Destroy template's scope to remove any watchers on it.
-              scope.$destroy();
-              // also remove the template when the directive scope is destroyed
-              return $scope.$on('$destroy', function () {
-                return template.remove();
-              });
+          adapter.reload = reload;
+
+          enqueueFetch = function (rid, direction) {
+            if (!adapter.isLoading) {
+              adapter.loading(true);
+            }
+            if (pending.push(direction) === 1) {
+              return fetch(rid);
+            }
+          };
+
+          isElementVisible = function (wrapper) {
+            return wrapper.element.height() && wrapper.element[0].offsetParent;
+          };
+
+          visibilityWatcher = function (wrapper) {
+            var item, j, len;
+            if (isElementVisible(wrapper)) {
+              for (j = 0, len = buffer.length; j < len; j++) {
+                item = buffer[j];
+                if (angular.isFunction(item.unregisterVisibilityWatcher)) {
+                  item.unregisterVisibilityWatcher();
+                  delete item.unregisterVisibilityWatcher;
+                }
+              }
+              return adjustBuffer();
+            }
+          };
+
+          insertWrapperContent = function (wrapper, sibling) {
+            viewport.insertElement(wrapper.element, sibling);
+            if (isElementVisible(wrapper)) {
+              return true;
+            }
+            wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function () {
+              return visibilityWatcher(wrapper);
             });
+            return false;
+          };
 
-            dismissPendingRequests = function () {
-              ridActual++;
-              return pending = [];
-            };
+          processBufferedItems = function (rid) {
+            var adjustedPaddingHeight, getPreSibling, i, item, j, k, keepFetching, l, len, len1, len2, len3, m, promises, toBePrepended, toBeRemoved, wrapper;
+            promises = [];
+            toBePrepended = [];
+            toBeRemoved = [];
 
-            reload = function () {
-              dismissPendingRequests();
-              if (arguments.length) {
-                buffer.clear(arguments[0]);
+            getPreSibling = function (i) {
+              if (i > 0) {
+                return buffer[i - 1].element;
               } else {
-                buffer.clear();
-              }
-              return adjustBuffer(ridActual);
-            };
-
-            adapter.reload = reload;
-
-            enqueueFetch = function (rid, direction) {
-              if (!adapter.isLoading) {
-                adapter.loading(true);
-              }
-              if (pending.push(direction) === 1) {
-                return fetch(rid);
+                return void 0;
               }
             };
 
-            isElementVisible = function (wrapper) {
-              return wrapper.element.height() && wrapper.element[0].offsetParent;
-            };
-
-            visibilityWatcher = function (wrapper) {
-              var item, j, len;
-              if (isElementVisible(wrapper)) {
-                for (j = 0, len = buffer.length; j < len; j++) {
-                  item = buffer[j];
-                  if (angular.isFunction(item.unregisterVisibilityWatcher)) {
-                    item.unregisterVisibilityWatcher();
-                    delete item.unregisterVisibilityWatcher;
-                  }
-                }
-                return adjustBuffer();
-              }
-            };
-
-            insertWrapperContent = function (wrapper, sibling) {
-              viewport.insertElement(wrapper.element, sibling);
-              if (isElementVisible(wrapper)) {
-                return true;
-              }
-              wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function () {
-                return visibilityWatcher(wrapper);
-              });
-              return false;
-            };
-
-            processBufferedItems = function (rid) {
-              var adjustedPaddingHeight, getPreSibling, i, item, j, k, keepFetching, l, len, len1, len2, len3, m, promises, toBePrepended, toBeRemoved, wrapper;
-              promises = [];
-              toBePrepended = [];
-              toBeRemoved = [];
-
-              getPreSibling = function (i) {
-                if (i > 0) {
-                  return buffer[i - 1].element;
-                } else {
-                  return void 0;
-                }
-              };
-
-              for (i = j = 0, len = buffer.length; j < len; i = ++j) {
-                wrapper = buffer[i];
-                switch (wrapper.op) {
-                  case 'prepend':
-                    toBePrepended.unshift(wrapper);
-                    break;
-                  case 'append':
-                    keepFetching = insertWrapperContent(wrapper, getPreSibling(i)) || keepFetching;
-                    wrapper.op = 'none';
-                    break;
-                  case 'insert':
-                    promises = promises.concat(viewport.insertElementAnimated(wrapper.element, getPreSibling(i)));
-                    wrapper.op = 'none';
-                    break;
-                  case 'remove':
-                    toBeRemoved.push(wrapper);
-                }
-              }
-              for (k = 0, len1 = toBeRemoved.length; k < len1; k++) {
-                wrapper = toBeRemoved[k];
-                promises = promises.concat(buffer.remove(wrapper));
-              }
-
-              if (toBePrepended.length) {
-                adjustedPaddingHeight = 0;
-                for (l = 0, len2 = toBePrepended.length; l < len2; l++) {
-                  wrapper = toBePrepended[l];
-                  keepFetching = insertWrapperContent(wrapper) || keepFetching;
+            for (i = j = 0, len = buffer.length; j < len; i = ++j) {
+              wrapper = buffer[i];
+              switch (wrapper.op) {
+                case 'prepend':
+                  toBePrepended.unshift(wrapper);
+                  break;
+                case 'append':
+                  keepFetching = insertWrapperContent(wrapper, getPreSibling(i)) || keepFetching;
                   wrapper.op = 'none';
-                  adjustedPaddingHeight += wrapper.element.outerHeight(true);
-                }
-                viewport.adjustScrollTop(adjustedPaddingHeight);
+                  break;
+                case 'insert':
+                  promises = promises.concat(viewport.insertElementAnimated(wrapper.element, getPreSibling(i)));
+                  wrapper.op = 'none';
+                  break;
+                case 'remove':
+                  toBeRemoved.push(wrapper);
               }
+            }
+            for (k = 0, len1 = toBeRemoved.length; k < len1; k++) {
+              wrapper = toBeRemoved[k];
+              promises = promises.concat(buffer.remove(wrapper));
+            }
 
-              // re-index the buffer
-              for (i = m = 0, len3 = buffer.length; m < len3; i = ++m) {
-                item = buffer[i];
-                item.scope.$index = buffer.first + i;
+            if (toBePrepended.length) {
+              adjustedPaddingHeight = 0;
+              for (l = 0, len2 = toBePrepended.length; l < len2; l++) {
+                wrapper = toBePrepended[l];
+                keepFetching = insertWrapperContent(wrapper) || keepFetching;
+                wrapper.op = 'none';
+                adjustedPaddingHeight += wrapper.element.outerHeight(true);
               }
+              viewport.adjustScrollTop(adjustedPaddingHeight);
+            }
 
-              // schedule another adjustBuffer after animation completion
-              if (promises.length) {
-                $q.all(promises).then(function () {
-                  viewport.adjustPadding();
-                  // log "Animation completed rid #{rid}"
-                  return adjustBuffer(rid);
-                });
-              } else {
+            // re-index the buffer
+            for (i = m = 0, len3 = buffer.length; m < len3; i = ++m) {
+              item = buffer[i];
+              item.scope.$index = buffer.first + i;
+            }
+
+            // schedule another adjustBuffer after animation completion
+            if (promises.length) {
+              $q.all(promises).then(function () {
                 viewport.adjustPadding();
-                if (!pending.length) {
-                  viewport.syncDatasource(datasource);
+                // log "Animation completed rid #{rid}"
+                return adjustBuffer(rid);
+              });
+            } else {
+              viewport.adjustPadding();
+              if (!pending.length) {
+                viewport.syncDatasource(datasource);
+              }
+            }
+            return keepFetching;
+          };
+
+          adjustBuffer = function (rid) {
+            // We need the item bindings to be processed before we can do adjustment
+            return $timeout(function () {
+              processBufferedItems(rid);
+              if (viewport.shouldLoadBottom()) {
+                enqueueFetch(rid, true);
+              } else {
+                if (viewport.shouldLoadTop()) {
+                  enqueueFetch(rid, false);
                 }
               }
-              return keepFetching;
-            };
+              if (!pending.length) {
+                return adapter.calculateProperties();
+              }
+            });
+          };
 
-            adjustBuffer = function (rid) {
-              // We need the item bindings to be processed before we can do adjustment
-              return $timeout(function () {
-                processBufferedItems(rid);
-                if (viewport.shouldLoadBottom()) {
+          adjustBufferAfterFetch = function (rid) {
+            // We need the item bindings to be processed before we can do adjustment
+            return $timeout(function () {
+              var keepFetching;
+              keepFetching = processBufferedItems(rid);
+              if (viewport.shouldLoadBottom()) {
+                // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
+                if (keepFetching) {
                   enqueueFetch(rid, true);
-                } else {
-                  if (viewport.shouldLoadTop()) {
+                }
+              } else {
+                if (viewport.shouldLoadTop()) {
+                  // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
+                  // BTW there will always be at least 1 element in the pending array because bottom is fetched first
+                  if (keepFetching || pending[0]) {
                     enqueueFetch(rid, false);
                   }
                 }
-                if (!pending.length) {
-                  return adapter.calculateProperties();
-                }
-              });
-            };
-
-            adjustBufferAfterFetch = function (rid) {
-              // We need the item bindings to be processed before we can do adjustment
-              return $timeout(function () {
-                var keepFetching;
-                keepFetching = processBufferedItems(rid);
-                if (viewport.shouldLoadBottom()) {
-                  // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
-                  if (keepFetching) {
-                    enqueueFetch(rid, true);
-                  }
-                } else {
-                  if (viewport.shouldLoadTop()) {
-                    // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
-                    // BTW there will always be at least 1 element in the pending array because bottom is fetched first
-                    if (keepFetching || pending[0]) {
-                      enqueueFetch(rid, false);
-                    }
-                  }
-                }
-                pending.shift();
-                if (!pending.length) {
-                  adapter.loading(false);
-                  return adapter.calculateProperties();
-                } else {
-                  return fetch(rid);
-                }
-              });
-            };
-
-            if (datasource.get.length === 2) {
-              fetchNext = function (success) {
-                return datasource.get({
-                  index: buffer.next,
-                  append: buffer.length ? buffer[buffer.length - 1].item : void 0,
-                  count: bufferSize
-                }, success);
-              };
-
-              fetchPrevious = function (success) {
-                return datasource.get({
-                  index: buffer.first - bufferSize,
-                  prepend: buffer.length ? buffer[0].item : void 0,
-                  count: bufferSize
-                }, success);
-              };
-            } else {
-              fetchNext = function (success) {
-                return datasource.get(buffer.next, bufferSize, success);
-              };
-
-              fetchPrevious = function (success) {
-                return datasource.get(buffer.first - bufferSize, bufferSize, success);
-              };
-            }
-
-            fetch = function (rid) {
-              if (pending[0]) {// scrolling down
-                if (buffer.length && !viewport.shouldLoadBottom()) {
-                  return adjustBufferAfterFetch(rid);
-                } else {
-                  return fetchNext(function (result) {
-                    if ((rid && rid !== ridActual) || $scope.$$destroyed) {
-                      return;
-                    }
-                    if (result.length < bufferSize) {
-                      buffer.eof = true;
-                      // log 'eof is reached'
-                    }
-                    if (result.length > 0) {
-                      viewport.clipTop();
-                      buffer.append(result);
-                    }
-                    buffer.setUpper();
-                    return adjustBufferAfterFetch(rid);
-                  });
-                }
+              }
+              pending.shift();
+              if (!pending.length) {
+                adapter.loading(false);
+                return adapter.calculateProperties();
               } else {
-                if (buffer.length && !viewport.shouldLoadTop()) {
-                  return adjustBufferAfterFetch(rid);
-                } else {
-                  return fetchPrevious(function (result) {
-                    if ((rid && rid !== ridActual) || $scope.$$destroyed) {
-                      return;
-                    }
-                    if (result.length < bufferSize) {
-                      buffer.bof = true;
-                      // log 'bof is reached'
-                    }
-                    if (result.length > 0) {
-                      if (buffer.length) {
-                        viewport.clipBottom();
-                      }
-                      buffer.prepend(result);
-                    }
-                    buffer.setLower();
-                    return adjustBufferAfterFetch(rid);
-                  });
-                }
+                return fetch(rid);
               }
-            };
-
-            // events and bindings
-
-            resizeAndScrollHandler = function () {
-              if (!$rootScope.$$phase && !adapter.isLoading) {
-                adjustBuffer();
-                return $scope.$apply();
-              }
-            };
-
-            wheelHandler = function (event) {
-              var scrollTop, yMax;
-              scrollTop = viewport[0].scrollTop;
-              yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
-              if ((scrollTop === 0 && !buffer.bof) || (scrollTop === yMax && !buffer.eof)) {
-                return event.preventDefault();
-              }
-            };
-
-            viewport.bind('resize', resizeAndScrollHandler);
-            viewport.bind('scroll', resizeAndScrollHandler);
-            viewport.bind('mousewheel', wheelHandler);
-
-            $scope.$watch(datasource.revision, function () {
-              return reload();
-            });
-
-            $scope.$on('$destroy', function () {
-              // clear the buffer. It is necessary to remove the elements and $destroy the scopes
-              buffer.clear();
-              viewport.unbind('resize', resizeAndScrollHandler);
-              viewport.unbind('scroll', resizeAndScrollHandler);
-              return viewport.unbind('mousewheel', wheelHandler);
-            });
-
-            // update events (deprecated since v1.1.0, unsupported since 1.2.0)
-
-            unsupportedMethod = function (token) {
-              throw new Error(token + ' event is no longer supported - use applyUpdates instead');
-            };
-            eventListener = datasource.scope ? datasource.scope.$new() : $scope.$new();
-            eventListener.$on('insert.item', function () {
-              return unsupportedMethod('insert');
-            });
-            eventListener.$on('update.items', function () {
-              return unsupportedMethod('update');
-            });
-            return eventListener.$on('delete.items', function () {
-              return unsupportedMethod('delete');
             });
           };
-        }
-      };
+
+          if (datasource.get.length === 2) {
+            fetchNext = function (success) {
+              return datasource.get({
+                index: buffer.next,
+                append: buffer.length ? buffer[buffer.length - 1].item : void 0,
+                count: bufferSize
+              }, success);
+            };
+
+            fetchPrevious = function (success) {
+              return datasource.get({
+                index: buffer.first - bufferSize,
+                prepend: buffer.length ? buffer[0].item : void 0,
+                count: bufferSize
+              }, success);
+            };
+          } else {
+            fetchNext = function (success) {
+              return datasource.get(buffer.next, bufferSize, success);
+            };
+
+            fetchPrevious = function (success) {
+              return datasource.get(buffer.first - bufferSize, bufferSize, success);
+            };
+          }
+
+          fetch = function (rid) {
+            if (pending[0]) {// scrolling down
+              if (buffer.length && !viewport.shouldLoadBottom()) {
+                return adjustBufferAfterFetch(rid);
+              } else {
+                return fetchNext(function (result) {
+                  if ((rid && rid !== ridActual) || $scope.$$destroyed) {
+                    return;
+                  }
+                  if (result.length < bufferSize) {
+                    buffer.eof = true;
+                    // log 'eof is reached'
+                  }
+                  if (result.length > 0) {
+                    viewport.clipTop();
+                    buffer.append(result);
+                  }
+                  buffer.setUpper();
+                  return adjustBufferAfterFetch(rid);
+                });
+              }
+            } else {
+              if (buffer.length && !viewport.shouldLoadTop()) {
+                return adjustBufferAfterFetch(rid);
+              } else {
+                return fetchPrevious(function (result) {
+                  if ((rid && rid !== ridActual) || $scope.$$destroyed) {
+                    return;
+                  }
+                  if (result.length < bufferSize) {
+                    buffer.bof = true;
+                    // log 'bof is reached'
+                  }
+                  if (result.length > 0) {
+                    if (buffer.length) {
+                      viewport.clipBottom();
+                    }
+                    buffer.prepend(result);
+                  }
+                  buffer.setLower();
+                  return adjustBufferAfterFetch(rid);
+                });
+              }
+            }
+          };
+
+          // events and bindings
+
+          resizeAndScrollHandler = function () {
+            if (!$rootScope.$$phase && !adapter.isLoading) {
+              adjustBuffer();
+              return $scope.$apply();
+            }
+          };
+
+          wheelHandler = function (event) {
+            var scrollTop, yMax;
+            scrollTop = viewport[0].scrollTop;
+            yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
+            if ((scrollTop === 0 && !buffer.bof) || (scrollTop === yMax && !buffer.eof)) {
+              return event.preventDefault();
+            }
+          };
+
+          viewport.bind('resize', resizeAndScrollHandler);
+          viewport.bind('scroll', resizeAndScrollHandler);
+          viewport.bind('mousewheel', wheelHandler);
+
+          $scope.$watch(datasource.revision, function () {
+            return reload();
+          });
+
+          $scope.$on('$destroy', function () {
+            // clear the buffer. It is necessary to remove the elements and $destroy the scopes
+            buffer.clear();
+            viewport.unbind('resize', resizeAndScrollHandler);
+            viewport.unbind('scroll', resizeAndScrollHandler);
+            return viewport.unbind('mousewheel', wheelHandler);
+          });
+
+          // update events (deprecated since v1.1.0, unsupported since 1.2.0)
+
+          unsupportedMethod = function (token) {
+            throw new Error(token + ' event is no longer supported - use applyUpdates instead');
+          };
+          eventListener = datasource.scope ? datasource.scope.$new() : $scope.$new();
+          eventListener.$on('insert.item', function () {
+            return unsupportedMethod('insert');
+          });
+          eventListener.$on('update.items', function () {
+            return unsupportedMethod('update');
+          });
+          return eventListener.$on('delete.items', function () {
+            return unsupportedMethod('delete');
+          });
+        };
+      }
     }
   ]);
