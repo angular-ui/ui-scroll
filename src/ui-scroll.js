@@ -234,120 +234,133 @@ angular.module('ui.scroll', [])
           return viewport.outerHeight() * Math.max(0.1, +attrs.padding || 0.1); // some extra space to initiate preload
         }
 
-        viewport.createPaddingElements = function (template) {
-          topPadding = new Padding(template);
-          bottomPadding = new Padding(template);
-          element.before(topPadding);
-          return element.after(bottomPadding);
-        };
+        angular.extend(viewport, {
+          createPaddingElements(template) {
+            topPadding = new Padding(template);
+            bottomPadding = new Padding(template);
+            element.before(topPadding);
+            element.after(bottomPadding);
+          },
 
-        viewport.bottomDataPos = function () {
-          var ref;
-          return ((ref = viewport[0].scrollHeight) != null ? ref : viewport[0].document.documentElement.scrollHeight) - bottomPadding.height();
-        };
+          bottomDataPos() {
+            let scrollHeight = viewport[0].scrollHeight;
+            scrollHeight = scrollHeight !== null ? scrollHeight : viewport[0].document.documentElement.scrollHeight;
 
-        viewport.topDataPos = function () {
-          return topPadding.height();
-        };
+            return scrollHeight - bottomPadding.height();
+          },
 
-        viewport.bottomVisiblePos = function () {
-          return viewport.scrollTop() + viewport.outerHeight();
-        };
+          topDataPos() {
+            return topPadding.height();
+          },
 
-        viewport.topVisiblePos = function () {
-          return viewport.scrollTop();
-        };
+          bottomVisiblePos() {
+            return viewport.scrollTop() + viewport.outerHeight();
+          },
 
-        viewport.insertElement = function (e, sibling) {
-          return insertElement(e, sibling || topPadding);
-        };
+          topVisiblePos() {
+            return viewport.scrollTop();
+          },
 
-        viewport.insertElementAnimated = function (e, sibling) {
-          return insertElementAnimated(e, sibling || topPadding);
-        };
+          insertElement(e, sibling) {
+            return insertElement(e, sibling || topPadding);
+          },
 
-        viewport.shouldLoadBottom = function () {
-          return !buffer.eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding();
-        };
+          insertElementAnimated(e, sibling) {
+            return insertElementAnimated(e, sibling || topPadding);
+          },
 
-        viewport.clipBottom = function () {
-          // clip the invisible items off the bottom
-          var i, item, j, overage, ref;
-          overage = 0;
-          for (i = j = ref = buffer.length - 1; ref <= 0 ? j <= 0 : j >= 0; i = ref <= 0 ? ++j : --j) {
-            item = buffer[i];
-            if (item.element.offset().top - viewportOffset().top > viewport.outerHeight() + bufferPadding()) {
+          shouldLoadBottom() {
+            return !buffer.eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding();
+          },
+
+          clipBottom() {
+            // clip the invisible items off the bottom
+            let overage = 0;
+            let i = buffer.length - 1;
+
+            while (i >= 0) {
+              if (buffer[i].element.offset().top - viewportOffset().top <= viewport.outerHeight() + bufferPadding()) {
+                break;
+              }
               overage++;
-            } else {
-              break;
+              i--;
             }
-          }
-          if (overage > 0) {
-            buffer.eof = false;
-            buffer.remove(buffer.length - overage, buffer.length);
-            buffer.next -= overage;
-            return viewport.adjustPadding();
-          }
-        };
 
-        viewport.shouldLoadTop = function () {
-          return !buffer.bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding());
-        };
+            if (overage > 0) {
+              buffer.eof = false;
+              buffer.remove(buffer.length - overage, buffer.length);
+              buffer.next -= overage;
+              viewport.adjustPadding();
+            }
+          },
 
-        viewport.clipTop = function () {
-          // clip the invisible items off the top
-          var item, j, len, overage, overageHeight;
-          overage = 0;
-          overageHeight = 0;
-          for (j = 0, len = buffer.length; j < len; j++) {
-            item = buffer[j];
-            if (item.element.offset().top - viewportOffset().top + item.element.outerHeight(true) < (-1) * bufferPadding()) {
+          shouldLoadTop() {
+            return !buffer.bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding());
+          },
+
+          clipTop() {
+            // clip the invisible items off the top
+            let overage = 0;
+            let overageHeight = 0;
+
+            buffer.some((item) => {
+              if (item.element.offset().top - viewportOffset().top + item.element.outerHeight(true) >= (-1) * bufferPadding()) {
+                // break the loop
+                return true;
+              }
               overageHeight += item.element.outerHeight(true);
               overage++;
+            });
+
+            if (overage > 0) {
+              // we need to adjust top padding element before items are removed from top
+              // to avoid strange behaviour of scroll bar during remove top items when we are at the very bottom
+              topPadding.height(topPadding.height() + overageHeight);
+              buffer.bof = false;
+              buffer.remove(0, overage);
+              buffer.first += overage;
+            }
+          },
+
+          adjustPadding() {
+            if (!buffer.length) {
+              return;
+            }
+
+            const bufferFirstEl = buffer[0].element;
+            const bufferLastEl = buffer[buffer.length - 1].element;
+
+            averageItemHeight = (bufferLastEl.offset().top + bufferLastEl.outerHeight(true) - bufferFirstEl.offset().top) / buffer.length;
+            topPadding.height((buffer.first - buffer.minIndex) * averageItemHeight);
+
+            return bottomPadding.height((buffer.maxIndex - buffer.next + 1) * averageItemHeight);
+          },
+
+          syncDatasource(datasource) {
+            if (!buffer.length) {
+              return;
+            }
+
+            const delta = buffer.syncDatasource(datasource) * averageItemHeight;
+
+            topPadding.height(topPadding.height() + delta);
+
+            viewport.scrollTop(viewport.scrollTop() + delta);
+
+            viewport.adjustPadding();
+          },
+
+          adjustScrollTop(height) {
+            const paddingHeight = topPadding.height() - height;
+
+            if (paddingHeight >= 0) {
+              topPadding.height(paddingHeight);
             } else {
-              break;
+              topPadding.height(0);
+              viewport.scrollTop(viewport.scrollTop() - paddingHeight);
             }
           }
-          if (overage > 0) {
-            // we need to adjust top padding element before items are removed from top
-            // to avoid strange behaviour of scroll bar during remove top items when we are at the very bottom
-            topPadding.height(topPadding.height() + overageHeight);
-            buffer.bof = false;
-            buffer.remove(0, overage);
-            return buffer.first += overage;
-          }
-        };
-
-        viewport.adjustPadding = function () {
-          if (!buffer.length) {
-            return;
-          }
-          averageItemHeight = (buffer[buffer.length - 1].element.offset().top + buffer[buffer.length - 1].element.outerHeight(true) - buffer[0].element.offset().top) / buffer.length;
-          topPadding.height((buffer.first - buffer.minIndex) * averageItemHeight);
-          return bottomPadding.height((buffer.maxIndex - buffer.next + 1) * averageItemHeight);
-        };
-
-        viewport.syncDatasource = function (datasource) {
-          var delta;
-          if (!buffer.length) {
-            return;
-          }
-          delta = buffer.syncDatasource(datasource) * averageItemHeight;
-          topPadding.height(topPadding.height() + delta);
-          viewport.scrollTop(viewport.scrollTop() + delta);
-          return viewport.adjustPadding();
-        };
-
-        viewport.adjustScrollTop = function (height) {
-          var paddingHeight;
-          paddingHeight = topPadding.height() - height;
-          if (paddingHeight >= 0) {
-            return topPadding.height(paddingHeight);
-          } else {
-            topPadding.height(0);
-            return viewport.scrollTop(viewport.scrollTop() - paddingHeight);
-          }
-        };
+        });
 
         return viewport;
       }
