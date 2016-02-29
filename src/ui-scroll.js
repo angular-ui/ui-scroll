@@ -366,95 +366,88 @@ angular.module('ui.scroll', [])
       }
 
       function Adapter($attr, viewport, buffer, adjustBuffer) {
-        var applyUpdate, setIsLoading, setTopVisible, setTopVisibleElement, setTopVisibleScope, viewportScope;
+        const viewportScope = viewport.scope() || $rootScope;
+        const setTopVisible = $attr.topVisible ? $parse($attr.topVisible).assign : angular.noop;
+        const setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : angular.noop;
+        const setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
+        const setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
+
         this.isLoading = false;
 
-        viewportScope = viewport.scope() || $rootScope;
-
-        applyUpdate = function (wrapper, newItems) {
-          var i, j, keepIt, len, newItem, pos, ref;
-          if (angular.isArray(newItems)) {
-            pos = (buffer.indexOf(wrapper)) + 1;
-            ref = newItems.reverse();
-            for (i = j = 0, len = ref.length; j < len; i = ++j) {
-              newItem = ref[i];
-              if (newItem === wrapper.item) {
-                keepIt = true;
-                pos--;
-              } else {
-                buffer.insert(pos, newItem);
-              }
-            }
-            if (!keepIt) {
-              return wrapper.op = 'remove';
-            }
+        function applyUpdate(wrapper, newItems) {
+          if (!angular.isArray(newItems)) {
+            return;
           }
-        };
 
-        this.applyUpdates = function (arg1, arg2) {
-          var bufferClone, i, j, len, ref, wrapper;
+          let keepIt;
+          let pos = (buffer.indexOf(wrapper)) + 1;
+
+          newItems.reverse().forEach((newItem) => {
+            if (newItem === wrapper.item) {
+              keepIt = true;
+              pos--;
+            } else {
+              buffer.insert(pos, newItem);
+            }
+          });
+
+          if (!keepIt) {
+            wrapper.op = 'remove';
+          }
+        }
+
+        this.applyUpdates = (arg1, arg2) => {
           if (angular.isFunction(arg1)) {
             // arg1 is the updater function, arg2 is ignored
-            bufferClone = buffer.slice(0);
-            for (i = j = 0, len = bufferClone.length; j < len; i = ++j) {
+            buffer.slice(0).forEach((wrapper) => {
               // we need to do it on the buffer clone, because buffer content
               // may change as we iterate through
-              wrapper = bufferClone[i];
               applyUpdate(wrapper, arg1(wrapper.item, wrapper.scope, wrapper.element));
-            }
+            });
           } else {
             // arg1 is item index, arg2 is the newItems array
-            if (arg1 % 1 === 0) {// checking if it is an integer
-              if ((0 <= (ref = arg1 - buffer.first) && ref < buffer.length)) {
-                applyUpdate(buffer[arg1 - buffer.first], arg2);
-              }
-            } else {
+            if (arg1 % 1 !== 0) {// checking if it is an integer
               throw new Error('applyUpdates - ' + arg1 + ' is not a valid index');
             }
+
+            const index = arg1 - buffer.first;
+            if ((index >= 0 && index < buffer.length)) {
+              applyUpdate(buffer[index], arg2);
+            }
           }
-          return adjustBuffer();
+
+          adjustBuffer();
         };
 
-        this.append = function (newItems) {
+        this.append = (newItems) => {
           buffer.append(newItems);
-          return adjustBuffer();
+          adjustBuffer();
         };
 
-        this.prepend = function (newItems) {
+        this.prepend = (newItems) => {
           buffer.prepend(newItems);
-          return adjustBuffer();
-        };
-
-        setTopVisible = $attr.topVisible ? $parse($attr.topVisible).assign : function () {
-        };
-        setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : function () {
-        };
-        setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : function () {
-        };
-        setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : function () {
+          adjustBuffer();
         };
 
         this.loading = function (value) {
           this.isLoading = value;
-          return setIsLoading(viewportScope, value);
+          setIsLoading(viewportScope, value);
         };
 
         this.calculateProperties = function () {
-          var item, itemHeight, itemTop, j, len, newRow, results, rowTop, topHeight;
+          let itemHeight, itemTop, isNewRow, rowTop, topHeight;
           topHeight = 0;
-          results = [];
-          for (j = 0, len = buffer.length; j < len; j++) {
-            item = buffer[j];
+          buffer.some((item) => {
             itemTop = item.element.offset().top;
-            newRow = rowTop !== itemTop;
+            isNewRow = rowTop !== itemTop;
             rowTop = itemTop;
-            if (newRow) {
+            if (isNewRow) {
               itemHeight = item.element.outerHeight(true);
             }
-            if (newRow && (viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos())) {
-              results.push(topHeight += itemHeight);
+            if (isNewRow && (viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos())) {
+              topHeight += itemHeight;
             } else {
-              if (newRow) {
+              if (isNewRow) {
                 this.topVisible = item.item;
                 this.topVisibleElement = item.element;
                 this.topVisibleScope = item.scope;
@@ -462,10 +455,10 @@ angular.module('ui.scroll', [])
                 setTopVisibleElement(viewportScope, item.element);
                 setTopVisibleScope(viewportScope, item.scope);
               }
-              break;
+
+              return true;// Break the loop
             }
-          }
-          return results;
+          });
         };
       }
 
