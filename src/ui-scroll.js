@@ -277,14 +277,12 @@ angular.module('ui.scroll', [])
           clipBottom() {
             // clip the invisible items off the bottom
             let overage = 0;
-            let i = buffer.length - 1;
 
-            while (i >= 0) {
+            for(let i = buffer.length - 1; i >= 0; i--) {
               if (buffer[i].element.offset().top - viewportOffset().top <= viewport.outerHeight() + bufferPadding()) {
                 break;
               }
               overage++;
-              i--;
             }
 
             if (overage > 0) {
@@ -304,14 +302,13 @@ angular.module('ui.scroll', [])
             let overage = 0;
             let overageHeight = 0;
 
-            buffer.some((item) => {
-              if (item.element.offset().top - viewportOffset().top + item.element.outerHeight(true) >= (-1) * bufferPadding()) {
-                // break the loop
-                return true;
+            for(let i = 0; i < buffer.length; i++) {
+              if(buffer[i].element.offset().top - viewportOffset().top + buffer[i].element.outerHeight(true) >= (-1) * bufferPadding()) {
+                break;
               }
-              overageHeight += item.element.outerHeight(true);
+              overageHeight += buffer[i].element.outerHeight(true);
               overage++;
-            });
+            }
 
             if (overage > 0) {
               // we need to adjust top padding element before items are removed from top
@@ -436,9 +433,10 @@ angular.module('ui.scroll', [])
         };
 
         this.calculateProperties = function () {
-          let itemHeight, itemTop, isNewRow, rowTop, topHeight;
-          topHeight = 0;
-          buffer.some((item) => {
+          let i, item, itemHeight, itemTop, isNewRow, rowTop;
+          let topHeight = 0;
+          for(i = 0; i < buffer.length; i++) {
+            item = buffer[i];
             itemTop = item.element.offset().top;
             isNewRow = rowTop !== itemTop;
             rowTop = itemTop;
@@ -456,10 +454,9 @@ angular.module('ui.scroll', [])
                 setTopVisibleElement(viewportScope, item.element);
                 setTopVisibleScope(viewportScope, item.scope);
               }
-
-              return true;// Break the loop
+              break;
             }
-          });
+          }
         };
       }
 
@@ -636,7 +633,7 @@ angular.module('ui.scroll', [])
           }
 
           function processBufferedItems(rid) {
-            let keepFetching;
+            let keepFetching = false;
             let promises = [];
             const toBePrepended = [];
             const toBeRemoved = [];
