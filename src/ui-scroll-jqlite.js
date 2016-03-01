@@ -2,30 +2,27 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
   .service('jqLiteExtras', [
     '$log',
     '$window',
-    function (console, window) {
+    (console, window) => {
       return {
-        registerFor: function (element) {
-          var convertToPx, css, getMeasurements, getStyle, getWidthHeight, isWindow, scrollTo;
+        registerFor: (element) => {
+          var convertToPx, css, getStyle, isWindow;
           // angular implementation blows up if elem is the window
           css = angular.element.prototype.css;
+
           element.prototype.css = function (name, value) {
-            var elem, self;
-            self = this;
-            elem = self[0];
+            let self = this;
+            let elem = self[0];
             if (!(!elem || elem.nodeType === 3 || elem.nodeType === 8 || !elem.style)) {
               return css.call(self, name, value);
             }
           };
 
           // as defined in angularjs v1.0.5
-          isWindow = function (obj) {
-            return obj && obj.document && obj.location && obj.alert && obj.setInterval;
-          };
+          isWindow = (obj) => obj && obj.document && obj.location && obj.alert && obj.setInterval;
 
-          scrollTo = function (self, direction, value) {
-            var elem, method, preserve, prop, ref;
-            elem = self[0];
-            ref = {
+          function scrollTo(self, direction, value) {
+            let elem = self[0];
+            let [method, prop, preserve] = {
               top: [
                 'scrollTop',
                 'pageYOffset',
@@ -36,72 +33,62 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
                 'pageXOffset',
                 'scrollTop'
               ]
-            }[direction], method = ref[0], prop = ref[1], preserve = ref[2];
+            }[direction];
+
             if (isWindow(elem)) {
               if (angular.isDefined(value)) {
                 return elem.scrollTo(self[preserve].call(self), value);
-              } else {
-                if (prop in elem) {
-                  return elem[prop];
-                } else {
-                  return elem.document.documentElement[method];
-                }
               }
+
+              return (prop in elem) ? elem[prop] : elem.document.documentElement[method];
             } else {
               if (angular.isDefined(value)) {
-                return elem[method] = value;
-              } else {
-                return elem[method];
+                elem[method] = value;
               }
+
+              return elem[method];
             }
-          };
+          }
 
           if (window.getComputedStyle) {
-            getStyle = function (elem) {
-              return window.getComputedStyle(elem, null);
-            };
-            convertToPx = function (elem, value) {
-              return parseFloat(value);
-            };
+            getStyle = (elem) => window.getComputedStyle(elem, null);
+            convertToPx = (elem, value) => parseFloat(value);
           } else {
-            getStyle = function (elem) {
-              return elem.currentStyle;
-            };
-            convertToPx = function (elem, value) {
-              var core_pnum, left, result, rnumnonpx, rs, rsLeft, style;
-              core_pnum = /[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source;
-              rnumnonpx = new RegExp('^(' + core_pnum + ')(?!px)[a-z%]+$', 'i');
+            getStyle = (elem) => elem.currentStyle;
+            convertToPx = (elem, value) => {
+              let left, result, rs, rsLeft, style;
+              let core_pnum = /[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source;
+              let rnumnonpx = new RegExp('^(' + core_pnum + ')(?!px)[a-z%]+$', 'i');
+
               if (!rnumnonpx.test(value)) {
                 return parseFloat(value);
-              } else {
-                // ported from JQuery
-                style = elem.style;
-                left = style.left;
-                rs = elem.runtimeStyle;
-                rsLeft = rs && rs.left;
-                if (rs) {
-                  rs.left = style.left;
-                }
-                // put in the new values to get a computed style out
-                style.left = value;
-                result = style.pixelLeft;
-                style.left = left;
-                if (rsLeft) {
-                  rs.left = rsLeft;
-                }
-                return result;
               }
+
+              // ported from JQuery
+              style = elem.style;
+              left = style.left;
+              rs = elem.runtimeStyle;
+              rsLeft = rs && rs.left;
+              if (rs) {
+                rs.left = style.left;
+              }
+              // put in the new values to get a computed style out
+              style.left = value;
+              result = style.pixelLeft;
+              style.left = left;
+              if (rsLeft) {
+                rs.left = rsLeft;
+              }
+              return result;
             };
           }
 
-          getMeasurements = function (elem, measure) {
-            var base, borderA, borderB, computedMarginA, computedMarginB, computedStyle, dirA, dirB, marginA, marginB, paddingA, paddingB, ref;
+          function getMeasurements(elem, measure) {
+            let base, borderA, borderB, computedMarginA, computedMarginB, computedStyle, dirA, dirB, marginA, marginB, paddingA, paddingB;
 
             if (isWindow(elem)) {
-              base = document.documentElement[{
-                height: 'clientHeight',
-                width: 'clientWidth'
-              }[measure]];
+              base = document.documentElement[{height: 'clientHeight', width: 'clientWidth'}[measure]];
+
               return {
                 base: base,
                 padding: 0,
@@ -111,7 +98,11 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
             }
 
             // Start with offset property
-            ref = {
+            [
+              base,
+              dirA,
+              dirB
+            ] = {
               width: [
                 elem.offsetWidth,
                 'Left',
@@ -122,7 +113,7 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
                 'Top',
                 'Bottom'
               ]
-            }[measure], base = ref[0], dirA = ref[1], dirB = ref[2];
+            }[measure];
 
             computedStyle = getStyle(elem);
             paddingA = convertToPx(elem, computedStyle['padding' + dirA]) || 0;
@@ -145,12 +136,12 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
               border: borderA + borderB,
               margin: marginA + marginB
             };
-          };
+          }
 
-          getWidthHeight = function (elem, direction, measure) {
-            var computedStyle, measurements, result;
+          function getWidthHeight(elem, direction, measure) {
+            let computedStyle, result;
 
-            measurements = getMeasurements(elem, direction);
+            let measurements = getMeasurements(elem, direction);
 
             if (measurements.base > 0) {
               return {
@@ -158,28 +149,29 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
                 outer: measurements.base,
                 outerfull: measurements.base + measurements.margin
               }[measure];
-            } else {
-              // Fall back to computed then uncomputed css if necessary
-              computedStyle = getStyle(elem);
-              result = computedStyle[direction];
-              if (result < 0 || result === null) {
-                result = elem.style[direction] || 0;
-              }
-
-              // Normalize "", auto, and prepare for extra
-              result = parseFloat(result) || 0;
-
-              return {
-                base: result - measurements.padding - measurements.border,
-                outer: result,
-                outerfull: result + measurements.padding + measurements.border + measurements.margin
-              }[measure];
             }
-          };
+
+            // Fall back to computed then uncomputed css if necessary
+            computedStyle = getStyle(elem);
+            result = computedStyle[direction];
+
+            if (result < 0 || result === null) {
+              result = elem.style[direction] || 0;
+            }
+
+            // Normalize "", auto, and prepare for extra
+            result = parseFloat(result) || 0;
+
+            return {
+              base: result - measurements.padding - measurements.border,
+              outer: result,
+              outerfull: result + measurements.padding + measurements.border + measurements.margin
+            }[measure];
+          }
 
           // define missing methods
           return angular.forEach({
-            before: function (newElem) {
+            before(newElem) {
               var children, elem, i, j, parent, ref, self;
               self = this;
               elem = self[0];
@@ -197,7 +189,7 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
                 throw new Error('invalid DOM structure ' + elem.outerHTML);
               }
             },
-            height: function (value) {
+            height (value){
               var self;
               self = this;
               if (angular.isDefined(value)) {
@@ -209,33 +201,35 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
                 return getWidthHeight(this[0], 'height', 'base');
               }
             },
-            outerHeight: function (option) {
+            outerHeight(option) {
               return getWidthHeight(this[0], 'height', option ? 'outerfull' : 'outer');
             },
 
             /*
              The offset setter method is not implemented
              */
-            offset: function (value) {
-              var box, doc, docElem, elem, self, win;
-              self = this;
-              if (arguments.length) {
-                if (value === void 0) {
-                  return self;
-                } else {
-                  // TODO: implement setter
-                  throw new Error('offset setter method is not implemented');
-                }
-              }
-              box = {
+            offset(value) {
+              let docElem, win;
+              let self = this;
+              let box = {
                 top: 0,
                 left: 0
               };
-              elem = self[0];
-              doc = elem && elem.ownerDocument;
+              let elem = self[0];
+              let doc = elem && elem.ownerDocument;
+
+              if (arguments.length) {
+                if (value === undefined) {
+                  return self;
+                }
+                // TODO: implement setter
+                throw new Error('offset setter method is not implemented');
+              }
+
               if (!doc) {
                 return;
               }
+
               docElem = doc.documentElement;
 
               // TODO: Make sure it's not a disconnected DOM node
@@ -243,6 +237,7 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
               if (elem.getBoundingClientRect != null) {
                 box = elem.getBoundingClientRect();
               }
+
               win = doc.defaultView || doc.parentWindow;
 
               return {
@@ -250,13 +245,13 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
                 left: box.left + (win.pageXOffset || docElem.scrollLeft) - (docElem.clientLeft || 0)
               };
             },
-            scrollTop: function (value) {
+            scrollTop(value) {
               return scrollTo(this, 'top', value);
             },
-            scrollLeft: function (value) {
+            scrollLeft(value) {
               return scrollTo(this, 'left', value);
             }
-          }, function (value, key) {
+          }, (value, key) => {
             if (!element.prototype[key]) {
               return element.prototype[key] = value;
             }
