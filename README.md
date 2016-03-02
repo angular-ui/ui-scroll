@@ -204,8 +204,8 @@ See [index.html](http://rawgithub.com/angular-ui/ui-scroll/master/demo/index.htm
 ###History
 
 ###v1.3.3
-* Implemented new version of gatasource.get(descriptor, success) method. See the documentation.
-* Implemented new version of reload(startIndex) method in the Adapter. See the documentation.
+* Implemented new signature of the Datasource get(descriptor, success) method. See the documentation.
+* Implemented new signature of the Adapter reload(startIndex) method. See the documentation.
 * Changed the logic of scroll bar adjustment (minIndex, maxIndex).
 
 ###v1.3.2
