@@ -203,8 +203,13 @@ See [index.html](http://rawgithub.com/angular-ui/ui-scroll/master/demo/index.htm
 
 ###History
 
+###v1.3.3
+* Implemented new version of gatasource.get(descriptor, success) method. See the documentation.
+* Implemented new version of reload(startIndex) method in the Adapter. See the documentation.
+* Changed the logic of scroll bar adjustment (minIndex, maxIndex).
+
 ###v1.3.2
-* Implemented logic for adjustBuffer triggering during invisible items became visible.
+* Implemented the logic for adjustBuffer triggering during invisible items became visible.
 
 ###v1.3.1
 * Changed the logic of viewport scroll/padding recalculation (to solve the problem [#8](https://github.com/angular-ui/ui-scroll/issues/8)).
