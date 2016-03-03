@@ -824,7 +824,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       function resizeAndScrollHandler() {
         if (!$rootScope.$$phase && !adapter.isLoading) {
           adjustBuffer();
-          $scope.$apply();
         }
       }
 
