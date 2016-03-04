@@ -99,7 +99,7 @@ angular.module('ui.scroll', [])
           buffer.first = origin;
           buffer.next = origin;
           buffer.minIndex = Number.MAX_VALUE;
-          return buffer.maxIndex = Number.MIN_VALUE;
+          buffer.maxIndex = Number.MIN_VALUE;
         }
 
         angular.extend(buffer, {
@@ -566,7 +566,7 @@ angular.module('ui.scroll', [])
           viewport.bind('scroll', resizeAndScrollHandler);
           viewport.bind('mousewheel', wheelHandler);
 
-          $scope.$watch(datasource.revision, () => reload());
+          $timeout(() => reload());
 
           $scope.$on('$destroy', () => {
             // clear the buffer. It is necessary to remove the elements and $destroy the scopes
