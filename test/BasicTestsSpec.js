@@ -546,9 +546,8 @@ describe('uiScroll', function () {
 
                     scope.$watch('container2.isLoading', function(newValue, oldValue) {
                         switch(++isLoadingChangeCount) {
-                            case 1: expect(newValue).toBe(false); expect(oldValue).toBe(false); break;
-                            case 2: expect(newValue).toBe(true); expect(oldValue).toBe(false); break;
-                            case 3: expect(newValue).toBe(false); expect(oldValue).toBe(true); break;
+                            case 1: expect(newValue).toBe(true); expect(oldValue).toBe(true); break;
+                            case 2: expect(newValue).toBe(false); expect(oldValue).toBe(true); break;
                         }
                         expect(scope.container1.adapter.isLoading).toBe(newValue);
                     });
@@ -557,7 +556,7 @@ describe('uiScroll', function () {
                     viewport.trigger('scroll');
                     $timeout.flush();
 
-                    expect(isLoadingChangeCount).toBe(3);
+                    expect(isLoadingChangeCount).toBe(2);
                 }
             );
         });
