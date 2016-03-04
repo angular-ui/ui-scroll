@@ -30,7 +30,8 @@ angular.module('ui.scroll', [])
     '$timeout',
     '$q',
     '$parse',
-    function (console, $injector, $rootScope, $timeout, $q, $parse) {
+    '$interval',
+    function (console, $injector, $rootScope, $timeout, $q, $parse, $interval) {
       const $animate = ($injector.has && $injector.has('$animate')) ? $injector.get('$animate') : null;
       const isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
       //const log = console.debug || console.log;
@@ -559,10 +560,23 @@ angular.module('ui.scroll', [])
 
           adapter.reload = reload;
 
+          var scrolling = false;
+
           // events and bindings
           viewport.bind('resize', resizeAndScrollHandler);
-          viewport.bind('scroll', resizeAndScrollHandler);
+          viewport.bind('scroll', resizeHandler);
           viewport.bind('mousewheel', wheelHandler);
+
+          function resizeHandler() {
+            scrolling = true;
+          }
+
+          $interval(function() {
+            if(scrolling && !adapter.isLoading) {
+              scrolling = false;
+              adjustBufferWithoutTimeout();
+            }
+          }, 100);
 
           $scope.$watch(datasource.revision, () => reload());
 
@@ -570,7 +584,7 @@ angular.module('ui.scroll', [])
             // clear the buffer. It is necessary to remove the elements and $destroy the scopes
             buffer.clear();
             viewport.unbind('resize', resizeAndScrollHandler);
-            viewport.unbind('scroll', resizeAndScrollHandler);
+            viewport.unbind('scroll', resizeHandler);
             viewport.unbind('mousewheel', wheelHandler);
           });
 
@@ -697,18 +711,23 @@ angular.module('ui.scroll', [])
           function adjustBuffer(rid) {
             // We need the item bindings to be processed before we can do adjustment
             return $timeout(() => {
-              processBufferedItems(rid);
-
-              if (viewport.shouldLoadBottom()) {
-                enqueueFetch(rid, true);
-              } else if (viewport.shouldLoadTop()) {
-                enqueueFetch(rid, false);
-              }
-
-              if (!pending.length) {
-                return adapter.calculateProperties();
-              }
+              return adjustBufferWithoutTimeout(rid);
             });
+
+
+          }
+
+          function adjustBufferWithoutTimeout(rid) {
+            processBufferedItems(rid);
+            if (viewport.shouldLoadBottom()) {
+              enqueueFetch(rid, true);
+            } else if (viewport.shouldLoadTop()) {
+              enqueueFetch(rid, false);
+            }
+
+            if (!pending.length) {
+              return adapter.calculateProperties();
+            }
           }
 
           function adjustBufferAfterFetch(rid) {
@@ -793,7 +812,9 @@ angular.module('ui.scroll', [])
 
           function resizeAndScrollHandler() {
             if (!$rootScope.$$phase && !adapter.isLoading) {
-              adjustBuffer();
+              $timeout(() => {
+                adjustBuffer();
+              });
             }
           }
 
