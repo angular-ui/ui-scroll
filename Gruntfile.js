@@ -28,7 +28,15 @@ module.exports = function (grunt) {
     },
     watch: {
       options: {
-        livereload: false
+        livereload: true,
+        debounceDelay: 250
+      },
+      scripts: {
+        files: [
+          'src/**/*.js',
+          'test/**/*.js'
+        ],
+        tasks: 'build'
       }
     },
     karma: {
