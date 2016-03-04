@@ -553,8 +553,8 @@ angular.module('ui.scroll', [])
             viewport.createPaddingElements(template[0]);
             // Destroy template's scope to remove any watchers on it.
             scope.$destroy();
-            // also remove the template when the directive scope is destroyed
-            $scope.$on('$destroy', () => template.remove());
+            // We don't need template anymore.
+            template.remove();
           });
 
           adapter.reload = reload;
