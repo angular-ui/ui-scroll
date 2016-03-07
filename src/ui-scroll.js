@@ -198,6 +198,8 @@ angular.module('ui.scroll', [])
       }
 
       function Viewport(buffer, element, controllers, attrs) {
+        const PADDING_MIN = 0.3;
+        const PADDING_DEFAULT = 0.5;
         let topPadding = null;
         let bottomPadding = null;
         let averageItemHeight = 0;
@@ -211,7 +213,7 @@ angular.module('ui.scroll', [])
         let viewportOffset = viewport.offset() ? () => viewport.offset() : () => ({top: 0});
 
         function bufferPadding() {
-          return viewport.outerHeight() * Math.max(0.1, +attrs.padding || 0.1); // some extra space to initiate preload
+          return viewport.outerHeight() * Math.max(PADDING_MIN, +attrs.padding || PADDING_DEFAULT); // some extra space to initiate preload
         }
 
         angular.extend(viewport, {
