@@ -16,9 +16,9 @@ describe('uiScroll', function () {
     describe('viewport visibility changing', function () {
         var scrollSettings = { datasource: 'myMultipageDatasource', viewportHeight: 200, itemHeight: 40, bufferSize: 3, adapter: 'adapter' };
         var onePackItemsCount = 3 + 2;
-        var twoPacksItemsCount = 3 * 2 + 2;
+        var twoPacksItemsCount = 3 * 3 + 2;
 
-        it('should create 6 divs with data (+ 2 padding divs)', function () {
+        it('should create 9 divs with data (+ 2 padding divs)', function () {
             runTest(scrollSettings,
                 function (viewport) {
                     expect(viewport.children().length).toBe(twoPacksItemsCount);
