@@ -99,7 +99,7 @@ angular.module('ui.scroll', [])
           buffer.first = origin;
           buffer.next = origin;
           buffer.minIndex = Number.MAX_VALUE;
-          return buffer.maxIndex = Number.MIN_VALUE;
+          buffer.maxIndex = Number.MIN_VALUE;
         }
 
         angular.extend(buffer, {
@@ -566,8 +566,6 @@ angular.module('ui.scroll', [])
           viewport.bind('scroll', resizeAndScrollHandler);
           viewport.bind('mousewheel', wheelHandler);
 
-          $scope.$watch(datasource.revision, () => reload());
-
           $scope.$on('$destroy', () => {
             // clear the buffer. It is necessary to remove the elements and $destroy the scopes
             buffer.clear();
@@ -575,6 +573,25 @@ angular.module('ui.scroll', [])
             viewport.unbind('scroll', resizeAndScrollHandler);
             viewport.unbind('mousewheel', wheelHandler);
           });
+
+          // update events (deprecated since v1.1.0, unsupported since 1.2.0)
+          (() => {
+            const eventListener = datasource.scope ? datasource.scope.$new() : $scope.$new();
+
+            eventListener.$on('insert.item', () => unsupportedMethod('insert'));
+
+            eventListener.$on('update.items', () => unsupportedMethod('update'));
+
+            eventListener.$on('delete.items', () => unsupportedMethod('delete'));
+
+            function unsupportedMethod(token) {
+              throw new Error(token + ' event is no longer supported - use applyUpdates instead');
+            }
+          })();
+
+          reload();
+
+          /* Functions definitions */
 
           function dismissPendingRequests() {
             ridActual++;
@@ -807,21 +824,6 @@ angular.module('ui.scroll', [])
               event.preventDefault();
             }
           }
-
-          // update events (deprecated since v1.1.0, unsupported since 1.2.0)
-          (() => {
-            const eventListener = datasource.scope ? datasource.scope.$new() : $scope.$new();
-
-            eventListener.$on('insert.item', () => unsupportedMethod('insert'));
-
-            eventListener.$on('update.items', () => unsupportedMethod('update'));
-
-            eventListener.$on('delete.items', () => unsupportedMethod('delete'));
-
-            function unsupportedMethod(token) {
-              throw new Error(token + ' event is no longer supported - use applyUpdates instead');
-            }
-          })();
         };
       }
     }
