@@ -28,7 +28,14 @@ module.exports = function (grunt) {
     },
     watch: {
       options: {
-        livereload: false
+        livereload: false,
+        debounceDelay: 250
+      },
+      scripts: {
+        files: [
+          'src/**/*.js'
+        ],
+        tasks: 'buildWatcher'
       }
     },
     karma: {
@@ -169,6 +176,11 @@ module.exports = function (grunt) {
   grunt.registerTask('test', [
     'babel',
     'karma:unit'
+  ]);
+
+  grunt.registerTask('buildWatcher', [
+    'babel',
+    'concat'
   ]);
 
   grunt.registerTask('build', [

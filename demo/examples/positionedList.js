@@ -8,7 +8,7 @@ angular.module('application', [
     '$rootScope',
     '$location',
     function (console, $timeout, $rootScope, $location) {
-      var current, data, get, i, j, k, l, len, len1, letter1, letter2, position, ref, ref1, revision;
+      var current, data, get, i, j, k, l, len, len1, letter1, letter2, position, ref, ref1;
       $rootScope.key = "";
       position = 0;
       data = [];
@@ -50,12 +50,9 @@ angular.module('application', [
         }
         return current++;
       });
-      revision = function () {
-        return current;
-      };
+
       return {
-        get: get,
-        revision: revision
+        get: get
       };
     }
   ]);
