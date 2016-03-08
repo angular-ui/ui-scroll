@@ -369,7 +369,13 @@ angular.module('ui.scroll', [])
         const setTopVisible = $attr.topVisible ? $parse($attr.topVisible).assign : angular.noop;
         const setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : angular.noop;
         const setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
-        const setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
+        const setIsLoading = $attr.isLoading ? setLoadingWithApply : angular.noop;
+
+        function setLoadingWithApply(viewportScope, value) {
+          return $timeout(() => {
+            $parse($attr.isLoading).assign(viewportScope, value);
+          });
+        }
 
         this.isLoading = false;
 
@@ -560,32 +566,25 @@ angular.module('ui.scroll', [])
 
           adapter.reload = reload;
 
-          var scrolling = false;
+          let scrolling = false;
+          let scrollInterval;
 
           // events and bindings
-          viewport.bind('resize', resizeAndScrollHandler);
-          viewport.bind('scroll', resizeHandler);
+          viewport.bind('resize', resizeHandler);
+          viewport.bind('scroll', scrollHandler);
           viewport.bind('mousewheel', wheelHandler);
-
-          function resizeHandler() {
-            scrolling = true;
-          }
-
-          $interval(function() {
-            if(scrolling && !adapter.isLoading) {
-              scrolling = false;
-              adjustBufferWithoutTimeout();
-            }
-          }, 100);
 
           $scope.$watch(datasource.revision, () => reload());
 
           $scope.$on('$destroy', () => {
             // clear the buffer. It is necessary to remove the elements and $destroy the scopes
             buffer.clear();
-            viewport.unbind('resize', resizeAndScrollHandler);
+            viewport.unbind('resize', resizeHandler);
             viewport.unbind('scroll', resizeHandler);
             viewport.unbind('mousewheel', wheelHandler);
+            if(scrollInterval) {
+              scrollInterval.cancel();
+            }
           });
 
           function dismissPendingRequests() {
@@ -810,11 +809,20 @@ angular.module('ui.scroll', [])
             });
           }
 
-          function resizeAndScrollHandler() {
+          function scrollHandler() {
+            scrolling = true;
+          }
+
+          scrollInterval = $interval(function() {
+            if(scrolling && !adapter.isLoading) {
+              scrolling = false;
+              adjustBufferWithoutTimeout();
+            }
+          }, 100, 0, false);
+
+          function resizeHandler() {
             if (!$rootScope.$$phase && !adapter.isLoading) {
-              $timeout(() => {
-                adjustBuffer();
-              });
+              adjustBufferWithoutTimeout();
             }
           }
 
