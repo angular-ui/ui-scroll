@@ -88,7 +88,7 @@ Data source is an object to be used by the uiScroll directive to access the data
 The directive will locate the object using the provided data source name. It will first look for a property with the given name on its $scope.
 If none found it will try to get an angular service with the provided name.
 
-The datasource object implements methods and properties to be used by the directive to access the data:
+The data source object implements methods and properties to be used by the directive to access the data:
 
 * Method `get`
 
@@ -103,7 +103,7 @@ The datasource object implements methods and properties to be used by the direct
     * **descriptor** is an object defining the portion of the dataset requested. The object will have 3 properties. Two of them named  `index` and `count`. They have the same meaning as in the alternative signature when the parameters passed explicitly (see below). The third one will be named either `append` if the items will be appended to the last item in the buffer, or `prepend` if they are to be prepended to the first item in the buffer. The value of the property in either case will be the item the new items will be appended/prepended to. This is useful if it is easier to identify the items to be added based on the previously requested items rather than on the index. Keep in mind that in certain use cases (i.e. on initial load) the value of the append/prepend property can be undefined.
     * **index** indicates the first data row requested
     * **count** indicates number of data rows requested
-    * **success** function to call when the data are retrieved. The implementation of the datsource has to call this function when the data are retrieved and pass it an array of the items retrieved. If no items are retrieved, an empty array has to be passed.
+    * **success** function to call when the data are retrieved. The implementation of the data source has to call this function when the data are retrieved and pass it an array of the items retrieved. If no items are retrieved, an empty array has to be passed.
 
 **Important:** Make sure to respect the `index` and `count` parameters of the request. The array passed to the success method should have
 exactly `count` elements unless it hit eof/bof
