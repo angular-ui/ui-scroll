@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.3.3 -- 2016-03-04T12:15:03.597Z
+ * Version: 1.3.3 -- 2016-03-08T19:39:30.954Z
  * License: MIT
  */
  
@@ -30,7 +30,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       return this;
     }]
   };
-}).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $q, $parse) {
+}).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$q', '$parse', '$interval', function (console, $injector, $rootScope, $timeout, $q, $parse, $interval) {
   var $animate = $injector.has && $injector.has('$animate') ? $injector.get('$animate') : null;
   var isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
   //const log = console.debug || console.log;
@@ -115,7 +115,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       buffer.first = origin;
       buffer.next = origin;
       buffer.minIndex = Number.MAX_VALUE;
-      return buffer.maxIndex = Number.MIN_VALUE;
+      buffer.maxIndex = Number.MIN_VALUE;
     }
 
     angular.extend(buffer, {
@@ -215,28 +215,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     return buffer;
   }
 
-  function Padding(template) {
-    var result = undefined;
-    var tagName = template.localName;
-
-    switch (tagName) {
-      case 'dl':
-        throw new Error('ui-scroll directive does not support <' + tagName + '> as a repeating tag: ' + template.outerHTML);
-      case 'tr':
-        var table = angular.element('<table><tr><td><div></div></td></tr></table>');
-        result = table.find('tr');
-        break;
-      case 'li':
-        result = angular.element('<li></li>');
-        break;
-      default:
-        result = angular.element('<div></div>');
-    }
-
-    return result;
-  }
-
   function Viewport(buffer, element, controllers, attrs) {
+    var PADDING_MIN = 0.3;
+    var PADDING_DEFAULT = 0.5;
     var topPadding = null;
     var bottomPadding = null;
     var averageItemHeight = 0;
@@ -254,7 +235,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     };
 
     function bufferPadding() {
-      return viewport.outerHeight() * Math.max(0.1, +attrs.padding || 0.1); // some extra space to initiate preload
+      return viewport.outerHeight() * Math.max(PADDING_MIN, +attrs.padding || PADDING_DEFAULT); // some extra space to initiate preload
     }
 
     angular.extend(viewport, {
@@ -263,6 +244,27 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         bottomPadding = new Padding(template);
         element.before(topPadding);
         element.after(bottomPadding);
+
+        function Padding(template) {
+          var result = undefined;
+          var tagName = template.localName;
+
+          switch (tagName) {
+            case 'dl':
+              throw new Error('ui-scroll directive does not support <' + tagName + '> as a repeating tag: ' + template.outerHTML);
+            case 'tr':
+              var table = angular.element('<table><tr><td><div></div></td></tr></table>');
+              result = table.find('tr');
+              break;
+            case 'li':
+              result = angular.element('<li></li>');
+              break;
+            default:
+              result = angular.element('<div></div>');
+          }
+
+          return result;
+        }
       },
       bottomDataPos: function bottomDataPos() {
         var scrollHeight = viewport[0].scrollHeight;
@@ -377,7 +379,13 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var setTopVisible = $attr.topVisible ? $parse($attr.topVisible).assign : angular.noop;
     var setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : angular.noop;
     var setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
-    var setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
+    var setIsLoading = $attr.isLoading ? setLoadingWithApply : angular.noop;
+
+    function setLoadingWithApply(viewportScope, value) {
+      return $timeout(function () {
+        $parse($attr.isLoading).assign(viewportScope, value);
+      });
+    }
 
     this.isLoading = false;
 
@@ -572,30 +580,55 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         viewport.createPaddingElements(template[0]);
         // Destroy template's scope to remove any watchers on it.
         scope.$destroy();
-        // also remove the template when the directive scope is destroyed
-        $scope.$on('$destroy', function () {
-          return template.remove();
-        });
+        // We don't need template anymore.
+        template.remove();
       });
 
       adapter.reload = reload;
 
-      // events and bindings
-      viewport.bind('resize', resizeAndScrollHandler);
-      viewport.bind('scroll', resizeAndScrollHandler);
-      viewport.bind('mousewheel', wheelHandler);
+      var scrolling = false;
+      var scrollInterval = undefined;
 
-      $scope.$watch(datasource.revision, function () {
-        return reload();
-      });
+      // events and bindings
+      viewport.bind('resize', resizeHandler);
+      viewport.bind('scroll', scrollHandler);
+      viewport.bind('mousewheel', wheelHandler);
 
       $scope.$on('$destroy', function () {
         // clear the buffer. It is necessary to remove the elements and $destroy the scopes
         buffer.clear();
-        viewport.unbind('resize', resizeAndScrollHandler);
-        viewport.unbind('scroll', resizeAndScrollHandler);
+        viewport.unbind('resize', resizeHandler);
+        viewport.unbind('scroll', resizeHandler);
         viewport.unbind('mousewheel', wheelHandler);
+        if (scrollInterval) {
+          scrollInterval.cancel();
+        }
       });
+
+      // update events (deprecated since v1.1.0, unsupported since 1.2.0)
+      (function () {
+        var eventListener = datasource.scope ? datasource.scope.$new() : $scope.$new();
+
+        eventListener.$on('insert.item', function () {
+          return unsupportedMethod('insert');
+        });
+
+        eventListener.$on('update.items', function () {
+          return unsupportedMethod('update');
+        });
+
+        eventListener.$on('delete.items', function () {
+          return unsupportedMethod('delete');
+        });
+
+        function unsupportedMethod(token) {
+          throw new Error(token + ' event is no longer supported - use applyUpdates instead');
+        }
+      })();
+
+      reload();
+
+      /* Functions definitions */
 
       function dismissPendingRequests() {
         ridActual++;
@@ -726,18 +759,21 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       function adjustBuffer(rid) {
         // We need the item bindings to be processed before we can do adjustment
         return $timeout(function () {
-          processBufferedItems(rid);
-
-          if (viewport.shouldLoadBottom()) {
-            enqueueFetch(rid, true);
-          } else if (viewport.shouldLoadTop()) {
-            enqueueFetch(rid, false);
-          }
-
-          if (!pending.length) {
-            return adapter.calculateProperties();
-          }
+          return adjustBufferWithoutTimeout(rid);
         });
+      }
+
+      function adjustBufferWithoutTimeout(rid) {
+        processBufferedItems(rid);
+        if (viewport.shouldLoadBottom()) {
+          enqueueFetch(rid, true);
+        } else if (viewport.shouldLoadTop()) {
+          enqueueFetch(rid, false);
+        }
+
+        if (!pending.length) {
+          return adapter.calculateProperties();
+        }
       }
 
       function adjustBufferAfterFetch(rid) {
@@ -821,9 +857,20 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         });
       }
 
-      function resizeAndScrollHandler() {
+      function scrollHandler() {
+        scrolling = true;
+      }
+
+      scrollInterval = $interval(function () {
+        if (scrolling && !adapter.isLoading) {
+          scrolling = false;
+          adjustBufferWithoutTimeout();
+        }
+      }, 100, 0, false);
+
+      function resizeHandler() {
         if (!$rootScope.$$phase && !adapter.isLoading) {
-          adjustBuffer();
+          adjustBufferWithoutTimeout();
         }
       }
 
@@ -835,27 +882,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           event.preventDefault();
         }
       }
-
-      // update events (deprecated since v1.1.0, unsupported since 1.2.0)
-      (function () {
-        var eventListener = datasource.scope ? datasource.scope.$new() : $scope.$new();
-
-        eventListener.$on('insert.item', function () {
-          return unsupportedMethod('insert');
-        });
-
-        eventListener.$on('update.items', function () {
-          return unsupportedMethod('update');
-        });
-
-        eventListener.$on('delete.items', function () {
-          return unsupportedMethod('delete');
-        });
-
-        function unsupportedMethod(token) {
-          throw new Error(token + ' event is no longer supported - use applyUpdates instead');
-        }
-      })();
     };
   }
 }]);

@@ -30,7 +30,8 @@ angular.module('ui.scroll', [])
     '$timeout',
     '$q',
     '$parse',
-    function (console, $injector, $rootScope, $timeout, $q, $parse) {
+    '$interval',
+    function (console, $injector, $rootScope, $timeout, $q, $parse, $interval) {
       const $animate = ($injector.has && $injector.has('$animate')) ? $injector.get('$animate') : null;
       const isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
       //const log = console.debug || console.log;
@@ -370,7 +371,13 @@ angular.module('ui.scroll', [])
         const setTopVisible = $attr.topVisible ? $parse($attr.topVisible).assign : angular.noop;
         const setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : angular.noop;
         const setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
-        const setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
+        const setIsLoading = $attr.isLoading ? setLoadingWithApply : angular.noop;
+
+        function setLoadingWithApply(viewportScope, value) {
+          return $timeout(() => {
+            $parse($attr.isLoading).assign(viewportScope, value);
+          });
+        }
 
         this.isLoading = false;
 
@@ -561,17 +568,23 @@ angular.module('ui.scroll', [])
 
           adapter.reload = reload;
 
+          let scrolling = false;
+          let scrollInterval;
+
           // events and bindings
-          viewport.bind('resize', resizeAndScrollHandler);
-          viewport.bind('scroll', resizeAndScrollHandler);
+          viewport.bind('resize', resizeHandler);
+          viewport.bind('scroll', scrollHandler);
           viewport.bind('mousewheel', wheelHandler);
 
           $scope.$on('$destroy', () => {
             // clear the buffer. It is necessary to remove the elements and $destroy the scopes
             buffer.clear();
-            viewport.unbind('resize', resizeAndScrollHandler);
-            viewport.unbind('scroll', resizeAndScrollHandler);
+            viewport.unbind('resize', resizeHandler);
+            viewport.unbind('scroll', resizeHandler);
             viewport.unbind('mousewheel', wheelHandler);
+            if(scrollInterval) {
+              scrollInterval.cancel();
+            }
           });
 
           // update events (deprecated since v1.1.0, unsupported since 1.2.0)
@@ -716,18 +729,23 @@ angular.module('ui.scroll', [])
           function adjustBuffer(rid) {
             // We need the item bindings to be processed before we can do adjustment
             return $timeout(() => {
-              processBufferedItems(rid);
-
-              if (viewport.shouldLoadBottom()) {
-                enqueueFetch(rid, true);
-              } else if (viewport.shouldLoadTop()) {
-                enqueueFetch(rid, false);
-              }
-
-              if (!pending.length) {
-                return adapter.calculateProperties();
-              }
+              return adjustBufferWithoutTimeout(rid);
             });
+
+
+          }
+
+          function adjustBufferWithoutTimeout(rid) {
+            processBufferedItems(rid);
+            if (viewport.shouldLoadBottom()) {
+              enqueueFetch(rid, true);
+            } else if (viewport.shouldLoadTop()) {
+              enqueueFetch(rid, false);
+            }
+
+            if (!pending.length) {
+              return adapter.calculateProperties();
+            }
           }
 
           function adjustBufferAfterFetch(rid) {
@@ -810,9 +828,20 @@ angular.module('ui.scroll', [])
             });
           }
 
-          function resizeAndScrollHandler() {
+          function scrollHandler() {
+            scrolling = true;
+          }
+
+          scrollInterval = $interval(function() {
+            if(scrolling && !adapter.isLoading) {
+              scrolling = false;
+              adjustBufferWithoutTimeout();
+            }
+          }, 100, 0, false);
+
+          function resizeHandler() {
             if (!$rootScope.$$phase && !adapter.isLoading) {
-              adjustBuffer();
+              adjustBufferWithoutTimeout();
             }
           }
 
