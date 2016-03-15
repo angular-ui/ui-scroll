@@ -568,15 +568,21 @@ angular.module('ui.scroll', [])
           adapter.reload = reload;
 
           // events and bindings
-          viewport.bind('resize', resizeAndScrollHandler);
-          viewport.bind('scroll', resizeAndScrollHandler);
+          function bindEvents() {
+            viewport.bind('resize', resizeAndScrollHandler);
+            viewport.bind('scroll', resizeAndScrollHandler);
+          }
           viewport.bind('mousewheel', wheelHandler);
+
+          function unbindEvents() {
+            viewport.unbind('resize', resizeAndScrollHandler);
+            viewport.unbind('scroll', resizeAndScrollHandler);
+          }
 
           $scope.$on('$destroy', () => {
             // clear the buffer. It is necessary to remove the elements and $destroy the scopes
             buffer.clear();
-            viewport.unbind('resize', resizeAndScrollHandler);
-            viewport.unbind('scroll', resizeAndScrollHandler);
+            unbindEvents();
             viewport.unbind('mousewheel', wheelHandler);
           });
 
@@ -738,7 +744,9 @@ angular.module('ui.scroll', [])
                 enqueueFetch(rid, false);
               }
 
-              if (!pending.length) {
+              if (pending.length) {
+//                unbindEvents();
+              } else {
                 return adapter.calculateProperties();
               }
             });
@@ -763,6 +771,7 @@ angular.module('ui.scroll', [])
 
               if (!pending.length) {
                 adapter.loading(false);
+                bindEvents();
                 return adapter.calculateProperties();
               }
 
@@ -828,7 +837,15 @@ angular.module('ui.scroll', [])
           function resizeAndScrollHandler() {
             if (!$rootScope.$$phase && !adapter.isLoading) {
               adapter.sCount++;
-              adjustBuffer();
+              if (viewport.shouldLoadBottom()) {
+                enqueueFetch(ridActual, true);
+              } else if (viewport.shouldLoadTop()) {
+                enqueueFetch(ridActual, false);
+              }
+
+              if (pending.length) {
+                unbindEvents();
+              }
             }
           }
 
