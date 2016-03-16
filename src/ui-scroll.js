@@ -247,8 +247,7 @@ angular.module('ui.scroll', [])
 
           bottomDataPos() {
             let scrollHeight = viewport[0].scrollHeight;
-            scrollHeight = scrollHeight !== null ? scrollHeight : viewport[0].document.documentElement.scrollHeight;
-
+            scrollHeight = scrollHeight != null ? scrollHeight : viewport[0].document.documentElement.scrollHeight;
             return scrollHeight - bottomPadding.height();
           },
 
@@ -463,6 +462,7 @@ angular.module('ui.scroll', [])
                 setTopVisibleScope(viewportScope, item.scope);
               }
               break;
+
             }
           }
         };
