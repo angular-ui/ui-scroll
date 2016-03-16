@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.3.3 -- 2016-03-04T12:15:03.597Z
+ * Version: 1.3.3 -- 2016-03-15T20:00:58.115Z
  * License: MIT
  */
  
@@ -266,8 +266,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       },
       bottomDataPos: function bottomDataPos() {
         var scrollHeight = viewport[0].scrollHeight;
-        scrollHeight = scrollHeight !== null ? scrollHeight : viewport[0].document.documentElement.scrollHeight;
-
+        scrollHeight = scrollHeight != null ? scrollHeight : viewport[0].document.documentElement.scrollHeight;
         return scrollHeight - bottomPadding.height();
       },
       topDataPos: function topDataPos() {
@@ -572,10 +571,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         viewport.createPaddingElements(template[0]);
         // Destroy template's scope to remove any watchers on it.
         scope.$destroy();
-        // also remove the template when the directive scope is destroyed
-        $scope.$on('$destroy', function () {
-          return template.remove();
-        });
+        // We don't need template anymore.
+        template.remove();
       });
 
       adapter.reload = reload;
