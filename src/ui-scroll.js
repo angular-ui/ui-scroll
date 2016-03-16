@@ -99,7 +99,7 @@ angular.module('ui.scroll', [])
           buffer.first = origin;
           buffer.next = origin;
           buffer.minIndex = Number.MAX_VALUE;
-          return buffer.maxIndex = Number.MIN_VALUE;
+          buffer.maxIndex = Number.MIN_VALUE;
         }
 
         angular.extend(buffer, {
@@ -197,28 +197,9 @@ angular.module('ui.scroll', [])
         return buffer;
       }
 
-      function Padding(template) {
-        let result;
-        let tagName = template.localName;
-
-        switch (tagName) {
-          case 'dl':
-            throw new Error(`ui-scroll directive does not support <${tagName}> as a repeating tag: ${template.outerHTML}`);
-          case 'tr':
-            let table = angular.element('<table><tr><td><div></div></td></tr></table>');
-            result = table.find('tr');
-            break;
-          case 'li':
-            result = angular.element('<li></li>');
-            break;
-          default:
-            result = angular.element('<div></div>');
-        }
-
-        return result;
-      }
-
       function Viewport(buffer, element, controllers, attrs) {
+        const PADDING_MIN = 0.3;
+        const PADDING_DEFAULT = 0.5;
         let topPadding = null;
         let bottomPadding = null;
         let averageItemHeight = 0;
@@ -232,7 +213,7 @@ angular.module('ui.scroll', [])
         let viewportOffset = viewport.offset() ? () => viewport.offset() : () => ({top: 0});
 
         function bufferPadding() {
-          return viewport.outerHeight() * Math.max(0.1, +attrs.padding || 0.1); // some extra space to initiate preload
+          return viewport.outerHeight() * Math.max(PADDING_MIN, +attrs.padding || PADDING_DEFAULT); // some extra space to initiate preload
         }
 
         angular.extend(viewport, {
@@ -241,6 +222,27 @@ angular.module('ui.scroll', [])
             bottomPadding = new Padding(template);
             element.before(topPadding);
             element.after(bottomPadding);
+
+            function Padding(template) {
+              let result;
+              let tagName = template.localName;
+
+              switch (tagName) {
+                case 'dl':
+                  throw new Error(`ui-scroll directive does not support <${tagName}> as a repeating tag: ${template.outerHTML}`);
+                case 'tr':
+                  let table = angular.element('<table><tr><td><div></div></td></tr></table>');
+                  result = table.find('tr');
+                  break;
+                case 'li':
+                  result = angular.element('<li></li>');
+                  break;
+                default:
+                  result = angular.element('<div></div>');
+              }
+
+              return result;
+            }
           },
 
           bottomDataPos() {
@@ -277,7 +279,7 @@ angular.module('ui.scroll', [])
             // clip the invisible items off the bottom
             let overage = 0;
 
-            for(let i = buffer.length - 1; i >= 0; i--) {
+            for (let i = buffer.length - 1; i >= 0; i--) {
               if (buffer[i].element.offset().top - viewportOffset().top <= viewport.outerHeight() + bufferPadding()) {
                 break;
               }
@@ -301,8 +303,8 @@ angular.module('ui.scroll', [])
             let overage = 0;
             let overageHeight = 0;
 
-            for(let i = 0; i < buffer.length; i++) {
-              if(buffer[i].element.offset().top - viewportOffset().top + buffer[i].element.outerHeight(true) >= (-1) * bufferPadding()) {
+            for (let i = 0; i < buffer.length; i++) {
+              if (buffer[i].element.offset().top - viewportOffset().top + buffer[i].element.outerHeight(true) >= (-1) * bufferPadding()) {
                 break;
               }
               overageHeight += buffer[i].element.outerHeight(true);
@@ -356,6 +358,12 @@ angular.module('ui.scroll', [])
               topPadding.height(0);
               viewport.scrollTop(viewport.scrollTop() - paddingHeight);
             }
+          },
+          resetTopPaddingHeight() {
+            topPadding.height(0);
+          },
+          resetBottomPaddingHeight() {
+            bottomPadding.height(0);
           }
         });
 
@@ -434,7 +442,7 @@ angular.module('ui.scroll', [])
         this.calculateProperties = function () {
           let i, item, itemHeight, itemTop, isNewRow, rowTop;
           let topHeight = 0;
-          for(i = 0; i < buffer.length; i++) {
+          for (i = 0; i < buffer.length; i++) {
             item = buffer[i];
             itemTop = item.element.offset().top;
             isNewRow = rowTop !== itemTop;
@@ -564,8 +572,6 @@ angular.module('ui.scroll', [])
           viewport.bind('scroll', resizeAndScrollHandler);
           viewport.bind('mousewheel', wheelHandler);
 
-          $scope.$watch(datasource.revision, () => reload());
-
           $scope.$on('$destroy', () => {
             // clear the buffer. It is necessary to remove the elements and $destroy the scopes
             buffer.clear();
@@ -574,6 +580,25 @@ angular.module('ui.scroll', [])
             viewport.unbind('mousewheel', wheelHandler);
           });
 
+          // update events (deprecated since v1.1.0, unsupported since 1.2.0)
+          (() => {
+            const eventListener = datasource.scope ? datasource.scope.$new() : $scope.$new();
+
+            eventListener.$on('insert.item', () => unsupportedMethod('insert'));
+
+            eventListener.$on('update.items', () => unsupportedMethod('update'));
+
+            eventListener.$on('delete.items', () => unsupportedMethod('delete'));
+
+            function unsupportedMethod(token) {
+              throw new Error(token + ' event is no longer supported - use applyUpdates instead');
+            }
+          })();
+
+          reload();
+
+          /* Functions definitions */
+
           function dismissPendingRequests() {
             ridActual++;
             pending = [];
@@ -581,6 +606,9 @@ angular.module('ui.scroll', [])
 
           function reload() {
             dismissPendingRequests();
+
+            viewport.resetTopPaddingHeight();
+            viewport.resetBottomPaddingHeight();
 
             if (arguments.length) {
               buffer.clear(arguments[0]);
@@ -805,21 +833,6 @@ angular.module('ui.scroll', [])
               event.preventDefault();
             }
           }
-
-          // update events (deprecated since v1.1.0, unsupported since 1.2.0)
-          (() => {
-            const eventListener = datasource.scope ? datasource.scope.$new() : $scope.$new();
-
-            eventListener.$on('insert.item', () => unsupportedMethod('insert'));
-
-            eventListener.$on('update.items', () => unsupportedMethod('update'));
-
-            eventListener.$on('delete.items', () => unsupportedMethod('delete'));
-
-            function unsupportedMethod(token) {
-              throw new Error(token + ' event is no longer supported - use applyUpdates instead');
-            }
-          })();
         };
       }
     }
