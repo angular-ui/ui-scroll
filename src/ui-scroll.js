@@ -744,9 +744,7 @@ angular.module('ui.scroll', [])
                 enqueueFetch(rid, false);
               }
 
-              if (pending.length) {
-//                unbindEvents();
-              } else {
+              if (!pending.length) {
                 return adapter.calculateProperties();
               }
             });
