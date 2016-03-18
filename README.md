@@ -108,6 +108,13 @@ The data source object implements methods and properties to be used by the direc
 **Important:** Make sure to respect the `index` and `count` parameters of the request. The array passed to the success method should have
 exactly `count` elements unless it hit eof/bof
 
+* Properties `minIndex` and  `maxIndex`
+
+    #### Description
+    As the scroller recieves the items requested by the `get` method, the value of minimum and maximum values of the item index are placed in the `minIndex` and `maxIndex` properties respectively. The values of the properties are cumulative - the value of the `minIndex` will never increase, and the value of the `maIndex` will never decrease - except the values are reset in response to a call to the adapter `reload` method. The values of the properties are used to maintain the appearance of the scroller scrollBar.
+    
+    Values of the properties can be assigned programmatically. If the range of the index values is known in advance, assigneing them programmatically would improve the usability of the scrollBar. 
+
 ###Adapter
 The adapter object is an internal object created for every instance of the scroller. Properties and methods of the adapter can be used to manipulate and assess the scroller the adapter was created for. Adapter based API replaces old (undocumented) event based API introduced earlier for this purpose. The event based API is now deprecated and no longer supported.
 
