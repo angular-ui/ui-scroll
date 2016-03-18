@@ -14,11 +14,11 @@ describe('uiScroll', function () {
                 runTest(scrollSettings,
                     function (viewport) {
                         expect($.fn.bind.calls.all().length).toBe(3);
-                        expect($.fn.bind.calls.all()[0].args[0]).toBe('resize');
+                        expect($.fn.bind.calls.all()[0].args[0]).toBe('mousewheel');
                         expect($.fn.bind.calls.all()[0].object[0]).toBe(viewport[0]);
-                        expect($.fn.bind.calls.all()[1].args[0]).toBe('scroll');
+                        expect($.fn.bind.calls.all()[1].args[0]).toBe('resize');
                         expect($.fn.bind.calls.all()[1].object[0]).toBe(viewport[0]);
-                        expect($.fn.bind.calls.all()[2].args[0]).toBe('mousewheel');
+                        expect($.fn.bind.calls.all()[2].args[0]).toBe('scroll');
                         expect($.fn.bind.calls.all()[2].object[0]).toBe(viewport[0]);
                     }, {
                         cleanupTest: function (viewport, scope, $timeout) {

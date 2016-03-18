@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.3.3 -- 2016-03-16T09:12:39.242Z
+ * Version: 1.3.3 -- 2016-03-17T12:18:01.421Z
  * License: MIT
  */
  
@@ -586,15 +586,21 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       adapter.reload = reload;
 
       // events and bindings
-      viewport.bind('resize', resizeAndScrollHandler);
-      viewport.bind('scroll', resizeAndScrollHandler);
+      function bindEvents() {
+        viewport.bind('resize', resizeAndScrollHandler);
+        viewport.bind('scroll', resizeAndScrollHandler);
+      }
       viewport.bind('mousewheel', wheelHandler);
+
+      function unbindEvents() {
+        viewport.unbind('resize', resizeAndScrollHandler);
+        viewport.unbind('scroll', resizeAndScrollHandler);
+      }
 
       $scope.$on('$destroy', function () {
         // clear the buffer. It is necessary to remove the elements and $destroy the scopes
         buffer.clear();
-        viewport.unbind('resize', resizeAndScrollHandler);
-        viewport.unbind('scroll', resizeAndScrollHandler);
+        unbindEvents();
         viewport.unbind('mousewheel', wheelHandler);
       });
 
@@ -633,6 +639,10 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
         viewport.resetTopPaddingHeight();
         viewport.resetBottomPaddingHeight();
+
+        adapter.abCount = 0;
+        adapter.abfCount = 0;
+        adapter.sCount = 0;
 
         if (arguments.length) {
           buffer.clear(arguments[0]);
@@ -755,6 +765,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       function adjustBuffer(rid) {
         // We need the item bindings to be processed before we can do adjustment
         return $timeout(function () {
+          adapter.abCount++;
           processBufferedItems(rid);
 
           if (viewport.shouldLoadBottom()) {
@@ -772,6 +783,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       function adjustBufferAfterFetch(rid) {
         // We need the item bindings to be processed before we can do adjustment
         return $timeout(function () {
+          adapter.abfCount++;
           var keepFetching = processBufferedItems(rid);
 
           if (viewport.shouldLoadBottom() && keepFetching) {
@@ -787,6 +799,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
           if (!pending.length) {
             adapter.loading(false);
+            bindEvents();
             return adapter.calculateProperties();
           }
 
@@ -852,7 +865,16 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       function resizeAndScrollHandler() {
         if (!$rootScope.$$phase && !adapter.isLoading) {
-          adjustBuffer();
+          adapter.sCount++;
+          if (viewport.shouldLoadBottom()) {
+            enqueueFetch(ridActual, true);
+          } else if (viewport.shouldLoadTop()) {
+            enqueueFetch(ridActual, false);
+          }
+
+          if (pending.length) {
+            unbindEvents();
+          }
         }
       }
 

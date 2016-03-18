@@ -568,15 +568,21 @@ angular.module('ui.scroll', [])
           adapter.reload = reload;
 
           // events and bindings
-          viewport.bind('resize', resizeAndScrollHandler);
-          viewport.bind('scroll', resizeAndScrollHandler);
+          function bindEvents() {
+            viewport.bind('resize', resizeAndScrollHandler);
+            viewport.bind('scroll', resizeAndScrollHandler);
+          }
           viewport.bind('mousewheel', wheelHandler);
+
+          function unbindEvents() {
+            viewport.unbind('resize', resizeAndScrollHandler);
+            viewport.unbind('scroll', resizeAndScrollHandler);
+          }
 
           $scope.$on('$destroy', () => {
             // clear the buffer. It is necessary to remove the elements and $destroy the scopes
             buffer.clear();
-            viewport.unbind('resize', resizeAndScrollHandler);
-            viewport.unbind('scroll', resizeAndScrollHandler);
+            unbindEvents();
             viewport.unbind('mousewheel', wheelHandler);
           });
 
@@ -609,6 +615,10 @@ angular.module('ui.scroll', [])
 
             viewport.resetTopPaddingHeight();
             viewport.resetBottomPaddingHeight();
+
+            adapter.abCount = 0;
+            adapter.abfCount = 0;
+            adapter.sCount = 0;
 
             if (arguments.length) {
               buffer.clear(arguments[0]);
@@ -725,6 +735,7 @@ angular.module('ui.scroll', [])
           function adjustBuffer(rid) {
             // We need the item bindings to be processed before we can do adjustment
             return $timeout(() => {
+              adapter.abCount++;
               processBufferedItems(rid);
 
               if (viewport.shouldLoadBottom()) {
@@ -742,6 +753,7 @@ angular.module('ui.scroll', [])
           function adjustBufferAfterFetch(rid) {
             // We need the item bindings to be processed before we can do adjustment
             return $timeout(() => {
+              adapter.abfCount++;
               let keepFetching = processBufferedItems(rid);
 
               if (viewport.shouldLoadBottom() && keepFetching) {
@@ -757,6 +769,7 @@ angular.module('ui.scroll', [])
 
               if (!pending.length) {
                 adapter.loading(false);
+                bindEvents();
                 return adapter.calculateProperties();
               }
 
@@ -821,7 +834,16 @@ angular.module('ui.scroll', [])
 
           function resizeAndScrollHandler() {
             if (!$rootScope.$$phase && !adapter.isLoading) {
-              adjustBuffer();
+              adapter.sCount++;
+              if (viewport.shouldLoadBottom()) {
+                enqueueFetch(ridActual, true);
+              } else if (viewport.shouldLoadTop()) {
+                enqueueFetch(ridActual, false);
+              }
+
+              if (pending.length) {
+                unbindEvents();
+              }
             }
           }
 
