@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.3.3 -- 2016-03-17T12:18:01.421Z
+ * Version: 1.3.3 -- 2016-03-19T16:35:39.854Z
  * License: MIT
  */
  
@@ -104,6 +104,30 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     return [$animate.leave(wrapper.element).then(function () {
       return wrapper.scope.$destroy();
     })];
+  }
+
+  function Cache() {
+    var cache = Object.create(Array.prototype);
+
+    angular.extend(cache, {
+      add: function add(item) {
+        for (var i = cache.length - 1; i >= 0; i--) {
+          if (cache[i].index === item.scope.$index) {
+            cache[i].height = item.element.outerHeight();
+            return;
+          }
+        }
+        cache.push({
+          index: item.scope.$index,
+          height: item.element.outerHeight()
+        });
+      },
+      clear: function clear() {
+        cache.length = 0;
+      }
+    });
+
+    return cache;
   }
 
   function Buffer(itemName, $scope, linker, bufferSize) {
@@ -215,7 +239,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     return buffer;
   }
 
-  function Viewport(buffer, element, controllers, attrs) {
+  function Viewport(buffer, cache, element, controllers, attrs) {
     var PADDING_MIN = 0.3;
     var PADDING_DEFAULT = 0.5;
     var topPadding = null;
@@ -297,6 +321,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           if (buffer[i].element.offset().top - viewportOffset().top <= viewport.outerHeight() + bufferPadding()) {
             break;
           }
+          cache.add(buffer[i]);
           overage++;
         }
 
@@ -319,6 +344,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           if (buffer[i].element.offset().top - viewportOffset().top + buffer[i].element.outerHeight(true) >= -1 * bufferPadding()) {
             break;
           }
+          cache.add(buffer[i]);
           overageHeight += buffer[i].element.outerHeight(true);
           overage++;
         }
@@ -333,22 +359,32 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         }
       },
       adjustPadding: function adjustPadding() {
+        if (!buffer.length || !cache.length) {
+          return;
+        }
+
+        var topPaddingHeight = 0;
+        var bottomPaddingHeight = 0;
+        for (var i = cache.length - 1; i >= 0; i--) {
+          if (cache[i].index < buffer.first) {
+            topPaddingHeight += cache[i].height;
+          }
+          if (cache[i].index >= buffer.next) {
+            bottomPaddingHeight += cache[i].height;
+          }
+        }
+
+        topPadding.height(topPaddingHeight);
+        bottomPadding.height(bottomPaddingHeight);
+      },
+      syncDatasource: function syncDatasource(datasource) {
         if (!buffer.length) {
           return;
         }
 
         var bufferFirstEl = buffer[0].element;
         var bufferLastEl = buffer[buffer.length - 1].element;
-
         averageItemHeight = (bufferLastEl.offset().top + bufferLastEl.outerHeight(true) - bufferFirstEl.offset().top) / buffer.length;
-        topPadding.height((buffer.first - buffer.minIndex) * averageItemHeight);
-
-        return bottomPadding.height((buffer.maxIndex - buffer.next + 1) * averageItemHeight);
-      },
-      syncDatasource: function syncDatasource(datasource) {
-        if (!buffer.length) {
-          return;
-        }
 
         var delta = buffer.syncDatasource(datasource) * averageItemHeight;
 
@@ -517,8 +553,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       var ridActual = 0; // current data revision id
       var pending = [];
+      var cache = new Cache();
       var buffer = new Buffer(itemName, $scope, linker, bufferSize);
-      var viewport = new Viewport(buffer, element, controllers, $attr);
+      var viewport = new Viewport(buffer, cache, element, controllers, $attr);
       var adapter = new Adapter($attr, viewport, buffer, function () {
         dismissPendingRequests();
         return adjustBuffer(ridActual);
@@ -649,6 +686,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         } else {
           buffer.clear();
         }
+        cache.clear();
 
         return adjustBuffer(ridActual);
       }

@@ -90,6 +90,30 @@ angular.module('ui.scroll', [])
         return [($animate.leave(wrapper.element)).then(() => wrapper.scope.$destroy())];
       }
 
+      function Cache() {
+        const cache = Object.create(Array.prototype);
+
+        angular.extend(cache, {
+          add(item) {
+            for (let i = cache.length - 1; i >= 0; i--) {
+              if(cache[i].index === item.scope.$index) {
+                cache[i].height = item.element.outerHeight();
+                return;
+              }
+            }
+            cache.push({
+              index: item.scope.$index,
+              height: item.element.outerHeight()
+            });
+          },
+          clear() {
+            cache.length = 0;
+          }
+        });
+
+        return cache;
+      }
+
       function Buffer(itemName, $scope, linker, bufferSize) {
         const buffer = Object.create(Array.prototype);
 
@@ -197,7 +221,7 @@ angular.module('ui.scroll', [])
         return buffer;
       }
 
-      function Viewport(buffer, element, controllers, attrs) {
+      function Viewport(buffer, cache, element, controllers, attrs) {
         const PADDING_MIN = 0.3;
         const PADDING_DEFAULT = 0.5;
         let topPadding = null;
@@ -283,6 +307,7 @@ angular.module('ui.scroll', [])
               if (buffer[i].element.offset().top - viewportOffset().top <= viewport.outerHeight() + bufferPadding()) {
                 break;
               }
+              cache.add(buffer[i]);
               overage++;
             }
 
@@ -307,6 +332,7 @@ angular.module('ui.scroll', [])
               if (buffer[i].element.offset().top - viewportOffset().top + buffer[i].element.outerHeight(true) >= (-1) * bufferPadding()) {
                 break;
               }
+              cache.add(buffer[i]);
               overageHeight += buffer[i].element.outerHeight(true);
               overage++;
             }
@@ -322,23 +348,33 @@ angular.module('ui.scroll', [])
           },
 
           adjustPadding() {
-            if (!buffer.length) {
+            if (!buffer.length || !cache.length) {
               return;
             }
 
-            const bufferFirstEl = buffer[0].element;
-            const bufferLastEl = buffer[buffer.length - 1].element;
+            let topPaddingHeight = 0;
+            let bottomPaddingHeight = 0;
+            for (let i = cache.length - 1; i >= 0; i--) {
+              if(cache[i].index < buffer.first) {
+                topPaddingHeight += cache[i].height;
+              }
+              if(cache[i].index >= buffer.next) {
+                bottomPaddingHeight += cache[i].height;
+              }
+            }
 
-            averageItemHeight = (bufferLastEl.offset().top + bufferLastEl.outerHeight(true) - bufferFirstEl.offset().top) / buffer.length;
-            topPadding.height((buffer.first - buffer.minIndex) * averageItemHeight);
-
-            return bottomPadding.height((buffer.maxIndex - buffer.next + 1) * averageItemHeight);
+            topPadding.height(topPaddingHeight);
+            bottomPadding.height(bottomPaddingHeight);
           },
 
           syncDatasource(datasource) {
             if (!buffer.length) {
               return;
             }
+
+            const bufferFirstEl = buffer[0].element;
+            const bufferLastEl = buffer[buffer.length - 1].element;
+            averageItemHeight = (bufferLastEl.offset().top + bufferLastEl.outerHeight(true) - bufferFirstEl.offset().top) / buffer.length;
 
             const delta = buffer.syncDatasource(datasource) * averageItemHeight;
 
@@ -503,8 +539,9 @@ angular.module('ui.scroll', [])
 
           let ridActual = 0;// current data revision id
           let pending = [];
+          let cache = new Cache();
           let buffer = new Buffer(itemName, $scope, linker, bufferSize);
-          let viewport = new Viewport(buffer, element, controllers, $attr);
+          let viewport = new Viewport(buffer, cache, element, controllers, $attr);
           let adapter = new Adapter($attr, viewport, buffer, () => {
             dismissPendingRequests();
             return adjustBuffer(ridActual);
@@ -625,6 +662,7 @@ angular.module('ui.scroll', [])
             } else {
               buffer.clear();
             }
+            cache.clear();
 
             return adjustBuffer(ridActual);
           }
