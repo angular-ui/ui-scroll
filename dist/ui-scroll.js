@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.3.3 -- 2016-03-23T04:28:04.314Z
+ * Version: 1.3.3 -- 2016-03-23T04:30:31.917Z
  * License: MIT
  */
  
@@ -475,29 +475,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         }
       }
     };
-
-    // this.calculateProperties = function () {
-    //   let i, item, itemHeight, itemTop, isNewRow, rowTop;
-    //   let topHeight = 0;
-    //   for (i = 0; i < buffer.length; i++) {
-    //     item = buffer[i];
-    //     itemTop = item.element.offset().top;
-    //     isNewRow = rowTop !== itemTop;
-    //     rowTop = itemTop;
-    //     if(isNewRow) {
-    //       itemHeight = item.element.outerHeight(true);
-    //     }
-    //
-    //     if(isNewRow && !isItemTopVisible(topHeight, itemHeight)) {
-    //       topHeight += itemHeight;
-    //     } else {
-    //       if(isNewRow && !(this.topVisibleScope && item.scope.$index === this.topVisibleScope.$index)) {
-    //         this.setTopVisibleItem(item);
-    //       }
-    //       break;
-    //     }
-    //   }
-    // };
 
     function isItemTopVisible(topHeight, itemHeight) {
       var viewportTopVisible = undefined,

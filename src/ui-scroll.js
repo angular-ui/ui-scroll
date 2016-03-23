@@ -462,29 +462,6 @@ angular.module('ui.scroll', [])
           }
         };
 
-        // this.calculateProperties = function () {
-        //   let i, item, itemHeight, itemTop, isNewRow, rowTop;
-        //   let topHeight = 0;
-        //   for (i = 0; i < buffer.length; i++) {
-        //     item = buffer[i];
-        //     itemTop = item.element.offset().top;
-        //     isNewRow = rowTop !== itemTop;
-        //     rowTop = itemTop;
-        //     if(isNewRow) {
-        //       itemHeight = item.element.outerHeight(true);
-        //     }
-        //
-        //     if(isNewRow && !isItemTopVisible(topHeight, itemHeight)) {
-        //       topHeight += itemHeight;
-        //     } else {
-        //       if(isNewRow && !(this.topVisibleScope && item.scope.$index === this.topVisibleScope.$index)) {
-        //         this.setTopVisibleItem(item);
-        //       }
-        //       break;
-        //     }
-        //   }
-        // };
-
         function isItemTopVisible(topHeight, itemHeight) {
           let viewportTopVisible, viewportTopData;
           viewportTopVisible = viewport.topVisiblePos();
