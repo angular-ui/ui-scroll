@@ -493,7 +493,7 @@ describe('uiScroll', function () {
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //now we are at the top but preventDefault is occurred because of bof will be reached only after next scroll trigger
                     expect(documentScrollBubblingCount).toBe(2); //here! the only one prevented wheel-event
 
-                    //flush();
+                    flush();
 
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred but document will not scroll because of viewport will be scrolled
                     expect(documentScrollBubblingCount).toBe(3);
@@ -501,7 +501,7 @@ describe('uiScroll', function () {
                     viewport.scrollTop(0);
                     viewport.trigger('scroll'); //bof will be reached right after that
 
-                    //flush();
+                    flush();
 
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred because of we are at the top and bof is reached
                     expect(documentScrollBubblingCount).toBe(4);

@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.3.3 -- 2016-03-17T12:18:01.421Z
+ * Version: 1.3.3 -- 2016-03-23T04:30:31.917Z
  * License: MIT
  */
  
@@ -465,20 +465,37 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         if (isNewRow) {
           itemHeight = item.element.outerHeight(true);
         }
-        if (isNewRow && viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos()) {
+        if (isNewRow && !isItemTopVisible(topHeight, itemHeight)) {
           topHeight += itemHeight;
         } else {
           if (isNewRow) {
-            this.topVisible = item.item;
-            this.topVisibleElement = item.element;
-            this.topVisibleScope = item.scope;
-            setTopVisible(viewportScope, item.item);
-            setTopVisibleElement(viewportScope, item.element);
-            setTopVisibleScope(viewportScope, item.scope);
+            this.setTopVisibleItem(item);
           }
           break;
         }
       }
+    };
+
+    function isItemTopVisible(topHeight, itemHeight) {
+      var viewportTopVisible = undefined,
+          viewportTopData = undefined;
+      viewportTopVisible = viewport.topVisiblePos();
+      viewportTopData = viewport.topDataPos();
+      var startOfEl = viewportTopData + topHeight;
+      var endOfEl = startOfEl + itemHeight;
+      return startOfEl <= viewportTopVisible && endOfEl > viewportTopVisible;
+    }
+
+    this.setTopVisibleItem = function (item) {
+      var parentThis = this;
+      return $timeout(function () {
+        parentThis.topVisible = item.item;
+        parentThis.topVisibleElement = item.element;
+        parentThis.topVisibleScope = item.scope;
+        setTopVisible(viewportScope, item.item);
+        setTopVisibleElement(viewportScope, item.element);
+        setTopVisibleScope(viewportScope, item.scope);
+      });
     };
   }
 
@@ -874,6 +891,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
           if (pending.length) {
             unbindEvents();
+          } else {
+            adapter.calculateProperties();
           }
         }
       }
