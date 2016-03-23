@@ -450,21 +450,60 @@ angular.module('ui.scroll', [])
             if (isNewRow) {
               itemHeight = item.element.outerHeight(true);
             }
-            if (isNewRow && (viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos())) {
+            if (isNewRow && !isItemTopVisible(topHeight, itemHeight)) {
               topHeight += itemHeight;
             } else {
               if (isNewRow) {
-                this.topVisible = item.item;
-                this.topVisibleElement = item.element;
-                this.topVisibleScope = item.scope;
-                setTopVisible(viewportScope, item.item);
-                setTopVisibleElement(viewportScope, item.element);
-                setTopVisibleScope(viewportScope, item.scope);
+                this.setTopVisibleItem(item);
               }
               break;
 
             }
           }
+        };
+
+        // this.calculateProperties = function () {
+        //   let i, item, itemHeight, itemTop, isNewRow, rowTop;
+        //   let topHeight = 0;
+        //   for (i = 0; i < buffer.length; i++) {
+        //     item = buffer[i];
+        //     itemTop = item.element.offset().top;
+        //     isNewRow = rowTop !== itemTop;
+        //     rowTop = itemTop;
+        //     if(isNewRow) {
+        //       itemHeight = item.element.outerHeight(true);
+        //     }
+        //
+        //     if(isNewRow && !isItemTopVisible(topHeight, itemHeight)) {
+        //       topHeight += itemHeight;
+        //     } else {
+        //       if(isNewRow && !(this.topVisibleScope && item.scope.$index === this.topVisibleScope.$index)) {
+        //         this.setTopVisibleItem(item);
+        //       }
+        //       break;
+        //     }
+        //   }
+        // };
+
+        function isItemTopVisible(topHeight, itemHeight) {
+          let viewportTopVisible, viewportTopData;
+          viewportTopVisible = viewport.topVisiblePos();
+          viewportTopData = viewport.topDataPos();
+          let startOfEl = viewportTopData + topHeight;
+          let endOfEl = startOfEl + itemHeight;
+          return startOfEl <= viewportTopVisible && endOfEl > viewportTopVisible;
+        }
+
+        this.setTopVisibleItem = function(item) {
+          var parentThis = this;
+          return $timeout(function() {
+            parentThis.topVisible = item.item;
+            parentThis.topVisibleElement = item.element;
+            parentThis.topVisibleScope = item.scope;
+            setTopVisible(viewportScope, item.item);
+            setTopVisibleElement(viewportScope, item.element);
+            setTopVisibleScope(viewportScope, item.scope);
+          });
         };
       }
 
@@ -843,6 +882,8 @@ angular.module('ui.scroll', [])
 
               if (pending.length) {
                 unbindEvents();
+              } else {
+                adapter.calculateProperties();
               }
             }
           }
