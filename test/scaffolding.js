@@ -3,12 +3,13 @@ var createHtml = function (settings) {
     var itemStyle = settings.itemHeight ? ' style="height:' + settings.itemHeight + 'px"' : '';
     var bufferSize = settings.bufferSize ? ' buffer-size="' + settings.bufferSize + '"' : '';
     var isLoading = settings.isLoading ? ' is-loading="' + settings.isLoading + '"' : '';
+    var topVisible = settings.topVisible ? ' top-visible="' + settings.topVisible + '"' : '';
     var adapter = settings.adapter ? ' adapter="' + settings.adapter + '"' : '';
     var template = settings.template ? settings.template : '{{$index}}: {{item}}';
     return '<div ui-scroll-viewport' + viewportStyle + '>' +
         '<div ui-scroll="item in ' + settings.datasource + '"' +
         adapter +
-        itemStyle + bufferSize + isLoading + '>' +
+        itemStyle + bufferSize + isLoading + topVisible + '>' +
         template +
         '</div>' +
         '</div>';

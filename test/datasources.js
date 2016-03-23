@@ -15,7 +15,7 @@ angular.module('ui.scroll.test.datasources', [])
 
             // another layer of indirection introduced by the actualGet
             // is a workaround for the jasmine issue #1007 https://github.com/jasmine/jasmine/issues/1007
-            result = {
+            var result = {
                 get: function (descriptor, success) {
                     result.actualGet(descriptor, success);
                 },
@@ -43,12 +43,30 @@ angular.module('ui.scroll.test.datasources', [])
         }
     ])
 
+    .factory('myOneBigPageDatasource', [
+        '$log', '$timeout', '$rootScope', function () {
+            return {
+                get: function (index, count, success) {
+                    if (index === 1) {
+                      var resultList = [];
+                      for(var i = 1; i < 100; i++) {
+                        resultList.push('item' + i);
+                      }
+                      success(resultList);
+                    } else {
+                        success([]);
+                    }
+                }
+            };
+        }
+    ])
+
     .factory('myNewOnePageDatasource', [
         '$log', '$timeout', '$rootScope', function () {
 
             // another layer of indirection introduced by the actualGet
             // is a workaround for the jasmine issue #1007 https://github.com/jasmine/jasmine/issues/1007
-            result = {
+            var result = {
                 get: function (descriptor, success) {
                     result.actualGet(descriptor, success);
                 },
