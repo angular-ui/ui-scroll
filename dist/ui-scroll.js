@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.3.3 -- 2016-03-19T16:35:39.854Z
+ * Version: 1.3.3 -- 2016-03-30T12:16:26.195Z
  * License: MIT
  */
  
@@ -912,6 +912,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
           if (pending.length) {
             unbindEvents();
+          } else {
+            adapter.calculateProperties();
+            $scope.$apply();
           }
         }
       }

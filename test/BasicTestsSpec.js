@@ -520,56 +520,6 @@ describe('uiScroll', function () {
         });
     });
 
-    describe('isLoading property: deep access and sync', function () {
-
-        it('should get isLoading as an adapter property', function () {
-            runTest({datasource: 'myOnePageDatasource', adapter: 'container.sub.adapter'},
-                function (viewport, scope) {
-                    expect(!!scope.container && !!scope.container.sub && !!scope.container.sub.adapter).toBe(true);
-                    expect(typeof scope.container.sub.adapter.isLoading).toBe('boolean');
-                }
-            );
-        });
-
-        it('should get isLoading as a scope property', function () {
-            runTest({datasource: 'myOnePageDatasource', isLoading: 'container.sub.isLoading'},
-                function (viewport, scope) {
-                    expect(!!scope.container && !!scope.container.sub).toBe(true);
-                    expect(typeof scope.container.sub.isLoading).toBe('boolean');
-                }
-            );
-        });
-
-        it('should sync scope-isLoading with adapter-isLoading', function () {
-            runTest({
-                    datasource: 'myMultipageDatasource',
-                    itemHeight: 40,
-                    bufferSize: 3,
-                    adapter: 'container1.adapter',
-                    isLoading: 'container2.isLoading'
-                },
-                function (viewport, scope, $timeout) {
-                    var isLoadingChangeCount = 0;
-
-                    expect(!!scope.container1 && !!scope.container1.adapter && !!scope.container2).toBe(true);
-
-                    // need to review: isLoading=true can't be catched since subscribe/unsibscribe optimization
-                    scope.$watch('container1.adapter.isLoading', function(newValue) {
-                        isLoadingChangeCount++;
-                        expect(scope.container2.isLoading).toBe(newValue);
-                    });
-
-                    viewport.scrollTop(100);
-                    viewport.trigger('scroll');
-                    $timeout.flush();
-
-                    expect(isLoadingChangeCount).toBe(1);
-                }
-            );
-        });
-
-    });
-
     describe('paddings recalculation', function () {
 
         var viewportHeight = 60;
@@ -712,5 +662,101 @@ describe('uiScroll', function () {
         });
 
     });
+
+	describe('topVisible property: deep access and sync', function () {
+
+		it('should get topVisible as an adapter property', function () {
+			runTest({datasource: 'myMultipageDatasource', adapter: 'adapterContainer.innerContainer.adapter'},
+				function (viewport, scope) {
+					expect(!!scope.adapterContainer && !!scope.adapterContainer.innerContainer && !!scope.adapterContainer.innerContainer.adapter).toBe(true);
+					expect(angular.isString(scope.adapterContainer.innerContainer.adapter.topVisible)).toBe(true);
+				}
+			);
+		});
+
+		it('should get topVisible as a scope property', function () {
+			runTest({datasource: 'myMultipageDatasource', topVisible: 'scopeContainer.innerContainer.topVisible'},
+				function (viewport, scope) {
+					expect(!!scope.scopeContainer && !!scope.scopeContainer.innerContainer).toBe(true);
+					expect(angular.isString(scope.scopeContainer.innerContainer.topVisible)).toBe(true);
+				}
+			);
+		});
+
+		it('should sync scope-topVisible with adapter-topVisible during each fetching', function () {
+			runTest({
+					datasource: 'myMultipageDatasource',
+					itemHeight: 40,
+					bufferSize: 3,
+					adapter: 'container1.adapter',
+					topVisible: 'container2.topVisible'
+				},
+				function (viewport, scope, $timeout) {
+					var topVisibleChangeCount = 0;
+
+					scope.$watch('container1.adapter.topVisible', function(newValue) {
+						topVisibleChangeCount++;
+
+						expect(scope.container1.adapter.topVisible).toBe(newValue);
+						expect(scope.container2.topVisible).toBe(newValue);
+
+						if(topVisibleChangeCount === 1) {
+							expect(newValue).toBe('item3');
+						}
+						else if(topVisibleChangeCount === 2) {
+							expect(newValue).toBe('item8');
+						}
+					});
+
+					viewport.scrollTop(100); // 100 : 40 = 2.5 --> item3
+					viewport.trigger('scroll');
+					$timeout.flush();
+
+					viewport.scrollTop(300); // 300 : 40 = 7.5 --> item8
+					viewport.trigger('scroll');
+					$timeout.flush();
+
+					expect(topVisibleChangeCount).toBe(2);
+				}
+			);
+		});
+
+		it('should sync scope-topVisible with adapter-topVisible during each scrolling (single fetch case)', function () {
+			runTest({
+					datasource: 'myOneBigPageDatasource',
+					itemHeight: 40,
+					bufferSize: 3,
+					adapter: 'container1.adapter',
+					topVisible: 'container2.topVisible'
+				},
+				function (viewport, scope) {
+					var topVisibleChangeCount = 0;
+
+					scope.$watch('container1.adapter.topVisible', function(newValue) {
+						topVisibleChangeCount++;
+
+						expect(scope.container1.adapter.topVisible).toBe(newValue);
+						expect(scope.container2.topVisible).toBe(newValue);
+
+						if(topVisibleChangeCount === 1) {
+							expect(newValue).toBe('item3');
+						}
+						else if(topVisibleChangeCount === 2) {
+							expect(newValue).toBe('item8');
+						}
+					});
+
+					viewport.scrollTop(100); // 100 : 40 = 2.5 --> item3
+					viewport.trigger('scroll');
+
+					viewport.scrollTop(300); // 300 : 40 = 7.5 --> item8
+					viewport.trigger('scroll');
+
+					expect(topVisibleChangeCount).toBe(2);
+				}
+			);
+		});
+
+	});
 
 });

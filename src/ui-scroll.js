@@ -881,6 +881,9 @@ angular.module('ui.scroll', [])
 
               if (pending.length) {
                 unbindEvents();
+              } else {
+                adapter.calculateProperties();
+                $scope.$apply();
               }
             }
           }
