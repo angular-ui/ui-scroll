@@ -14,9 +14,10 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite'])
 			};
 
 			$scope.datasource = datasource;
+			$scope.adapter = {};
 
 			$scope.doReload = function () {
-				if (angular.isObject($scope.adapter) && angular.isFunction($scope.adapter.reload)) {
+				if (angular.isFunction($scope.adapter.reload)) {
 					var reloadIndex = parseInt($scope.reloadIndex, 10);
 					reloadIndex = isNaN(reloadIndex) ? 1 : reloadIndex;
 					$scope.adapter.reload(reloadIndex);
