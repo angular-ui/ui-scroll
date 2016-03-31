@@ -15,7 +15,7 @@
 
 		<a class="back" href="../index.html">browse other examples</a>
 
-		<h1 class="page-header page-header-exapmle">Datasource as service</h1>
+		<h1 class="page-header page-header-exapmle">Reload with parameter</h1>
 
 		<div class="description">
 			Here we provide an ability to reload the datasource to some specified position.
@@ -26,7 +26,7 @@
 			<button ng-click="doReload(reloadIndex)"> Reload({{reloadIndex}}) </button>
 		</div>
 
-		<div class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
+		<div ng-if="delay" class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
 			<div class="item" ui-scroll="item in datasource" adapter="adapter">{{item}}</div>
 		</div>
 

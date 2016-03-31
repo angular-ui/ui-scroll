@@ -23,5 +23,10 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite'])
 				}
 			};
 
+			$scope.delay = false;
+			$timeout(function() {
+				$scope.delay = true;
+			}, 500);
+
 		}
 	]);
