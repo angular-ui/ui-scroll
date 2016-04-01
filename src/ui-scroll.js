@@ -122,8 +122,10 @@ angular.module('ui.scroll', [])
           buffer.bof = false;
           buffer.first = origin;
           buffer.next = origin;
-          buffer.minIndex = Number.MAX_VALUE;
-          buffer.maxIndex = Number.MIN_VALUE;
+          buffer.minIndex = origin;
+          buffer.maxIndex = origin;
+          buffer.minIndexUser = null;
+          buffer.maxIndexUser = null;
         }
 
         angular.extend(buffer, {
@@ -200,15 +202,6 @@ angular.module('ui.scroll', [])
             buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
           },
 
-          syncDatasource(datasource) {
-            const offset = buffer.minIndex - (Math.min(buffer.minIndex, datasource.minIndex || Number.MAX_VALUE));
-
-            datasource.minIndex = (buffer.minIndex -= offset);
-            datasource.maxIndex = buffer.maxIndex = Math.max(buffer.maxIndex, datasource.maxIndex || Number.MIN_VALUE);
-
-            return offset;
-          },
-
           // clears the buffer
           clear() {
             buffer.remove(0, buffer.length);
@@ -226,7 +219,6 @@ angular.module('ui.scroll', [])
         const PADDING_DEFAULT = 0.5;
         let topPadding = null;
         let bottomPadding = null;
-        let averageItemHeight = 0;
         const viewport = controllers[0] && controllers[0].viewport ? controllers[0].viewport : angular.element(window);
 
         viewport.css({
@@ -246,7 +238,7 @@ angular.module('ui.scroll', [])
             bottomPadding = new Padding(template);
             element.before(topPadding);
             element.after(bottomPadding);
-
+            
             function Padding(template) {
               let result;
               let tagName = template.localName;
@@ -347,45 +339,55 @@ angular.module('ui.scroll', [])
             }
           },
 
-          adjustPadding() {
-            if (!buffer.length || !cache.length) {
-              return;
-            }
-
-            let topPaddingHeight = 0;
-            let bottomPaddingHeight = 0;
-            for (let i = cache.length - 1; i >= 0; i--) {
-              if(cache[i].index < buffer.first) {
-                topPaddingHeight += cache[i].height;
-              }
-              if(cache[i].index >= buffer.next) {
-                bottomPaddingHeight += cache[i].height;
-              }
-            }
-
-            topPadding.height(topPaddingHeight);
-            bottomPadding.height(bottomPaddingHeight);
-          },
-
-          syncDatasource(datasource) {
+          adjustPadding(adjustScrollTop) {
             if (!buffer.length) {
               return;
             }
 
-            const bufferFirstEl = buffer[0].element;
-            const bufferLastEl = buffer[buffer.length - 1].element;
-            averageItemHeight = (bufferLastEl.offset().top + bufferLastEl.outerHeight(true) - bufferFirstEl.offset().top) / buffer.length;
+            // percise heights calculation, items that were in buffer once
+            let topPaddingHeight = 0;
+            let bottomPaddingHeight = 0;
 
-            const delta = buffer.syncDatasource(datasource) * averageItemHeight;
+            if(cache.length) {
+              for (let i = cache.length - 1; i >= 0; i--) {
+                if(cache[i].index < buffer.first) {
+                  topPaddingHeight += cache[i].height;
+                }
+                if(cache[i].index >= buffer.next) {
+                  bottomPaddingHeight += cache[i].height;
+                }
+              }
+            }
 
-            topPadding.height(topPadding.height() + delta);
+            // average heights calculation, items that have never been reached
+            let topPaddingHeightAdd = 0;
+            let bottomPaddingHeightAdd = 0;
+            let adjustTopPadding = buffer.minIndexUser && buffer.minIndex > buffer.minIndexUser;
+            let adjustBottomPadding = buffer.maxIndexUser && buffer.maxIndex < buffer.maxIndexUser;
 
-            viewport.scrollTop(viewport.scrollTop() + delta);
+            if(adjustTopPadding || adjustBottomPadding) {
+              let visibleItemsHeight = 0;
+              for (let i = buffer.length - 1; i >= 0; i--) {
+                visibleItemsHeight += buffer[i].element.outerHeight(true);
+              }
+              let averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
+              topPaddingHeightAdd = adjustTopPadding ? (buffer.minIndex - buffer.minIndexUser) * averageItemHeight : 0;
+              bottomPaddingHeightAdd = adjustBottomPadding ? (buffer.maxIndexUser - buffer.maxIndex) * averageItemHeight : 0;
+            }
 
-            viewport.adjustPadding();
+            // paddings combine adjustement
+            let topPaddingHeightOld = topPadding.height();
+            topPadding.height(topPaddingHeight + topPaddingHeightAdd);
+            bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
+
+            // additional scrollTop adjustement in case of datasource.minIndex external set
+            if (adjustScrollTop && adjustTopPadding && topPaddingHeightAdd) {
+              let diff = topPadding.height() - topPaddingHeightOld;
+              viewport.scrollTop(viewport.scrollTop() + diff);
+            }
           },
 
-          adjustScrollTop(height) {
+          adjustScrollTopAfterPrepend(height) {
             const paddingHeight = topPadding.height() - height;
 
             if (paddingHeight >= 0) {
@@ -520,21 +522,39 @@ angular.module('ui.scroll', [])
           linker = linker || compileLinker;
 
           const datasource = (() => {
-            let _datasource = $parse(datasourceName)($scope);
+            let isDatasourceValid = function () {
+              return angular.isObject(_datasource) && angular.isFunction(_datasource.get);
+            };
 
+            let _datasource = $parse(datasourceName)($scope); // try to get datasource on scope
             if (!isDatasourceValid()) {
-              _datasource = $injector.get(datasourceName);
+              _datasource = $injector.get(datasourceName); // try to inject datasource as service
               if (!isDatasourceValid()) {
                 throw new Error(datasourceName + ' is not a valid datasource');
               }
             }
 
-            return _datasource;
+            Object.defineProperty(_datasource, 'minIndex', {
+              set: function (value) {
+                this._minIndex = value;
+                onDatasourceMinIndexChanged(value);
+              },
+              get: function get() {
+                return this._minIndex;
+              }
+            });
 
-            function isDatasourceValid() {
-              // then try to inject datasource as service
-              return angular.isObject(_datasource) && angular.isFunction(_datasource.get);
-            }
+            Object.defineProperty(_datasource, 'maxIndex', {
+              set: function (value) {
+                this._maxIndex = value;
+                onDatasourceMaxIndexChanged(value);
+              },
+              get: function get() {
+                return this._maxIndex;
+              }
+            });
+
+            return _datasource;
           })();
 
           let ridActual = 0;// current data revision id
@@ -546,6 +566,23 @@ angular.module('ui.scroll', [])
             dismissPendingRequests();
             return adjustBuffer(ridActual);
           });
+
+          var onDatasourceMinIndexChanged = function(value) {
+            $timeout(function(){
+              buffer.minIndexUser = value;
+              if(!pending.length) {
+                viewport.adjustPadding(true);
+              }
+            });
+          };
+          var onDatasourceMaxIndexChanged = function(value) {
+            $timeout(function(){
+              buffer.maxIndexUser = value;
+              if(!pending.length) {
+                viewport.adjustPadding();
+              }
+            });
+          };
 
           const fetchNext = (() => {
             if (datasource.get.length !== 2) {
@@ -747,7 +784,7 @@ angular.module('ui.scroll', [])
                 adjustedPaddingHeight += wrapper.element.outerHeight(true);
               });
 
-              viewport.adjustScrollTop(adjustedPaddingHeight);
+              viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
             }
 
             // re-index the buffer
@@ -762,9 +799,6 @@ angular.module('ui.scroll', [])
               });
             } else {
               viewport.adjustPadding();
-              if (!pending.length) {
-                viewport.syncDatasource(datasource);
-              }
             }
 
             return keepFetching;
