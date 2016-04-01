@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.3.3 -- 2016-03-30T12:16:26.195Z
+ * Version: 1.3.3 -- 2016-04-01T15:17:21.448Z
  * License: MIT
  */
  
@@ -106,30 +106,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     })];
   }
 
-  function Cache() {
-    var cache = Object.create(Array.prototype);
-
-    angular.extend(cache, {
-      add: function add(item) {
-        for (var i = cache.length - 1; i >= 0; i--) {
-          if (cache[i].index === item.scope.$index) {
-            cache[i].height = item.element.outerHeight();
-            return;
-          }
-        }
-        cache.push({
-          index: item.scope.$index,
-          height: item.element.outerHeight()
-        });
-      },
-      clear: function clear() {
-        cache.length = 0;
-      }
-    });
-
-    return cache;
-  }
-
   function Buffer(itemName, $scope, linker, bufferSize) {
     var buffer = Object.create(Array.prototype);
 
@@ -138,8 +114,10 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       buffer.bof = false;
       buffer.first = origin;
       buffer.next = origin;
-      buffer.minIndex = Number.MAX_VALUE;
-      buffer.maxIndex = Number.MIN_VALUE;
+      buffer.minIndex = origin;
+      buffer.maxIndex = origin;
+      buffer.minIndexUser = null;
+      buffer.maxIndexUser = null;
     }
 
     angular.extend(buffer, {
@@ -217,14 +195,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       setLower: function setLower() {
         buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
       },
-      syncDatasource: function syncDatasource(datasource) {
-        var offset = buffer.minIndex - Math.min(buffer.minIndex, datasource.minIndex || Number.MAX_VALUE);
-
-        datasource.minIndex = buffer.minIndex -= offset;
-        datasource.maxIndex = buffer.maxIndex = Math.max(buffer.maxIndex, datasource.maxIndex || Number.MIN_VALUE);
-
-        return offset;
-      },
 
 
       // clears the buffer
@@ -239,12 +209,11 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     return buffer;
   }
 
-  function Viewport(buffer, cache, element, controllers, attrs) {
+  function Viewport(buffer, element, controllers, attrs) {
     var PADDING_MIN = 0.3;
     var PADDING_DEFAULT = 0.5;
     var topPadding = null;
     var bottomPadding = null;
-    var averageItemHeight = 0;
     var viewport = controllers[0] && controllers[0].viewport ? controllers[0].viewport : angular.element(window);
 
     viewport.css({
@@ -258,6 +227,52 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       return { top: 0 };
     };
 
+    function Cache() {
+      var cache = Object.create(Array.prototype);
+
+      angular.extend(cache, {
+        add: function add(item) {
+          for (var i = cache.length - 1; i >= 0; i--) {
+            if (cache[i].index === item.scope.$index) {
+              cache[i].height = item.element.outerHeight();
+              return;
+            }
+          }
+          cache.push({
+            index: item.scope.$index,
+            height: item.element.outerHeight()
+          });
+        },
+        clear: function clear() {
+          cache.length = 0;
+        }
+      });
+
+      return cache;
+    }
+
+    function Padding(template) {
+      var result = undefined;
+
+      switch (template.tagName) {
+        case 'dl':
+          throw new Error('ui-scroll directive does not support <' + template.tagName + '> as a repeating tag: ' + template.outerHTML);
+        case 'tr':
+          var table = angular.element('<table><tr><td><div></div></td></tr></table>');
+          result = table.find('tr');
+          break;
+        case 'li':
+          result = angular.element('<li></li>');
+          break;
+        default:
+          result = angular.element('<div></div>');
+      }
+
+      result.cache = new Cache();
+
+      return result;
+    }
+
     function bufferPadding() {
       return viewport.outerHeight() * Math.max(PADDING_MIN, +attrs.padding || PADDING_DEFAULT); // some extra space to initiate preload
     }
@@ -268,27 +283,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         bottomPadding = new Padding(template);
         element.before(topPadding);
         element.after(bottomPadding);
-
-        function Padding(template) {
-          var result = undefined;
-          var tagName = template.localName;
-
-          switch (tagName) {
-            case 'dl':
-              throw new Error('ui-scroll directive does not support <' + tagName + '> as a repeating tag: ' + template.outerHTML);
-            case 'tr':
-              var table = angular.element('<table><tr><td><div></div></td></tr></table>');
-              result = table.find('tr');
-              break;
-            case 'li':
-              result = angular.element('<li></li>');
-              break;
-            default:
-              result = angular.element('<div></div>');
-          }
-
-          return result;
-        }
       },
       bottomDataPos: function bottomDataPos() {
         var scrollHeight = viewport[0].scrollHeight;
@@ -321,7 +315,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           if (buffer[i].element.offset().top - viewportOffset().top <= viewport.outerHeight() + bufferPadding()) {
             break;
           }
-          cache.add(buffer[i]);
+          bottomPadding.cache.add(buffer[i]);
           overage++;
         }
 
@@ -344,7 +338,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           if (buffer[i].element.offset().top - viewportOffset().top + buffer[i].element.outerHeight(true) >= -1 * bufferPadding()) {
             break;
           }
-          cache.add(buffer[i]);
+          topPadding.cache.add(buffer[i]);
           overageHeight += buffer[i].element.outerHeight(true);
           overage++;
         }
@@ -358,43 +352,58 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           buffer.first += overage;
         }
       },
-      adjustPadding: function adjustPadding() {
-        if (!buffer.length || !cache.length) {
-          return;
-        }
-
-        var topPaddingHeight = 0;
-        var bottomPaddingHeight = 0;
-        for (var i = cache.length - 1; i >= 0; i--) {
-          if (cache[i].index < buffer.first) {
-            topPaddingHeight += cache[i].height;
-          }
-          if (cache[i].index >= buffer.next) {
-            bottomPaddingHeight += cache[i].height;
-          }
-        }
-
-        topPadding.height(topPaddingHeight);
-        bottomPadding.height(bottomPaddingHeight);
-      },
-      syncDatasource: function syncDatasource(datasource) {
+      adjustPadding: function adjustPadding(adjustScrollTop) {
         if (!buffer.length) {
           return;
         }
 
-        var bufferFirstEl = buffer[0].element;
-        var bufferLastEl = buffer[buffer.length - 1].element;
-        averageItemHeight = (bufferLastEl.offset().top + bufferLastEl.outerHeight(true) - bufferFirstEl.offset().top) / buffer.length;
+        // percise heights calculation, items that were in buffer once
+        var topPaddingHeight = 0;
+        var bottomPaddingHeight = 0;
 
-        var delta = buffer.syncDatasource(datasource) * averageItemHeight;
+        if (topPadding.cache.length) {
+          for (var i = topPadding.cache.length - 1; i >= 0; i--) {
+            if (topPadding.cache[i].index < buffer.first) {
+              topPaddingHeight += topPadding.cache[i].height;
+            }
+          }
+        }
+        if (bottomPadding.cache.length) {
+          for (var i = bottomPadding.cache.length - 1; i >= 0; i--) {
+            if (bottomPadding.cache[i].index >= buffer.next) {
+              bottomPaddingHeight += bottomPadding.cache[i].height;
+            }
+          }
+        }
 
-        topPadding.height(topPadding.height() + delta);
+        // average heights calculation, items that have never been reached
+        var topPaddingHeightAdd = 0;
+        var bottomPaddingHeightAdd = 0;
+        var adjustTopPadding = buffer.minIndexUser && buffer.minIndex > buffer.minIndexUser;
+        var adjustBottomPadding = buffer.maxIndexUser && buffer.maxIndex < buffer.maxIndexUser;
 
-        viewport.scrollTop(viewport.scrollTop() + delta);
+        if (adjustTopPadding || adjustBottomPadding) {
+          var visibleItemsHeight = 0;
+          for (var i = buffer.length - 1; i >= 0; i--) {
+            visibleItemsHeight += buffer[i].element.outerHeight(true);
+          }
+          var averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
+          topPaddingHeightAdd = adjustTopPadding ? (buffer.minIndex - buffer.minIndexUser) * averageItemHeight : 0;
+          bottomPaddingHeightAdd = adjustBottomPadding ? (buffer.maxIndexUser - buffer.maxIndex) * averageItemHeight : 0;
+        }
 
-        viewport.adjustPadding();
+        // paddings combine adjustement
+        var topPaddingHeightOld = topPadding.height();
+        topPadding.height(topPaddingHeight + topPaddingHeightAdd);
+        bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
+
+        // additional scrollTop adjustement in case of datasource.minIndex external set
+        if (adjustScrollTop && adjustTopPadding && topPaddingHeightAdd) {
+          var diff = topPadding.height() - topPaddingHeightOld;
+          viewport.scrollTop(viewport.scrollTop() + diff);
+        }
       },
-      adjustScrollTop: function adjustScrollTop(height) {
+      adjustScrollTopAfterPrepend: function adjustScrollTopAfterPrepend(height) {
         var paddingHeight = topPadding.height() - height;
 
         if (paddingHeight >= 0) {
@@ -404,11 +413,13 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           viewport.scrollTop(viewport.scrollTop() - paddingHeight);
         }
       },
-      resetTopPaddingHeight: function resetTopPaddingHeight() {
+      resetTopPadding: function resetTopPadding() {
         topPadding.height(0);
+        topPadding.cache.clear();
       },
-      resetBottomPaddingHeight: function resetBottomPaddingHeight() {
+      resetBottomPadding: function resetBottomPadding() {
         bottomPadding.height(0);
+        bottomPadding.cache.clear();
       }
     });
 
@@ -534,32 +545,66 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       linker = linker || compileLinker;
 
       var datasource = function () {
-        var _datasource = $parse(datasourceName)($scope);
+        var isDatasourceValid = function isDatasourceValid() {
+          return angular.isObject(_datasource) && angular.isFunction(_datasource.get);
+        };
 
+        var _datasource = $parse(datasourceName)($scope); // try to get datasource on scope
         if (!isDatasourceValid()) {
-          _datasource = $injector.get(datasourceName);
+          _datasource = $injector.get(datasourceName); // try to inject datasource as service
           if (!isDatasourceValid()) {
             throw new Error(datasourceName + ' is not a valid datasource');
           }
         }
 
-        return _datasource;
+        Object.defineProperty(_datasource, 'minIndex', {
+          set: function set(value) {
+            this._minIndex = value;
+            onDatasourceMinIndexChanged(value);
+          },
+          get: function get() {
+            return this._minIndex;
+          }
+        });
 
-        function isDatasourceValid() {
-          // then try to inject datasource as service
-          return angular.isObject(_datasource) && angular.isFunction(_datasource.get);
-        }
+        Object.defineProperty(_datasource, 'maxIndex', {
+          set: function set(value) {
+            this._maxIndex = value;
+            onDatasourceMaxIndexChanged(value);
+          },
+          get: function get() {
+            return this._maxIndex;
+          }
+        });
+
+        return _datasource;
       }();
 
       var ridActual = 0; // current data revision id
       var pending = [];
-      var cache = new Cache();
       var buffer = new Buffer(itemName, $scope, linker, bufferSize);
-      var viewport = new Viewport(buffer, cache, element, controllers, $attr);
+      var viewport = new Viewport(buffer, element, controllers, $attr);
       var adapter = new Adapter($attr, viewport, buffer, function () {
         dismissPendingRequests();
         return adjustBuffer(ridActual);
       });
+
+      var onDatasourceMinIndexChanged = function onDatasourceMinIndexChanged(value) {
+        $timeout(function () {
+          buffer.minIndexUser = value;
+          if (!pending.length) {
+            viewport.adjustPadding(true);
+          }
+        });
+      };
+      var onDatasourceMaxIndexChanged = function onDatasourceMaxIndexChanged(value) {
+        $timeout(function () {
+          buffer.maxIndexUser = value;
+          if (!pending.length) {
+            viewport.adjustPadding();
+          }
+        });
+      };
 
       var fetchNext = function () {
         if (datasource.get.length !== 2) {
@@ -674,8 +719,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       function reload() {
         dismissPendingRequests();
 
-        viewport.resetTopPaddingHeight();
-        viewport.resetBottomPaddingHeight();
+        viewport.resetTopPadding();
+        viewport.resetBottomPadding();
 
         adapter.abCount = 0;
         adapter.abfCount = 0;
@@ -686,7 +731,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         } else {
           buffer.clear();
         }
-        cache.clear();
 
         return adjustBuffer(ridActual);
       }
@@ -775,7 +819,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
             adjustedPaddingHeight += wrapper.element.outerHeight(true);
           });
 
-          viewport.adjustScrollTop(adjustedPaddingHeight);
+          viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
         }
 
         // re-index the buffer
@@ -792,9 +836,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           });
         } else {
           viewport.adjustPadding();
-          if (!pending.length) {
-            viewport.syncDatasource(datasource);
-          }
         }
 
         return keepFetching;
