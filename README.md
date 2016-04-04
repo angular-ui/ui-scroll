@@ -210,6 +210,11 @@ See [index.html](http://rawgithub.com/angular-ui/ui-scroll/master/demo/index.htm
 
 ###History
 
+###v1.4.0
+* Migrated sources from CoffeeScript to ES6
+* Optimized scroll events handling, removed odd $digest cycles
+* Examples (demo) refactoring
+
 ###v1.3.3
 * Implemented new signature of the Datasource get(descriptor, success) method. See the documentation.
 * Implemented new signature of the Adapter reload(startIndex) method. See the documentation.
