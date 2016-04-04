@@ -520,56 +520,6 @@ describe('uiScroll', function () {
         });
     });
 
-    describe('isLoading property: deep access and sync', function () {
-
-        it('should get isLoading as an adapter property', function () {
-            runTest({datasource: 'myOnePageDatasource', adapter: 'container.sub.adapter'},
-                function (viewport, scope) {
-                    expect(!!scope.container && !!scope.container.sub && !!scope.container.sub.adapter).toBe(true);
-                    expect(typeof scope.container.sub.adapter.isLoading).toBe('boolean');
-                }
-            );
-        });
-
-        it('should get isLoading as a scope property', function () {
-            runTest({datasource: 'myOnePageDatasource', isLoading: 'container.sub.isLoading'},
-                function (viewport, scope) {
-                    expect(!!scope.container && !!scope.container.sub).toBe(true);
-                    expect(typeof scope.container.sub.isLoading).toBe('boolean');
-                }
-            );
-        });
-
-        it('should sync scope-isLoading with adapter-isLoading', function () {
-            runTest({
-                    datasource: 'myMultipageDatasource',
-                    itemHeight: 40,
-                    bufferSize: 3,
-                    adapter: 'container1.adapter',
-                    isLoading: 'container2.isLoading'
-                },
-                function (viewport, scope, $timeout) {
-                    var isLoadingChangeCount = 0;
-
-                    expect(!!scope.container1 && !!scope.container1.adapter && !!scope.container2).toBe(true);
-
-                    // need to review: isLoading=true can't be catched since subscribe/unsibscribe optimization
-                    scope.$watch('container1.adapter.isLoading', function(newValue) {
-                        isLoadingChangeCount++;
-                        expect(scope.container2.isLoading).toBe(newValue);
-                    });
-
-                    viewport.scrollTop(100);
-                    viewport.trigger('scroll');
-                    $timeout.flush();
-
-                    expect(isLoadingChangeCount).toBe(1);
-                }
-            );
-        });
-
-    });
-
     describe('paddings recalculation', function () {
 
         var viewportHeight = 60;
@@ -733,7 +683,7 @@ describe('uiScroll', function () {
 			);
 		});
 
-		it('should sync scope-topVisible with adapter-topVisible', function () {
+		it('should sync scope-topVisible with adapter-topVisible during each fetching', function () {
 			runTest({
 					datasource: 'myMultipageDatasource',
 					itemHeight: 40,
@@ -771,7 +721,7 @@ describe('uiScroll', function () {
 			);
 		});
 
-		it('should sync scope-topVisible with adapter-topVisible in case of single fetch', function () {
+		it('should sync scope-topVisible with adapter-topVisible during each scrolling (single fetch case)', function () {
 			runTest({
 					datasource: 'myOneBigPageDatasource',
 					itemHeight: 40,

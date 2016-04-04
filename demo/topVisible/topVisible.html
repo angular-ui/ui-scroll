@@ -33,7 +33,7 @@
 		</div>
 
 		<div class="viewport" id="viewport-persistentScroll" ui-scroll-viewport>
-			<div class="item" ui-scroll="item in datasource"  top-visible="topVisible">{{$index}}: {{item}}</div>
+			<div class="item" ui-scroll="item in datasource" buffer-size="40"  top-visible="topVisible">{{$index}}: {{item}}</div>
 		</div>
 
 	</div>
