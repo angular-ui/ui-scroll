@@ -1099,7 +1099,7 @@ describe('uiScroll', function () {
                     scope.adapter.reload();
                     $timeout.flush();
 
-                    expect(scope.adapter.topVisible).toBe('item1');
+                    expect(scope.adapter.topVisible).toBe('item100');
                 }
             );
         });

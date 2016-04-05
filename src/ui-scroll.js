@@ -523,6 +523,7 @@ angular.module('ui.scroll', [])
         const itemName = match[1];
         const datasourceName = match[2];
         const bufferSize = Math.max(3, +attr.bufferSize || 10);
+        var startIndex = +attr.startIndex || 1;
 
         return function link($scope, element, $attr, controllers, linker) {
           // starting from angular 1.2 compileLinker usage is deprecated
@@ -647,18 +648,6 @@ angular.module('ui.scroll', [])
 
           adapter.reload = reload;
 
-          // events and bindings
-          function bindEvents() {
-            viewport.bind('resize', resizeAndScrollHandler);
-            viewport.bind('scroll', resizeAndScrollHandler);
-          }
-          viewport.bind('mousewheel', wheelHandler);
-
-          function unbindEvents() {
-            viewport.unbind('resize', resizeAndScrollHandler);
-            viewport.unbind('scroll', resizeAndScrollHandler);
-          }
-
           $scope.$on('$destroy', () => {
             // clear the buffer. It is necessary to remove the elements and $destroy the scopes
             buffer.clear();
@@ -666,24 +655,21 @@ angular.module('ui.scroll', [])
             viewport.unbind('mousewheel', wheelHandler);
           });
 
-          // update events (deprecated since v1.1.0, unsupported since 1.2.0)
-          (() => {
-            const eventListener = datasource.scope ? datasource.scope.$new() : $scope.$new();
-
-            eventListener.$on('insert.item', () => unsupportedMethod('insert'));
-
-            eventListener.$on('update.items', () => unsupportedMethod('update'));
-
-            eventListener.$on('delete.items', () => unsupportedMethod('delete'));
-
-            function unsupportedMethod(token) {
-              throw new Error(token + ' event is no longer supported - use applyUpdates instead');
-            }
-          })();
+          viewport.bind('mousewheel', wheelHandler);
 
           reload();
 
           /* Functions definitions */
+
+          function bindEvents() {
+            viewport.bind('resize', resizeAndScrollHandler);
+            viewport.bind('scroll', resizeAndScrollHandler);
+          }
+
+          function unbindEvents() {
+            viewport.unbind('resize', resizeAndScrollHandler);
+            viewport.unbind('scroll', resizeAndScrollHandler);
+          }
 
           function dismissPendingRequests() {
             ridActual++;
@@ -696,15 +682,10 @@ angular.module('ui.scroll', [])
             viewport.resetTopPadding();
             viewport.resetBottomPadding();
 
-            adapter.abCount = 0;
-            adapter.abfCount = 0;
-            adapter.sCount = 0;
+            if (arguments.length)
+              startIndex = arguments[0];
 
-            if (arguments.length) {
-              buffer.clear(arguments[0]);
-            } else {
-              buffer.clear();
-            }
+            buffer.clear(startIndex);
 
             return adjustBuffer(ridActual);
           }
@@ -812,7 +793,6 @@ angular.module('ui.scroll', [])
           function adjustBuffer(rid) {
             // We need the item bindings to be processed before we can do adjustment
             return $timeout(() => {
-              adapter.abCount++;
               processBufferedItems(rid);
 
               if (viewport.shouldLoadBottom()) {
@@ -830,7 +810,6 @@ angular.module('ui.scroll', [])
           function adjustBufferAfterFetch(rid) {
             // We need the item bindings to be processed before we can do adjustment
             return $timeout(() => {
-              adapter.abfCount++;
               let keepFetching = processBufferedItems(rid);
 
               if (viewport.shouldLoadBottom() && keepFetching) {
@@ -911,7 +890,6 @@ angular.module('ui.scroll', [])
 
           function resizeAndScrollHandler() {
             if (!$rootScope.$$phase && !adapter.isLoading) {
-              adapter.sCount++;
               if (viewport.shouldLoadBottom()) {
                 enqueueFetch(ridActual, true);
               } else if (viewport.shouldLoadTop()) {
