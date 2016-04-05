@@ -136,7 +136,7 @@ Adapater object implements the following methods
         reload(startIndex)
 
    #### Description
-    Calling this method reinitializes and reloads the scroller content. `startIndex` is an integer indicating what item index the scroller will use to start the load process. The value of the argument replaces the value provided with the start-index attribute.  Calling `reload()` is equivalent to calling `reload` method with current value of the startIndex attribute .
+    Calling this method reinitializes and reloads the scroller content. `startIndex` is an integer indicating what item index the scroller will use to start the load process. The value of the argument replaces the value provided with the start-index attribute.  Calling `reload()` is equivalent to calling `reload` method with current value of the `start-index` attribute .
     
     **important: `startIndex` should fall within underlying datset boundaries** The scroller will request two batches of items one starting from the `startIndex` and another one preceding the first one (starting from `startIndex - bufferSize`). If both requests come back empty, the scroller will consider the dataset to be empty and will place no further data requests. 
     
