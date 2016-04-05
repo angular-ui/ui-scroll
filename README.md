@@ -53,7 +53,7 @@ If you plan to use ui-scroll over jQuery feel free to skip ui-scroll-jqlite.
 ###Usage
 
 ```html
-<ANY ui-scroll="{scroll_expression}" buffer-size="value" padding="value" adapter="name">
+<ANY ui-scroll="{scroll_expression}" buffer-size="value" padding="value" start-index="value" adapter="name">
       ...
 </ANY>
 ```
@@ -73,6 +73,7 @@ dl as a repeated tag is not supported.
 * **buffer-size - value**, optional - number of items requested from the datasource in a single request. The default is 10 and the minimal value is 3
 * **padding - value**, optional - extra height added to the visible area for the purpose of determining when the items should be created/destroyed.
 The value is relative to the visible height of the area, the default is 0.5 and the minimal value is 0.3
+* **start-index - value**, optional - index of the first item to be requested from the datasource. The default is 1.
 * **adapter - name**, optional - if provided a reference to the adapter object for the scroller instance will be placed in the member with the said name on the scope associated with the viewport. If the viewport is the window, the value will be placed on the $rootScope.
 
 Some of the properties offered by the adapter can also be accessed directly from the directive by using matching attributes. In the same way as for the adapter attribute, syntax for such attributes allows for providing a name to be used to access the corresponding value. A reference to the value will be placed on the scope associated with the viewport. If the viewport is the window, the value will be placed on the $rootScope. Below is a list of such attributes:
@@ -135,7 +136,7 @@ Adapater object implements the following methods
         reload(startIndex)
 
    #### Description
-    Calling this method reinitializes and reloads the scroller content. `startIndex` is an integer indicating what item index the scroller will use to start the load process. Calling `reload()` is equivalent to calling `reload(1)`.
+    Calling this method reinitializes and reloads the scroller content. `startIndex` is an integer indicating what item index the scroller will use to start the load process. The value of the argument replaces the value provided with the start-index attribute.  Calling `reload()` is equivalent to calling `reload` method with current value of the startIndex attribute .
     
     **important: `startIndex` should fall within underlying datset boundaries** The scroller will request two batches of items one starting from the `startIndex` and another one preceding the first one (starting from `startIndex - bufferSize`). If both requests come back empty, the scroller will consider the dataset to be empty and will place no further data requests. 
     
