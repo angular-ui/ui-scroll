@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.0 -- 2016-04-04T13:14:46.276Z
+ * Version: 1.4.0 -- 2016-04-08T01:17:59.374Z
  * License: MIT
  */
  
@@ -221,12 +221,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       'display': 'block'
     });
 
-    var viewportOffset = viewport.offset() ? function () {
-      return viewport.offset();
-    } : function () {
-      return { top: 0 };
-    };
-
     function Cache() {
       var cache = Object.create(Array.prototype);
 
@@ -310,12 +304,17 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       clipBottom: function clipBottom() {
         // clip the invisible items off the bottom
         var overage = 0;
+        var overageHeight = 0;
+        var itemHeight = 0;
+        var emptySpaceHeight = viewport.bottomDataPos() - viewport.bottomVisiblePos() - bufferPadding();
 
         for (var i = buffer.length - 1; i >= 0; i--) {
-          if (buffer[i].element.offset().top - viewportOffset().top <= viewport.outerHeight() + bufferPadding()) {
+          itemHeight = buffer[i].element.outerHeight(true);
+          if (overageHeight + itemHeight > emptySpaceHeight) {
             break;
           }
           bottomPadding.cache.add(buffer[i]);
+          overageHeight += itemHeight;
           overage++;
         }
 
@@ -333,13 +332,16 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         // clip the invisible items off the top
         var overage = 0;
         var overageHeight = 0;
+        var itemHeight = 0;
+        var emptySpaceHeight = viewport.topVisiblePos() - viewport.topDataPos() - bufferPadding();
 
         for (var i = 0; i < buffer.length; i++) {
-          if (buffer[i].element.offset().top - viewportOffset().top + buffer[i].element.outerHeight(true) >= -1 * bufferPadding()) {
+          itemHeight = buffer[i].element.outerHeight(true);
+          if (overageHeight + itemHeight > emptySpaceHeight) {
             break;
           }
           topPadding.cache.add(buffer[i]);
-          overageHeight += buffer[i].element.outerHeight(true);
+          overageHeight += itemHeight;
           overage++;
         }
 
@@ -539,6 +541,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var itemName = match[1];
     var datasourceName = match[2];
     var bufferSize = Math.max(3, +attr.bufferSize || 10);
+    var startIndex = +attr.startIndex || 1;
 
     return function link($scope, element, $attr, controllers, linker) {
       // starting from angular 1.2 compileLinker usage is deprecated
@@ -667,18 +670,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       adapter.reload = reload;
 
-      // events and bindings
-      function bindEvents() {
-        viewport.bind('resize', resizeAndScrollHandler);
-        viewport.bind('scroll', resizeAndScrollHandler);
-      }
-      viewport.bind('mousewheel', wheelHandler);
-
-      function unbindEvents() {
-        viewport.unbind('resize', resizeAndScrollHandler);
-        viewport.unbind('scroll', resizeAndScrollHandler);
-      }
-
       $scope.$on('$destroy', function () {
         // clear the buffer. It is necessary to remove the elements and $destroy the scopes
         buffer.clear();
@@ -686,30 +677,21 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         viewport.unbind('mousewheel', wheelHandler);
       });
 
-      // update events (deprecated since v1.1.0, unsupported since 1.2.0)
-      (function () {
-        var eventListener = datasource.scope ? datasource.scope.$new() : $scope.$new();
-
-        eventListener.$on('insert.item', function () {
-          return unsupportedMethod('insert');
-        });
-
-        eventListener.$on('update.items', function () {
-          return unsupportedMethod('update');
-        });
-
-        eventListener.$on('delete.items', function () {
-          return unsupportedMethod('delete');
-        });
-
-        function unsupportedMethod(token) {
-          throw new Error(token + ' event is no longer supported - use applyUpdates instead');
-        }
-      })();
+      viewport.bind('mousewheel', wheelHandler);
 
       reload();
 
       /* Functions definitions */
+
+      function bindEvents() {
+        viewport.bind('resize', resizeAndScrollHandler);
+        viewport.bind('scroll', resizeAndScrollHandler);
+      }
+
+      function unbindEvents() {
+        viewport.unbind('resize', resizeAndScrollHandler);
+        viewport.unbind('scroll', resizeAndScrollHandler);
+      }
 
       function dismissPendingRequests() {
         ridActual++;
@@ -722,15 +704,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         viewport.resetTopPadding();
         viewport.resetBottomPadding();
 
-        adapter.abCount = 0;
-        adapter.abfCount = 0;
-        adapter.sCount = 0;
+        if (arguments.length) startIndex = arguments[0];
 
-        if (arguments.length) {
-          buffer.clear(arguments[0]);
-        } else {
-          buffer.clear();
-        }
+        buffer.clear(startIndex);
 
         return adjustBuffer(ridActual);
       }
@@ -844,7 +820,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       function adjustBuffer(rid) {
         // We need the item bindings to be processed before we can do adjustment
         return $timeout(function () {
-          adapter.abCount++;
           processBufferedItems(rid);
 
           if (viewport.shouldLoadBottom()) {
@@ -862,7 +837,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       function adjustBufferAfterFetch(rid) {
         // We need the item bindings to be processed before we can do adjustment
         return $timeout(function () {
-          adapter.abfCount++;
           var keepFetching = processBufferedItems(rid);
 
           if (viewport.shouldLoadBottom() && keepFetching) {
@@ -944,7 +918,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       function resizeAndScrollHandler() {
         if (!$rootScope.$$phase && !adapter.isLoading) {
-          adapter.sCount++;
           if (viewport.shouldLoadBottom()) {
             enqueueFetch(ridActual, true);
           } else if (viewport.shouldLoadTop()) {
