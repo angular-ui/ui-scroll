@@ -202,8 +202,6 @@ angular.module('ui.scroll', [])
           'display': 'block'
         });
 
-        let viewportOffset = viewport.offset() ? () => viewport.offset() : () => ({top: 0});
-
         function Cache() {
           const cache = Object.create(Array.prototype);
 
@@ -295,12 +293,17 @@ angular.module('ui.scroll', [])
           clipBottom() {
             // clip the invisible items off the bottom
             let overage = 0;
+            let overageHeight = 0;
+            let itemHeight = 0;
+            let emptySpaceHeight = viewport.bottomDataPos() - viewport.bottomVisiblePos() - bufferPadding();
 
             for (let i = buffer.length - 1; i >= 0; i--) {
-              if (buffer[i].element.offset().top - viewportOffset().top <= viewport.outerHeight() + bufferPadding()) {
+              itemHeight = buffer[i].element.outerHeight(true);
+              if(overageHeight + itemHeight > emptySpaceHeight) {
                 break;
               }
               bottomPadding.cache.add(buffer[i]);
+              overageHeight += itemHeight;
               overage++;
             }
 
@@ -320,13 +323,16 @@ angular.module('ui.scroll', [])
             // clip the invisible items off the top
             let overage = 0;
             let overageHeight = 0;
+            let itemHeight = 0;
+            let emptySpaceHeight = viewport.topVisiblePos() - viewport.topDataPos() - bufferPadding();
 
             for (let i = 0; i < buffer.length; i++) {
-              if (buffer[i].element.offset().top - viewportOffset().top + buffer[i].element.outerHeight(true) >= (-1) * bufferPadding()) {
+              itemHeight = buffer[i].element.outerHeight(true);
+              if(overageHeight + itemHeight > emptySpaceHeight) {
                 break;
               }
               topPadding.cache.add(buffer[i]);
-              overageHeight += buffer[i].element.outerHeight(true);
+              overageHeight += itemHeight;
               overage++;
             }
 
