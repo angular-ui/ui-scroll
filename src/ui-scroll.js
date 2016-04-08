@@ -93,19 +93,20 @@ angular.module('ui.scroll', [])
       function Buffer(itemName, $scope, linker, bufferSize) {
         const buffer = Object.create(Array.prototype);
 
-        function reset(origin) {
-          buffer.eof = false;
-          buffer.bof = false;
-          buffer.first = origin;
-          buffer.next = origin;
-          buffer.minIndex = origin;
-          buffer.maxIndex = origin;
-          buffer.minIndexUser = null;
-          buffer.maxIndexUser = null;
-        }
-
         angular.extend(buffer, {
           size: bufferSize,
+
+          reset(startIndex) {
+            buffer.remove(0, buffer.length);
+            buffer.eof = false;
+            buffer.bof = false;
+            buffer.first = startIndex;
+            buffer.next = startIndex;
+            buffer.minIndex = startIndex;
+            buffer.maxIndex = startIndex;
+            buffer.minIndexUser = null;
+            buffer.maxIndexUser = null;
+          },
 
           append(items) {
             items.forEach((item) => {
@@ -176,16 +177,9 @@ angular.module('ui.scroll', [])
 
           setLower() {
             buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
-          },
-
-          // clears the buffer
-          clear() {
-            buffer.remove(0, buffer.length);
-            arguments.length ? reset(arguments[0]) : reset(1);
           }
-        });
 
-        reset(1);
+        });
 
         return buffer;
       }
@@ -656,7 +650,7 @@ angular.module('ui.scroll', [])
 
           $scope.$on('$destroy', () => {
             // clear the buffer. It is necessary to remove the elements and $destroy the scopes
-            buffer.clear();
+            //  *******  buffer.clear(); there is no need to reset the buffer especially because the elements are not destroyed by this anyway
             unbindEvents();
             viewport.unbind('mousewheel', wheelHandler);
           });
@@ -691,7 +685,7 @@ angular.module('ui.scroll', [])
             if (arguments.length)
               startIndex = arguments[0];
 
-            buffer.clear(startIndex);
+            buffer.reset(startIndex);
 
             return adjustBuffer(ridActual);
           }
