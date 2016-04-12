@@ -787,7 +787,6 @@ angular.module('ui.scroll', [])
                 fetch(rid);
                 adapter.loading(true);              
               }
-
             } else if (viewport.shouldLoadTop() && (keepFetching || pending[0])) {
                 // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
                 // BTW there will always be at least 1 element in the pending array because bottom is fetched first
@@ -796,92 +795,87 @@ angular.module('ui.scroll', [])
                 adapter.loading(true);              
               }
             }
-
           }          
 
           function adjustBuffer(rid) {
             // We need the item bindings to be processed before we can do adjustment
-            return $timeout(() => {
-              processBufferedItems(rid);
+            $timeout(() => {
 
+              processBufferedItems(rid);
               enqueueFetch(rid, true);
 
               if (!pending.length) {
-                return adapter.calculateProperties();
+                adapter.calculateProperties();
               }
             });
           }
 
           function adjustBufferAfterFetch(rid) {
             // We need the item bindings to be processed before we can do adjustment
-            return $timeout(() => {
+            $timeout(() => {
 
               enqueueFetch(rid, processBufferedItems(rid));
               pending.shift();
 
-              if (!pending.length) {
+              if (pending.length) 
+                fetch(rid);
+              else {
                 adapter.loading(false);
                 bindEvents();
-                return adapter.calculateProperties();
+                adapter.calculateProperties();
               }
-
-              return fetch(rid);
             });
           }
 
           function fetch(rid) {
             if (pending[0]) {// scrolling down
               if (buffer.length && !viewport.shouldLoadBottom()) {
-                return adjustBufferAfterFetch(rid);
+                adjustBufferAfterFetch(rid);
+              } else {
+                fetchNext((result) => {
+                  if ((rid && rid !== ridActual) || $scope.$$destroyed) {
+                    return;
+                  }
+
+                  if (result.length < bufferSize) {
+                    buffer.eof = true;
+                  }
+
+                  if (result.length > 0) {
+                    viewport.clipTop();
+                    buffer.append(result);
+                    buffer.setUpper();
+                  }
+
+                  adjustBufferAfterFetch(rid);
+                });
               }
+            } else {  // scrolling up
+              if (buffer.length && !viewport.shouldLoadTop()) {
+                adjustBufferAfterFetch(rid);
+              } else {
+                fetchPrevious((result) => {
+                  if ((rid && rid !== ridActual) || $scope.$$destroyed) {
+                    return;
+                  }
 
-              return fetchNext((result) => {
-                if ((rid && rid !== ridActual) || $scope.$$destroyed) {
-                  return;
-                }
+                  if (result.length < bufferSize) {
+                    buffer.bof = true;
+                    // log 'bof is reached'
+                  }
 
-                if (result.length < bufferSize) {
-                  buffer.eof = true;
-                  // log 'eof is reached'
-                }
+                  if (result.length > 0) {
+                    if (buffer.length) {
+                      viewport.clipBottom();
+                    }
+                    buffer.prepend(result);
+                    buffer.setLower();
+                  }
 
-                if (result.length > 0) {
-                  viewport.clipTop();
-                  buffer.append(result);
-                }
-
-                buffer.setUpper();
-
-                return adjustBufferAfterFetch(rid);
-              });
+                  adjustBufferAfterFetch(rid);
+                });
+              }
             }
-
-            // scrolling up
-            if (buffer.length && !viewport.shouldLoadTop()) {
-              return adjustBufferAfterFetch(rid);
-            }
-
-            return fetchPrevious((result) => {
-              if ((rid && rid !== ridActual) || $scope.$$destroyed) {
-                return;
-              }
-
-              if (result.length < bufferSize) {
-                buffer.bof = true;
-                // log 'bof is reached'
-              }
-
-              if (result.length > 0) {
-                if (buffer.length) {
-                  viewport.clipBottom();
-                }
-                buffer.prepend(result);
-              }
-
-              buffer.setLower();
-
-              return adjustBufferAfterFetch(rid);
-            });
           }
 
           function resizeAndScrollHandler() {
