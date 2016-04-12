@@ -571,7 +571,7 @@ angular.module('ui.scroll', [])
           let viewport = new Viewport(buffer, element, controllers, $attr);
           let adapter = new Adapter($attr, viewport, buffer, () => {
             dismissPendingRequests();
-            return adjustBuffer(ridActual);
+            adjustBuffer(ridActual);
           });
 
           var onDatasourceMinIndexChanged = function(value) {
@@ -597,7 +597,7 @@ angular.module('ui.scroll', [])
             }
 
             return (success) => {
-              return datasource.get({
+              datasource.get({
                 index: buffer.next,
                 append: buffer.length ? buffer[buffer.length - 1].item : void 0,
                 count: bufferSize
@@ -611,7 +611,7 @@ angular.module('ui.scroll', [])
             }
 
             return (success) => {
-              return datasource.get({
+              datasource.get({
                 index: buffer.first - bufferSize,
                 prepend: buffer.length ? buffer[0].item : void 0,
                 count: bufferSize
@@ -678,7 +678,6 @@ angular.module('ui.scroll', [])
 
           function reload() {
             dismissPendingRequests();
-
             viewport.resetTopPadding();
             viewport.resetBottomPadding();
 
@@ -686,8 +685,7 @@ angular.module('ui.scroll', [])
               startIndex = arguments[0];
 
             buffer.reset(startIndex);
-
-            return adjustBuffer(ridActual);
+            adjustBuffer(ridActual);
           }
 
           function isElementVisible(wrapper) {
@@ -695,18 +693,15 @@ angular.module('ui.scroll', [])
           }
 
           function visibilityWatcher(wrapper) {
-            if (!isElementVisible(wrapper)) {
-              return;
+            if (isElementVisible(wrapper)) {
+              buffer.forEach((item) => {
+                if (angular.isFunction(item.unregisterVisibilityWatcher)) {
+                  item.unregisterVisibilityWatcher();
+                  delete item.unregisterVisibilityWatcher;
+                }
+              });
+              adjustBuffer();
             }
-
-            buffer.forEach((item) => {
-              if (angular.isFunction(item.unregisterVisibilityWatcher)) {
-                item.unregisterVisibilityWatcher();
-                delete item.unregisterVisibilityWatcher;
-              }
-            });
-
-            return adjustBuffer();
           }
 
           function insertWrapperContent(wrapper, sibling) {
