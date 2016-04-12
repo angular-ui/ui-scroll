@@ -690,16 +690,6 @@ angular.module('ui.scroll', [])
             return adjustBuffer(ridActual);
           }
 
-          function enqueueFetch(rid, direction) {
-            if (!adapter.isLoading) {
-              adapter.loading(true);
-            }
-
-            if (pending.push(direction) === 1) {
-              return fetch(rid);
-            }
-          }
-
           function isElementVisible(wrapper) {
             return wrapper.element.height() && wrapper.element[0].offsetParent;
           }
@@ -790,16 +780,31 @@ angular.module('ui.scroll', [])
             return keepFetching;
           }
 
+          function enqueueFetch(rid, keepFetching) {
+            if (viewport.shouldLoadBottom() && keepFetching) {
+                  // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
+              if (pending.push(true) === 1) {
+                fetch(rid);
+                adapter.loading(true);              
+              }
+
+            } else if (viewport.shouldLoadTop() && (keepFetching || pending[0])) {
+                // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
+                // BTW there will always be at least 1 element in the pending array because bottom is fetched first
+              if (pending.push(false) === 1) {
+                fetch(rid);
+                adapter.loading(true);              
+              }
+            }
+
+          }          
+
           function adjustBuffer(rid) {
             // We need the item bindings to be processed before we can do adjustment
             return $timeout(() => {
               processBufferedItems(rid);
 
-              if (viewport.shouldLoadBottom()) {
-                enqueueFetch(rid, true);
-              } else if (viewport.shouldLoadTop()) {
-                enqueueFetch(rid, false);
-              }
+              enqueueFetch(rid, true);
 
               if (!pending.length) {
                 return adapter.calculateProperties();
@@ -810,17 +815,8 @@ angular.module('ui.scroll', [])
           function adjustBufferAfterFetch(rid) {
             // We need the item bindings to be processed before we can do adjustment
             return $timeout(() => {
-              let keepFetching = processBufferedItems(rid);
 
-              if (viewport.shouldLoadBottom() && keepFetching) {
-                // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
-                enqueueFetch(rid, true);
-              } else if (viewport.shouldLoadTop() && (keepFetching || pending[0])) {
-                // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
-                // BTW there will always be at least 1 element in the pending array because bottom is fetched first
-                enqueueFetch(rid, false);
-              }
-
+              enqueueFetch(rid, processBufferedItems(rid));
               pending.shift();
 
               if (!pending.length) {
@@ -890,11 +886,8 @@ angular.module('ui.scroll', [])
 
           function resizeAndScrollHandler() {
             if (!$rootScope.$$phase && !adapter.isLoading) {
-              if (viewport.shouldLoadBottom()) {
-                enqueueFetch(ridActual, true);
-              } else if (viewport.shouldLoadTop()) {
-                enqueueFetch(ridActual, false);
-              }
+
+              enqueueFetch(ridActual, true);
 
               if (pending.length) {
                 unbindEvents();
