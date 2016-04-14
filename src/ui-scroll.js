@@ -14,11 +14,20 @@ angular.module('ui.scroll', [])
   .directive('uiScrollViewport', function () {
     return {
       controller: [
+        '$log',
         '$scope',
         '$element',
-        function (scope, element) {
-          this.viewport = element;
-          return this;
+        function (console, scope, element) {
+          let self = this;
+          self.container = element;
+          self.viewport = element;
+
+          angular.forEach(element.children(), 
+            (child => {
+              if (child.tagName.toLowerCase() === 'tbody') {
+                self.viewport = angular.element(child);
+              }
+            }));
         }
       ]
     };
@@ -190,6 +199,7 @@ angular.module('ui.scroll', [])
         let topPadding = null;
         let bottomPadding = null;
         const viewport = controllers[0] && controllers[0].viewport ? controllers[0].viewport : angular.element(window);
+        const container = controllers[0] && controllers[0].container ? controllers[0].container : undefined;
 
         viewport.css({
           'overflow-y': 'auto',
@@ -252,6 +262,13 @@ angular.module('ui.scroll', [])
             bottomPadding = new Padding(template);
             element.before(topPadding);
             element.after(bottomPadding);
+          },
+
+
+          applyContainerStyle() {
+            console.log(container[0]);
+            if (container)
+              viewport.css('height', window.getComputedStyle(container[0]).height);
           },
 
           bottomDataPos() {
@@ -657,7 +674,11 @@ angular.module('ui.scroll', [])
 
           viewport.bind('mousewheel', wheelHandler);
 
-          reload();
+          $timeout(() => {
+            viewport.applyContainerStyle();
+
+            reload();
+          })
 
           /* Functions definitions */
 
