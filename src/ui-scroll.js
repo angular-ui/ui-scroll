@@ -542,25 +542,31 @@ angular.module('ui.scroll', [])
               }
             }
 
-            Object.defineProperty(_datasource, 'minIndex', {
-              set: function (value) {
-                this._minIndex = value;
-                onDatasourceMinIndexChanged(value);
-              },
-              get: function get() {
-                return this._minIndex;
-              }
-            });
+            let minIndexDesc = Object.getOwnPropertyDescriptor(_datasource, 'minIndex');
+            if(!minIndexDesc || (!minIndexDesc.set && !minIndexDesc.get)) {
+              Object.defineProperty(_datasource, 'minIndex', {
+                set: function (value) {
+                  this._minIndex = value;
+                  onDatasourceMinIndexChanged(value);
+                },
+                get: function get() {
+                  return this._minIndex;
+                }
+              });
+            }
 
-            Object.defineProperty(_datasource, 'maxIndex', {
-              set: function (value) {
-                this._maxIndex = value;
-                onDatasourceMaxIndexChanged(value);
-              },
-              get: function get() {
-                return this._maxIndex;
-              }
-            });
+            let maxIndexDesc = Object.getOwnPropertyDescriptor(_datasource, 'maxIndex');
+            if(!maxIndexDesc || (!maxIndexDesc.set && !maxIndexDesc.get)) {
+              Object.defineProperty(_datasource, 'maxIndex', {
+                set: function (value) {
+                  this._maxIndex = value;
+                  onDatasourceMaxIndexChanged(value);
+                },
+                get: function get() {
+                  return this._maxIndex;
+                }
+              });
+            }
 
             return _datasource;
           })();
