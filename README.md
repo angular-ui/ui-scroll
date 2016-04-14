@@ -202,7 +202,7 @@ marked with uiScrollViewport directive, the browser window object will be used a
 
 ###Examples
 
-Examples ([look here](https://github.com/angular-ui/ui-scroll/tree/master/demo/examples)) consist of several pages (.html files) showing various ways to use the ui-scroll directive. Each page relays on its own datasource service (called `datasource`) defined in the coffescript file with the same name and .coffee extension.
+Examples ([look here for example source](https://github.com/angular-ui/ui-scroll/tree/master/demo/examples)) consist of several pages (.html files) showing various ways to use the ui-scroll directive. Each page relays on its own datasource service (called `datasource`) defined in the coffescript file with the same name and .coffee extension.
 
 I intentionally broke every rule of proper html/css structure (i.e. embedded styles). This is done to keep the html as bare bones as possible and leave
 it to you to do it properly - whatever properly means in your book.
