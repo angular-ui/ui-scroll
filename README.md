@@ -33,8 +33,7 @@ uiScrollViewport directive (see below), browser window will be used as viewport.
 
 ### Dependencies
 
-To use the directive make sure the ui-scroll.js (as transpiled from ui-scroll.coffee) is loaded in your page. You also have to include
-module name 'ui.scroll' on the list of your application module dependencies.
+To use the directive make sure the dist/ui-scroll.js is loaded in your page. You also have to include module name 'ui.scroll' on the list of your application module dependencies.
 
 The code in this file relies on a few DOM element methods of jQuery which are currently not implemented in jQlite, namely
 * before(elem)
@@ -43,7 +42,7 @@ The code in this file relies on a few DOM element methods of jQuery which are cu
 * scrollTop() and scrollTop(value)
 * offset()
 
-File ui-scroll-jqlite.coffee houses implementations of the above methods and also has to be loaded in your page. Please note that the methods are implemented in a separate module
+File dist/ui-scroll-jqlite houses implementations of the above methods and also has to be loaded in your page. Please note that the methods are implemented in a separate module
 'ui.scroll.jqlite' and this name should also be included in the dependency list of the main module. The implementation currently supports missing methods
 only as necessary for the directive. It is tested on IE8 and up as well as on the Chrome 28 and Firefox 20.
 
@@ -202,12 +201,12 @@ marked with uiScrollViewport directive, the browser window object will be used a
 
 ###Examples
 
-Examples ([look here for example source](https://github.com/angular-ui/ui-scroll/tree/master/demo/examples)) consist of several pages (.html files) showing various ways to use the ui-scroll directive. Each page relays on its own datasource service (called `datasource`) defined in the coffescript file with the same name and .coffee extension.
+Examples ([look here for sources](https://github.com/angular-ui/ui-scroll/tree/master/demo/examples)) consist of several pages (.html files) showing various ways to use the ui-scroll directive. Each page relays on its own datasource service (called `datasource`) defined in the javascript file with the same name and .js extension.
 
 I intentionally broke every rule of proper html/css structure (i.e. embedded styles). This is done to keep the html as bare bones as possible and leave
 it to you to do it properly - whatever properly means in your book.
 
-See [index.html](http://rawgithub.com/angular-ui/ui-scroll/master/demo/index.html)
+To run the examples use this [link](http://rawgithub.com/angular-ui/ui-scroll/master/demo/index.html)
 
 ###History
 
