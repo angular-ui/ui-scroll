@@ -210,14 +210,20 @@ To run the examples use this [link](http://rawgithub.com/angular-ui/ui-scroll/ma
 
 ###History
 
+###v1.4.1
+* Developed a new complex approach of paddings elements height calculation (see [details](https://github.com/angular-ui/ui-scroll/pull/77)).
+* Added startIndex attribute.
+* Changed clipTop/clipBottom methods logic.
+* Some new demos, tests, cleanup and other minor refactoring.
+
 ###v1.4.0
-* Migrated sources from CoffeeScript to ES6
-* Optimized scroll events handling, removed odd $digest cycles
-* Examples (demo) refactoring
+* Migrated sources from CoffeeScript to ES6.
+* Optimized scroll events handling, removed odd $digest cycles.
+* Examples (demo) refactoring.
 
 ###v1.3.3
-* Implemented new signature of the Datasource get(descriptor, success) method. See the documentation.
-* Implemented new signature of the Adapter reload(startIndex) method. See the documentation.
+* Implemented new signature of the Datasource get(descriptor, success) method.
+* Implemented new signature of the Adapter reload(startIndex) method.
 * Changed the logic of scroll bar adjustment (minIndex, maxIndex).
 
 ###v1.3.2
