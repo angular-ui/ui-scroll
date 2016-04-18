@@ -1,7 +1,7 @@
 // Build configurations.
 module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-karma');
-  grunt.loadNpmTasks('grunt-babel');
+  grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
@@ -58,22 +58,19 @@ module.exports = function (grunt) {
         }
       }
     },
-    babel: {
-      options: {
-        //sourceMap: true,
-        babelrc: false,
-        presets: ['es2015']
-      },
+    browserify: {
       dist: {
-        files: [
-          {
-            expand: true,
-            cwd: 'src/',
-            src: ['**/*.js'],
-            dest: 'temp/',
-            ext: '.js'
-          }
-        ]
+        options: {
+          transform: [
+            ["babelify", {
+              loose: "all"
+            }]
+          ]
+        },
+        files: {
+          "./temp/ui-scroll.js": ["./src/ui-scroll.js"],
+          "./temp/ui-scroll-jqlite.js": ["./src/ui-scroll-jqlite.js"]
+        }
       }
     },
     concat: {
@@ -174,26 +171,26 @@ module.exports = function (grunt) {
   grunt.registerTask('default', ['server']);
 
   grunt.registerTask('test', [
-    'babel',
+    'browserify',
     'karma:unit'
   ]);
 
   grunt.registerTask('buildWatcher', [
-    'babel',
+    'browserify',
     'concat'
   ]);
 
   grunt.registerTask('build', [
     'jshint:test',
     'jshint:src',
-    'babel',
+    'browserify',
     'karma:travis',
     'concat',
     'uglify:common'
   ]);
 
   grunt.registerTask('travis', [
-    'babel',
+    'browserify',
     'karma:travis'
   ]);
 };
