@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-18T12:48:42.102Z
+ * Version: 1.4.1 -- 2016-04-18T20:39:03.966Z
  * License: MIT
  */
  
@@ -566,46 +566,45 @@ function Viewport(elementRoutines, buffer, element, controllers, attrs) {
 module.exports = exports['default'];
 
 },{'./cache':3}],6:[function(require,module,exports){
+/*!
+ globals: angular, window
+ List of used element methods available in JQuery but not in JQuery Lite
+ element.before(elem)
+ element.height()
+ element.outerHeight(true)
+ element.height(value) = only for Top/Bottom padding elements
+ element.scrollTop()
+ element.scrollTop(value)
+ */
+
 'use strict';
 
-exports.__esModule = true;
-exports['default'] = uiScrollViewport;
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-function uiScrollViewport() {
+var _modulesElementRoutinesJs = require('./modules/elementRoutines.js');
+
+var _modulesElementRoutinesJs2 = _interopRequireDefault(_modulesElementRoutinesJs);
+
+var _modulesBufferJs = require('./modules/buffer.js');
+
+var _modulesBufferJs2 = _interopRequireDefault(_modulesBufferJs);
+
+var _modulesViewportJs = require('./modules/viewport.js');
+
+var _modulesViewportJs2 = _interopRequireDefault(_modulesViewportJs);
+
+var _modulesAdapterJs = require('./modules/adapter.js');
+
+var _modulesAdapterJs2 = _interopRequireDefault(_modulesAdapterJs);
+
+angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 	return {
 		controller: ['$scope', '$element', function (scope, element) {
 			this.viewport = element;
 			return this;
 		}]
 	};
-}
-
-module.exports = exports['default'];
-
-},{}],7:[function(require,module,exports){
-'use strict';
-
-exports.__esModule = true;
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _miscElementRoutinesJs = require('./misc/elementRoutines.js');
-
-var _miscElementRoutinesJs2 = _interopRequireDefault(_miscElementRoutinesJs);
-
-var _miscBufferJs = require('./misc/buffer.js');
-
-var _miscBufferJs2 = _interopRequireDefault(_miscBufferJs);
-
-var _miscViewportJs = require('./misc/viewport.js');
-
-var _miscViewportJs2 = _interopRequireDefault(_miscViewportJs);
-
-var _miscAdapterJs = require('./misc/adapter.js');
-
-var _miscAdapterJs2 = _interopRequireDefault(_miscAdapterJs);
-
-exports['default'] = ['$log', '$injector', '$rootScope', '$timeout', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $q, $parse) {
+}).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $q, $parse) {
 
 	return {
 		require: ['?^uiScrollViewport'],
@@ -675,10 +674,10 @@ exports['default'] = ['$log', '$injector', '$rootScope', '$timeout', '$q', '$par
 
 			var ridActual = 0; // current data revision id
 			var pending = [];
-			var elementRoutines = new _miscElementRoutinesJs2['default']($injector);
-			var buffer = new _miscBufferJs2['default'](elementRoutines, itemName, $scope, linker, bufferSize);
-			var viewport = new _miscViewportJs2['default'](elementRoutines, buffer, element, controllers, $attr);
-			var adapter = new _miscAdapterJs2['default']($parse, $attr, viewport, buffer, function () {
+			var elementRoutines = new _modulesElementRoutinesJs2['default']($injector);
+			var buffer = new _modulesBufferJs2['default'](elementRoutines, itemName, $scope, linker, bufferSize);
+			var viewport = new _modulesViewportJs2['default'](elementRoutines, buffer, element, controllers, $attr);
+			var adapter = new _modulesAdapterJs2['default']($parse, $attr, viewport, buffer, function () {
 				dismissPendingRequests();
 				adjustBuffer(ridActual);
 			});
@@ -1011,34 +1010,7 @@ exports['default'] = ['$log', '$injector', '$rootScope', '$timeout', '$q', '$par
 			}
 		};
 	}
-}];
-module.exports = exports['default'];
+}]);
 
-},{'./misc/adapter.js':1,'./misc/buffer.js':2,'./misc/elementRoutines.js':4,'./misc/viewport.js':5}],8:[function(require,module,exports){
-/*!
- globals: angular, window
- List of used element methods available in JQuery but not in JQuery Lite
- element.before(elem)
- element.height()
- element.outerHeight(true)
- element.height(value) = only for Top/Bottom padding elements
- element.scrollTop()
- element.scrollTop(value)
- */
-
-'use strict';
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
-
-var _modulesUiScrollViewportJs = require('./modules/ui-scroll-viewport.js');
-
-var _modulesUiScrollViewportJs2 = _interopRequireDefault(_modulesUiScrollViewportJs);
-
-var _modulesUiScrollJs = require('./modules/ui-scroll.js');
-
-var _modulesUiScrollJs2 = _interopRequireDefault(_modulesUiScrollJs);
-
-angular.module('ui.scroll', []).directive('uiScrollViewport', _modulesUiScrollViewportJs2['default']).directive('uiScroll', _modulesUiScrollJs2['default']);
-
-},{'./modules/ui-scroll-viewport.js':6,'./modules/ui-scroll.js':7}]},{},[8]);
+},{'./modules/adapter.js':1,'./modules/buffer.js':2,'./modules/elementRoutines.js':4,'./modules/viewport.js':5}]},{},[6]);
 }());
