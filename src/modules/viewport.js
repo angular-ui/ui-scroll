@@ -115,7 +115,7 @@ export default function Viewport(elementRoutines, buffer, element, controllers, 
 				return;
 			}
 
-			// precise heights calculation, items that were in buffer once
+			// precise heights calculation, items that were in buffer at some point
 			let topPaddingHeight = 0;
 			let bottomPaddingHeight = 0;
 
