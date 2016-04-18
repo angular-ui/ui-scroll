@@ -32,6 +32,25 @@ angular.module('ui.scroll', [])
       ]
     };
   })
+  .directive('uiScrollTh', ['$log', function (console) {
+
+    return {
+      require: ['^uiScrollViewport'],
+      link: ($scope, element, $attr, controllers, linker) => {
+        
+            function GridAdatper() {
+              var headers = [];
+              var columns = [];
+              this.registerHeader = function(header) {
+                console.log(header);
+              };
+            }
+
+  //          gridAdapter = controllers[0].gridAdapter = controllers[0].gridAdapter || new GridAdapter();            
+  //          gridAdapter.registerHeader(element);
+          }
+    };
+  }])
   .directive('uiScroll', [
     '$log',
     '$injector',
@@ -266,8 +285,7 @@ angular.module('ui.scroll', [])
 
 
           applyContainerStyle() {
-            console.log(container[0]);
-            if (container)
+            if (container !== viewport)
               viewport.css('height', window.getComputedStyle(container[0]).height);
           },
 
@@ -542,9 +560,13 @@ angular.module('ui.scroll', [])
         const bufferSize = Math.max(3, +attr.bufferSize || 10);
         var startIndex = +attr.startIndex || 1;
 
+        console.log('complie'); console.log(elementTemplate);
+
         return function link($scope, element, $attr, controllers, linker) {
           // starting from angular 1.2 compileLinker usage is deprecated
           linker = linker || compileLinker;
+
+          console.log('link'); console.log(element);
 
           const datasource = (() => {
             let isDatasourceValid = function () {

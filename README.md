@@ -42,7 +42,7 @@ The code in this file relies on a few DOM element methods of jQuery which are cu
 * scrollTop() and scrollTop(value)
 * offset()
 
-File dist/ui-scroll-jqlite houses implementations of the above methods and also has to be loaded in your page. Please note that the methods are implemented in a separate module
+File dist/ui-scroll-jqlite.js houses implementations of the above methods and also has to be loaded in your page. Please note that the methods are implemented in a separate module
 'ui.scroll.jqlite' and this name should also be included in the dependency list of the main module. The implementation currently supports missing methods
 only as necessary for the directive. It is tested on IE8 and up as well as on the Chrome 28 and Firefox 20.
 
