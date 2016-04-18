@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-18T20:39:03.966Z
+ * Version: 1.4.1 -- 2016-04-18T22:35:24.296Z
  * License: MIT
  */
  
@@ -227,38 +227,6 @@ module.exports = exports['default'];
 'use strict';
 
 exports.__esModule = true;
-exports['default'] = Cache;
-
-function Cache() {
-	var cache = Object.create(Array.prototype);
-
-	angular.extend(cache, {
-		add: function add(item) {
-			for (var i = cache.length - 1; i >= 0; i--) {
-				if (cache[i].index === item.scope.$index) {
-					cache[i].height = item.element.outerHeight();
-					return;
-				}
-			}
-			cache.push({
-				index: item.scope.$index,
-				height: item.element.outerHeight()
-			});
-		},
-		clear: function clear() {
-			cache.length = 0;
-		}
-	});
-
-	return cache;
-}
-
-module.exports = exports['default'];
-
-},{}],4:[function(require,module,exports){
-'use strict';
-
-exports.__esModule = true;
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
@@ -342,6 +310,59 @@ var ElementRoutines = (function () {
 exports['default'] = ElementRoutines;
 module.exports = exports['default'];
 
+},{}],4:[function(require,module,exports){
+'use strict';
+
+exports.__esModule = true;
+exports['default'] = Padding;
+function Cache() {
+	var cache = Object.create(Array.prototype);
+
+	angular.extend(cache, {
+		add: function add(item) {
+			for (var i = cache.length - 1; i >= 0; i--) {
+				if (cache[i].index === item.scope.$index) {
+					cache[i].height = item.element.outerHeight();
+					return;
+				}
+			}
+			cache.push({
+				index: item.scope.$index,
+				height: item.element.outerHeight()
+			});
+		},
+		clear: function clear() {
+			cache.length = 0;
+		}
+	});
+
+	return cache;
+}
+
+function Padding(template) {
+	var result = undefined;
+
+	switch (template.tagName) {
+		case 'dl':
+			throw new Error('ui-scroll directive does not support <' + template.tagName + '> as a repeating tag: ' + template.outerHTML);
+		case 'tr':
+			var table = angular.element('<table><tr><td><div></div></td></tr></table>');
+			result = table.find('tr');
+			break;
+		case 'li':
+			result = angular.element('<li></li>');
+			break;
+		default:
+			result = angular.element('<div></div>');
+	}
+
+	result.cache = new Cache();
+
+	return result;
+}
+
+module.exports = exports['default'];
+
 },{}],5:[function(require,module,exports){
 'use strict';
 
@@ -350,9 +371,9 @@ exports['default'] = Viewport;
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
-var _cache = require('./cache');
+var _padding = require('./padding');
 
-var _cache2 = _interopRequireDefault(_cache);
+var _padding2 = _interopRequireDefault(_padding);
 
 function Viewport(elementRoutines, buffer, element, controllers, attrs) {
 	var PADDING_MIN = 0.3;
@@ -366,36 +387,14 @@ function Viewport(elementRoutines, buffer, element, controllers, attrs) {
 		'display': 'block'
 	});
 
-	function Padding(template) {
-		var result = undefined;
-
-		switch (template.tagName) {
-			case 'dl':
-				throw new Error('ui-scroll directive does not support <' + template.tagName + '> as a repeating tag: ' + template.outerHTML);
-			case 'tr':
-				var table = angular.element('<table><tr><td><div></div></td></tr></table>');
-				result = table.find('tr');
-				break;
-			case 'li':
-				result = angular.element('<li></li>');
-				break;
-			default:
-				result = angular.element('<div></div>');
-		}
-
-		result.cache = new _cache2['default']();
-
-		return result;
-	}
-
 	function bufferPadding() {
 		return viewport.outerHeight() * Math.max(PADDING_MIN, +attrs.padding || PADDING_DEFAULT); // some extra space to initiate preload
 	}
 
 	angular.extend(viewport, {
 		createPaddingElements: function createPaddingElements(template) {
-			topPadding = new Padding(template);
-			bottomPadding = new Padding(template);
+			topPadding = new _padding2['default'](template);
+			bottomPadding = new _padding2['default'](template);
 			element.before(topPadding);
 			element.after(bottomPadding);
 		},
@@ -565,7 +564,7 @@ function Viewport(elementRoutines, buffer, element, controllers, attrs) {
 
 module.exports = exports['default'];
 
-},{'./cache':3}],6:[function(require,module,exports){
+},{'./padding':4}],6:[function(require,module,exports){
 /*!
  globals: angular, window
  List of used element methods available in JQuery but not in JQuery Lite
@@ -1012,5 +1011,5 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 	}
 }]);
 
-},{'./modules/adapter.js':1,'./modules/buffer.js':2,'./modules/elementRoutines.js':4,'./modules/viewport.js':5}]},{},[6]);
+},{'./modules/adapter.js':1,'./modules/buffer.js':2,'./modules/elementRoutines.js':3,'./modules/viewport.js':5}]},{},[6]);
 }());

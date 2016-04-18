@@ -1,4 +1,4 @@
-import Cache from './cache'
+import Padding from './padding'
 
 export default function Viewport(elementRoutines, buffer, element, controllers, attrs) {
 	const PADDING_MIN = 0.3;
@@ -11,28 +11,6 @@ export default function Viewport(elementRoutines, buffer, element, controllers, 
 		'overflow-y': 'auto',
 		'display': 'block'
 	});
-
-	function Padding(template) {
-		let result;
-
-		switch (template.tagName) {
-			case 'dl':
-				throw new Error(`ui-scroll directive does not support <${template.tagName}> as a repeating tag: ${template.outerHTML}`);
-			case 'tr':
-				let table = angular.element('<table><tr><td><div></div></td></tr></table>');
-				result = table.find('tr');
-				break;
-			case 'li':
-				result = angular.element('<li></li>');
-				break;
-			default:
-				result = angular.element('<div></div>');
-		}
-
-		result.cache = new Cache();
-
-		return result;
-	}
 
 	function bufferPadding() {
 		return viewport.outerHeight() * Math.max(PADDING_MIN, +attrs.padding || PADDING_DEFAULT); // some extra space to initiate preload
