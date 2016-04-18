@@ -1,17 +1,16 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-17T11:47:46.064Z
+ * Version: 1.4.1 -- 2016-04-18T22:35:24.296Z
  * License: MIT
  */
  
 
  (function () {
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=='function'&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error('Cannot find module \''+o+'\'');throw f.code='MODULE_NOT_FOUND',f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=='function'&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
-var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i['return']) _i['return'](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError('Invalid attempt to destructure non-iterable instance'); } }; }();
-
-angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log', '$window', function (console, window) {
+angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', function () {
   return {
     registerFor: function registerFor(element) {
       var convertToPx, css, getStyle, isWindow;
@@ -27,22 +26,19 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
       };
 
       // as defined in angularjs v1.0.5
-      isWindow = function isWindow(obj) {
+      isWindow = function (obj) {
         return obj && obj.document && obj.location && obj.alert && obj.setInterval;
       };
 
       function scrollTo(self, direction, value) {
         var elem = self[0];
-
-        var _top$left$direction = _slicedToArray({
+        var _top$left$direction = ({
           top: ['scrollTop', 'pageYOffset', 'scrollLeft'],
           left: ['scrollLeft', 'pageXOffset', 'scrollTop']
-        }[direction], 3);
-
+        })[direction];
         var method = _top$left$direction[0];
         var prop = _top$left$direction[1];
         var preserve = _top$left$direction[2];
-
 
         if (isWindow(elem)) {
           if (angular.isDefined(value)) {
@@ -60,17 +56,17 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
       }
 
       if (window.getComputedStyle) {
-        getStyle = function getStyle(elem) {
+        getStyle = function (elem) {
           return window.getComputedStyle(elem, null);
         };
-        convertToPx = function convertToPx(elem, value) {
+        convertToPx = function (elem, value) {
           return parseFloat(value);
         };
       } else {
-        getStyle = function getStyle(elem) {
+        getStyle = function (elem) {
           return elem.currentStyle;
         };
-        convertToPx = function convertToPx(elem, value) {
+        convertToPx = function (elem, value) {
           var left = undefined,
               result = undefined,
               rs = undefined,
@@ -117,7 +113,7 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
             paddingB = undefined;
 
         if (isWindow(elem)) {
-          base = document.documentElement[{ height: 'clientHeight', width: 'clientWidth' }[measure]];
+          base = document.documentElement[({ height: 'clientHeight', width: 'clientWidth' })[measure]];
 
           return {
             base: base,
@@ -128,16 +124,13 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
         }
 
         // Start with offset property
-
-        var _width$height$measure = _slicedToArray({
+        var _width$height$measure = ({
           width: [elem.offsetWidth, 'Left', 'Right'],
           height: [elem.offsetHeight, 'Top', 'Bottom']
-        }[measure], 3);
-
+        })[measure];
         base = _width$height$measure[0];
         dirA = _width$height$measure[1];
         dirB = _width$height$measure[2];
-
 
         computedStyle = getStyle(elem);
         paddingA = convertToPx(elem, computedStyle['padding' + dirA]) || 0;
@@ -169,11 +162,11 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
         var measurements = getMeasurements(elem, direction);
 
         if (measurements.base > 0) {
-          return {
+          return ({
             base: measurements.base - measurements.padding - measurements.border,
             outer: measurements.base,
             outerfull: measurements.base + measurements.margin
-          }[measure];
+          })[measure];
         }
 
         // Fall back to computed then uncomputed css if necessary
@@ -187,11 +180,11 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
         // Normalize '', auto, and prepare for extra
         result = parseFloat(result) || 0;
 
-        return {
+        return ({
           base: result - measurements.padding - measurements.border,
           outer: result,
           outerfull: result + measurements.padding + measurements.border + measurements.margin
-        }[measure];
+        })[measure];
       }
 
       // define missing methods
@@ -229,7 +222,6 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
         outerHeight: function outerHeight(option) {
           return getWidthHeight(this[0], 'height', option ? 'outerfull' : 'outer');
         },
-
 
         /*
          The offset setter method is not implemented
@@ -285,9 +277,11 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
       });
     }
   };
-}]).run(['$log', '$window', 'jqLiteExtras', function (console, window, jqLiteExtras) {
+}).run(['$log', '$window', 'jqLiteExtras', function (console, window, jqLiteExtras) {
   if (!window.jQuery) {
     return jqLiteExtras.registerFor(angular.element);
   }
 }]);
+
+},{}]},{},[1]);
 }());

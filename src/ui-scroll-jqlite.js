@@ -1,10 +1,7 @@
 angular.module('ui.scroll.jqlite', ['ui.scroll'])
-  .service('jqLiteExtras', [
-    '$log',
-    '$window',
-    (console, window) => {
+  .service('jqLiteExtras', () => {
       return {
-        registerFor: (element) => {
+        registerFor: function (element) {
           var convertToPx, css, getStyle, isWindow;
           // angular implementation blows up if elem is the window
           css = angular.element.prototype.css;
@@ -259,7 +256,7 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
         }
       };
     }
-  ])
+  )
   .run([
     '$log',
     '$window',
