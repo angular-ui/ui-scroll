@@ -696,12 +696,15 @@ angular.module('ui.scroll', [])
            * to prevent the directive scope from pollution a new scope is created and destroyed
            * right after the builder creation is completed
            */
-          linker($scope.$new(), (template, scope) => {
-            viewport.createPaddingElements(template[0]);
-            // Destroy template's scope to remove any watchers on it.
-            scope.$destroy();
-            // We don't need template anymore.
-            template.remove();
+          linker((clone, scope) => {
+            viewport.createPaddingElements(clone[0]);
+            element.after(clone);
+            $timeout(() => {
+              // Destroy template's scope to remove any watchers on it.
+              scope.$destroy();
+              // We don't need template anymore.
+              clone.remove();
+            });
           });
 
           adapter.reload = reload;

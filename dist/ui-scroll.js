@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-21T15:54:28.362Z
+ * Version: 1.4.1 -- 2016-04-21T21:11:42.062Z
  * License: MIT
  */
  
@@ -700,12 +700,15 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
        * to prevent the directive scope from pollution a new scope is created and destroyed
        * right after the builder creation is completed
        */
-      linker($scope.$new(), function (template, scope) {
-        viewport.createPaddingElements(template[0]);
-        // Destroy template's scope to remove any watchers on it.
-        scope.$destroy();
-        // We don't need template anymore.
-        template.remove();
+      linker(function (clone, scope) {
+        viewport.createPaddingElements(clone[0]);
+        element.after(clone);
+        $timeout(function () {
+          // Destroy template's scope to remove any watchers on it.
+          scope.$destroy();
+          // We don't need template anymore.
+          clone.remove();
+        });
       });
 
       adapter.reload = reload;
