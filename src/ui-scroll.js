@@ -85,7 +85,7 @@ angular.module('ui.scroll', [])
         transclude: 'element',
         priority: 1000,
         terminal: true,
-        compile
+        link: link
       };
 
       // Element manipulation routines
@@ -565,21 +565,21 @@ angular.module('ui.scroll', [])
         };
       }
 
-      function compile(elementTemplate, attr, compileLinker) {
-        const match = attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/);
+//      function compile(elementTemplate, attr, compileLinker) {
 
-        if (!(match)) {
-          throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + attr.uiScroll + '\'');
-        }
+        //return 
+        function link($scope, element, $attr, controllers, linker) {
 
-        const itemName = match[1];
-        const datasourceName = match[2];
-        const bufferSize = Math.max(3, +attr.bufferSize || 10);
-        var startIndex = +attr.startIndex || 1;
+          const match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/);
 
-        return function link($scope, element, $attr, controllers, linker) {
-          // starting from angular 1.2 compileLinker usage is deprecated
-          linker = linker || compileLinker;
+          if (!(match)) {
+            throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
+          }
+
+          const itemName = match[1];
+          const datasourceName = match[2];
+          const bufferSize = Math.max(3, +$attr.bufferSize || 10);
+          var startIndex = +$attr.startIndex || 1;
 
           const datasource = (() => {
             let isDatasourceValid = function () {
@@ -700,9 +700,9 @@ angular.module('ui.scroll', [])
             viewport.createPaddingElements(clone[0]);
             element.after(clone);
             $timeout(() => {
-              // Destroy template's scope to remove any watchers on it.
+              // Destroy clone's scope to remove any watchers on it.
               scope.$destroy();
-              // We don't need template anymore.
+              // We don't need the clone anymore.
               clone.remove();
             });
           });
@@ -772,12 +772,10 @@ angular.module('ui.scroll', [])
           function insertWrapperContent(wrapper, sibling) {
             viewport.insertElement(wrapper.element, sibling);
 
-            if (isElementVisible(wrapper)) {
+            if (isElementVisible(wrapper))
               return true;
-            }
 
             wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(() => visibilityWatcher(wrapper));
-
             return false;
           }
 
@@ -960,7 +958,7 @@ angular.module('ui.scroll', [])
               event.preventDefault();
             }
           }
-        };
-      }
+        }//;
+      //}
     }
   ]);
