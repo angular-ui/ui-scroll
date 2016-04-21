@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-21T21:58:13.687Z
+ * Version: 1.4.1 -- 2016-04-21T22:06:47.596Z
  * License: MIT
  */
  
@@ -565,9 +565,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     };
   }
 
-  //      function compile(elementTemplate, attr, compileLinker) {
-
-  //return
   function link($scope, element, $attr, controllers, linker) {
 
     var match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/);
@@ -966,7 +963,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         event.preventDefault();
       }
     }
-  } //;
-  //}
+  }
 }]);
 }());
