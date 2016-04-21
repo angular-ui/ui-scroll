@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.0 -- 2016-04-13T22:24:38.318Z
+ * Version: 1.4.1 -- 2016-04-21T15:54:28.362Z
  * License: MIT
  */
  
@@ -37,7 +37,39 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       });
     }]
   };
-}).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $q, $parse) {
+}).directive('uiScrollTh', ['$log', function (console) {
+  return {
+    require: ['^uiScrollViewport'],
+    link: function link($scope, element, $attr, controllers, linker) {
+
+      function GridAdapter() {
+        var headers = [];
+        var columns = [];
+        this.registerHeader = function (header) {
+          headers.push(header);
+        };
+        this.registerColumn = function (column) {
+          headers.push(column);
+          console.log(column);
+        };
+      }
+
+      gridAdapter = controllers[0].gridAdapter = controllers[0].gridAdapter || new GridAdapter();
+      gridAdapter.registerHeader(element);
+    }
+  };
+}]).directive('uiScrollTd', ['$log', function (console) {
+  return {
+    require: ['?^uiScrollViewport'],
+    link: function link($scope, element, $attr, controllers, linker) {
+
+      //gridAdapter = controllers[0].gridAdapter;           
+      //gridAdapter.registerColumn(element);
+      element.attr('ui-scroll-td', '1');
+      console.log(controllers[0]);
+    }
+  };
+}]).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $q, $parse) {
   var $animate = $injector.has && $injector.has('$animate') ? $injector.get('$animate') : null;
   var isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
   //const log = console.debug || console.log;
@@ -278,8 +310,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         element.after(bottomPadding);
       },
       applyContainerStyle: function applyContainerStyle() {
-        console.log(container[0]);
-        if (container) viewport.css('height', window.getComputedStyle(container[0]).height);
+        if (container !== viewport) viewport.css('height', window.getComputedStyle(container[0]).height);
       },
       bottomDataPos: function bottomDataPos() {
         var scrollHeight = viewport[0].scrollHeight;
@@ -563,25 +594,31 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           }
         }
 
-        Object.defineProperty(_datasource, 'minIndex', {
-          set: function set(value) {
-            this._minIndex = value;
-            onDatasourceMinIndexChanged(value);
-          },
-          get: function get() {
-            return this._minIndex;
-          }
-        });
+        var minIndexDesc = Object.getOwnPropertyDescriptor(_datasource, 'minIndex');
+        if (!minIndexDesc || !minIndexDesc.set && !minIndexDesc.get) {
+          Object.defineProperty(_datasource, 'minIndex', {
+            set: function set(value) {
+              this._minIndex = value;
+              onDatasourceMinIndexChanged(value);
+            },
+            get: function get() {
+              return this._minIndex;
+            }
+          });
+        }
 
-        Object.defineProperty(_datasource, 'maxIndex', {
-          set: function set(value) {
-            this._maxIndex = value;
-            onDatasourceMaxIndexChanged(value);
-          },
-          get: function get() {
-            return this._maxIndex;
-          }
-        });
+        var maxIndexDesc = Object.getOwnPropertyDescriptor(_datasource, 'maxIndex');
+        if (!maxIndexDesc || !maxIndexDesc.set && !maxIndexDesc.get) {
+          Object.defineProperty(_datasource, 'maxIndex', {
+            set: function set(value) {
+              this._maxIndex = value;
+              onDatasourceMaxIndexChanged(value);
+            },
+            get: function get() {
+              return this._maxIndex;
+            }
+          });
+        }
 
         return _datasource;
       }();
