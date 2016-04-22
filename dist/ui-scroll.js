@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-22T19:55:15.675Z
+ * Version: 1.4.1 -- 2016-04-22T20:05:37.618Z
  * License: MIT
  */
  
@@ -278,7 +278,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         element.after(bottomPadding);
       },
       applyContainerStyle: function applyContainerStyle() {
-        if (container !== viewport) viewport.css('height', window.getComputedStyle(container[0]).height);
+        if (container && container !== viewport) viewport.css('height', window.getComputedStyle(container[0]).height);
       },
       bottomDataPos: function bottomDataPos() {
         var scrollHeight = viewport[0].scrollHeight;

@@ -266,7 +266,7 @@ angular.module('ui.scroll', [])
 
 
           applyContainerStyle() {
-            if (container !== viewport)
+            if (container && container !== viewport)
               viewport.css('height', window.getComputedStyle(container[0]).height);
           },
 
