@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-17T11:47:46.064Z
+ * Version: 1.4.1 -- 2016-04-22T16:53:02.706Z
  * License: MIT
  */
  
@@ -426,6 +426,20 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
     var setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
 
+    var disabled = false;
+    this.disable = function () {
+      return disabled = true;
+    };
+    this.enable = function () {
+      if (disabled) {
+        adjustBuffer();
+        disabled = false;
+      }
+    };
+    this.isDisabled = function () {
+      return disabled;
+    };
+
     this.isLoading = false;
 
     function applyUpdate(wrapper, newItems) {
@@ -532,7 +546,10 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var itemName = match[1];
     var datasourceName = match[2];
     var bufferSize = Math.max(3, +attr.bufferSize || 10);
-    var startIndex = +attr.startIndex || 1;
+    var startIndex = parseInt(attr.startIndex, 10);
+    if (isNaN(startIndex)) {
+      startIndex = 1;
+    }
 
     return function link($scope, element, $attr, controllers, linker) {
       // starting from angular 1.2 compileLinker usage is deprecated
@@ -898,7 +915,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       }
 
       function resizeAndScrollHandler() {
-        if (!$rootScope.$$phase && !adapter.isLoading) {
+        if (!$rootScope.$$phase && !adapter.isLoading && !adapter.isDisabled()) {
 
           enqueueFetch(ridActual, true);
 
@@ -912,6 +929,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       }
 
       function wheelHandler(event) {
+        if (adapter.isDisabled()) {
+          return;
+        }
         var scrollTop = viewport[0].scrollTop;
         var yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
 

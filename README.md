@@ -210,6 +210,9 @@ To run the examples use this [link](http://rawgithub.com/angular-ui/ui-scroll/ma
 
 ###History
 
+###next release
+* Implemented disable/enable methods on the Adapter to ignore user's scroll events.
+
 ###v1.4.1
 * Developed a new complex approach of paddings elements height calculation (see [details](https://github.com/angular-ui/ui-scroll/pull/77)).
 * Added startIndex attribute.
