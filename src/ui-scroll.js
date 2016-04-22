@@ -770,10 +770,9 @@ angular.module('ui.scroll', [])
                 toBeRemoved.push(wrapper);
             }
           });
-
           toBeRemoved.forEach((wrapper) => promises = promises.concat(buffer.remove(wrapper)));
 
-          if (toBePrepended.length) {
+          if (toBePrepended.length)
             toBePrepended.forEach((wrapper) => {
               insertWrapperContent(wrapper);
               wrapper.op = 'none';
@@ -786,13 +785,14 @@ angular.module('ui.scroll', [])
             inserted: inserted,
             animated: promises
           };
+
         }
 
-        function updatePaddings(updates) {
+        function updatePaddings(rid, updates) {
 
           function effectiveHeight(list) {
             if (list.length == 0)
-              return false;
+              return 0;
             let top = Number.MAX_VALUE;
             let bottom = Number.MIN_VALUE;
             list.forEach((wrapper) => {
@@ -807,9 +807,11 @@ angular.module('ui.scroll', [])
 
           let adjustedPaddingHeight = effectiveHeight(updates.prepended);
 
+          viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
+
           // schedule another adjustBuffer after animation completion
-          if (updates.promises.length) {
-            $q.all(promises).then(() => {
+          if (updates.animated.length) {
+            $q.all(updates.animated).then(() => {
               viewport.adjustPadding();
               // log "Animation completed rid #{rid}"
               return adjustBuffer(rid);
@@ -823,7 +825,7 @@ angular.module('ui.scroll', [])
         }
 
         function processBufferedItems(rid) {
-          return updatePaddings(updateDom(rid));
+          return updatePaddings(rid, updateDOM(rid));
         }
 
         function processBufferedItemsOld(rid) {

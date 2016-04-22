@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-22T16:52:47.916Z
+ * Version: 1.4.1 -- 2016-04-22T19:55:15.675Z
  * License: MIT
  */
  
@@ -748,7 +748,95 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       return false;
     }
 
+    function updateDOM(rid) {
+
+      var promises = [];
+      var toBePrepended = [];
+      var toBeRemoved = [];
+      var inserted = [];
+
+      function getPreSibling(i) {
+        return i > 0 ? buffer[i - 1].element : undefined;
+      }
+
+      buffer.forEach(function (wrapper, i) {
+        switch (wrapper.op) {
+          case 'prepend':
+            toBePrepended.unshift(wrapper);
+            break;
+          case 'append':
+            insertWrapperContent(wrapper, getPreSibling(i));
+            wrapper.op = 'none';
+            inserted.push(wrapper);
+            break;
+          case 'insert':
+            promises = promises.concat(viewport.insertElementAnimated(wrapper.element, getPreSibling(i)));
+            wrapper.op = 'none';
+            inserted.push(wrapper);
+            break;
+          case 'remove':
+            toBeRemoved.push(wrapper);
+        }
+      });
+      toBeRemoved.forEach(function (wrapper) {
+        return promises = promises.concat(buffer.remove(wrapper));
+      });
+
+      if (toBePrepended.length) toBePrepended.forEach(function (wrapper) {
+        insertWrapperContent(wrapper);
+        wrapper.op = 'none';
+      });
+
+      buffer.forEach(function (item, i) {
+        return item.scope.$index = buffer.first + i;
+      });
+      return {
+        prepended: toBePrepended,
+        removed: toBeRemoved,
+        inserted: inserted,
+        animated: promises
+      };
+    }
+
+    function updatePaddings(rid, updates) {
+
+      function effectiveHeight(list) {
+        if (list.length == 0) return 0;
+        var top = Number.MAX_VALUE;
+        var bottom = Number.MIN_VALUE;
+        list.forEach(function (wrapper) {
+          if (wrapper.element[0].offsetParent) {
+            // element style is not display:none
+            top = Math.min(top, wrapper.element.offset().top);
+            bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
+          }
+        });
+        return Math.max(0, bottom - top);
+      }
+
+      var adjustedPaddingHeight = effectiveHeight(updates.prepended);
+
+      viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
+
+      // schedule another adjustBuffer after animation completion
+      if (updates.animated.length) {
+        $q.all(updates.animated).then(function () {
+          viewport.adjustPadding();
+          // log 'Animation completed rid #{rid}'
+          return adjustBuffer(rid);
+        });
+      } else {
+        viewport.adjustPadding();
+      }
+
+      return adjustedPaddingHeight > 0 || effectiveHeight(updates.inserted) > 0;
+    }
+
     function processBufferedItems(rid) {
+      return updatePaddings(rid, updateDOM(rid));
+    }
+
+    function processBufferedItemsOld(rid) {
       var keepFetching = false;
       var promises = [];
       var toBePrepended = [];
