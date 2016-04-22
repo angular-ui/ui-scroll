@@ -740,7 +740,93 @@ angular.module('ui.scroll', [])
           return false;
         }
 
+        function updateDOM(rid) {
+
+          let promises = [];
+          const toBePrepended = [];
+          const toBeRemoved = [];
+          const inserted = [];
+
+          function getPreSibling(i) {
+            return (i > 0) ? buffer[i - 1].element : undefined;
+          }
+
+          buffer.forEach((wrapper, i) => {
+            switch (wrapper.op) {
+              case 'prepend':
+                toBePrepended.unshift(wrapper);
+                break;
+              case 'append':
+                insertWrapperContent(wrapper, getPreSibling(i));
+                wrapper.op = 'none';
+                inserted.push(wrapper);
+                break;
+              case 'insert':
+                promises = promises.concat(viewport.insertElementAnimated(wrapper.element, getPreSibling(i)));
+                wrapper.op = 'none';
+                inserted.push(wrapper);
+                break;
+              case 'remove':
+                toBeRemoved.push(wrapper);
+            }
+          });
+
+          toBeRemoved.forEach((wrapper) => promises = promises.concat(buffer.remove(wrapper)));
+
+          if (toBePrepended.length) {
+            toBePrepended.forEach((wrapper) => {
+              insertWrapperContent(wrapper);
+              wrapper.op = 'none';
+            });
+
+          buffer.forEach((item, i) => item.scope.$index = buffer.first + i);
+          return {
+            prepended: toBePrepended,
+            removed: toBeRemoved,
+            inserted: inserted,
+            animated: promises
+          };
+        }
+
+        function updatePaddings(updates) {
+
+          function effectiveHeight(list) {
+            if (list.length == 0)
+              return false;
+            let top = Number.MAX_VALUE;
+            let bottom = Number.MIN_VALUE;
+            list.forEach((wrapper) => {
+              if (wrapper.element[0].offsetParent) {
+                // element style is not display:none
+                top = Math.min(top, wrapper.element.offset().top);
+                bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
+              }
+            });
+            return Math.max(0, bottom - top);
+          }
+
+          let adjustedPaddingHeight = effectiveHeight(updates.prepended);
+
+          // schedule another adjustBuffer after animation completion
+          if (updates.promises.length) {
+            $q.all(promises).then(() => {
+              viewport.adjustPadding();
+              // log "Animation completed rid #{rid}"
+              return adjustBuffer(rid);
+            });
+          } else {
+            viewport.adjustPadding();
+          }
+
+          return adjustedPaddingHeight > 0 || effectiveHeight(updates.inserted) > 0;
+
+        }
+
         function processBufferedItems(rid) {
+          return updatePaddings(updateDom(rid));
+        }
+
+        function processBufferedItemsOld(rid) {
           let keepFetching = false;
           let promises = [];
           const toBePrepended = [];
