@@ -422,6 +422,16 @@ angular.module('ui.scroll', [])
         const setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
         const setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
 
+        let disabled = false;
+        this.disable = () => disabled = true;
+        this.enable = () => {
+          if(disabled) {
+            adjustBuffer();
+            disabled = false;
+          }
+        };
+        this.isDisabled = () => disabled;
+
         this.isLoading = false;
 
         function applyUpdate(wrapper, newItems) {
@@ -883,7 +893,7 @@ angular.module('ui.scroll', [])
           }
 
           function resizeAndScrollHandler() {
-            if (!$rootScope.$$phase && !adapter.isLoading) {
+            if (!$rootScope.$$phase && !adapter.isLoading && !adapter.isDisabled()) {
 
               enqueueFetch(ridActual, true);
 
@@ -897,6 +907,9 @@ angular.module('ui.scroll', [])
           }
 
           function wheelHandler(event) {
+            if(adapter.isDisabled()) {
+              return;
+            }
             let scrollTop = viewport[0].scrollTop;
             let yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
 
