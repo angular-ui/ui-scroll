@@ -138,15 +138,15 @@ angular.module('ui.scroll', [])
            * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
            */
           insert(operation, item) {
-            const itemScope = $scope.$new();
+//            const itemScope = $scope.$new();
             const wrapper = {
               item,
-              scope: itemScope
+//              scope: itemScope
             };
 
-            itemScope[itemName] = item;
+//            itemScope[itemName] = item;
 
-            linker(itemScope, (clone) => wrapper.element = clone);
+//            linker(itemScope, (clone) => {wrapper.element = clone;});
 
             if (operation % 1 === 0) {// it is an insert
               wrapper.op = 'insert';
@@ -731,13 +731,23 @@ angular.module('ui.scroll', [])
         }
 
         function insertWrapperContent(wrapper, sibling) {
-          viewport.insertElement(wrapper.element, sibling);
+
+          createElement(wrapper, sibling);
 
           if (isElementVisible(wrapper))
             return true;
-
           wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(() => visibilityWatcher(wrapper));
           return false;
+        }
+
+        function createElement(wrapper, sibling) {
+          linker((clone, scope) => {
+            viewport.insertElement(clone, sibling);
+            wrapper.element = clone;
+            wrapper.scope = scope;
+            scope[itemName] = wrapper.item;
+          });
+          return wrapper.element;
         }
 
         function updateDOM(rid) {
@@ -762,7 +772,7 @@ angular.module('ui.scroll', [])
                 inserted.push(wrapper);
                 break;
               case 'insert':
-                promises = promises.concat(viewport.insertElementAnimated(wrapper.element, getPreSibling(i)));
+                promises = promises.concat(viewport.insertElementAnimated(createElement(wrapper, getPreSibling(i))));
                 wrapper.op = 'none';
                 inserted.push(wrapper);
                 break;
@@ -823,7 +833,7 @@ angular.module('ui.scroll', [])
           return adjustedPaddingHeight > 0 || effectiveHeight(updates.inserted) > 0;
 
         }
-
+/*
         function processBufferedItems(rid) {
           return updatePaddings(rid, updateDOM(rid));
         }
@@ -886,7 +896,7 @@ angular.module('ui.scroll', [])
 
           return keepFetching;
         }
-
+*/
         function enqueueFetch(rid, keepFetching) {
           if (viewport.shouldLoadBottom() && keepFetching) {
                 // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
@@ -905,10 +915,13 @@ angular.module('ui.scroll', [])
         }          
 
         function adjustBuffer(rid) {
+          var updates = updateDOM(rid);
+
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
 
-            processBufferedItems(rid);
+            //processBufferedItems(rid);
+            updatePaddings(rid, updates);
             enqueueFetch(rid, true);
 
             if (!pending.length) {
@@ -918,10 +931,13 @@ angular.module('ui.scroll', [])
         }
 
         function adjustBufferAfterFetch(rid) {
+          var updates = updateDOM(rid);
+
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
 
-            enqueueFetch(rid, processBufferedItems(rid));
+            //enqueueFetch(rid, processBufferedItems(rid));
+            enqueueFetch(rid, updatePaddings(rid, updates));
             pending.shift();
 
             if (pending.length) 

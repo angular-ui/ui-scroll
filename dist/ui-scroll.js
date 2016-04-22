@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-22T20:05:37.618Z
+ * Version: 1.4.1 -- 2016-04-22T21:13:57.462Z
  * License: MIT
  */
  
@@ -151,18 +151,16 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
        * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
        */
       insert: function insert(operation, item) {
-        var itemScope = $scope.$new();
+        //            const itemScope = $scope.$new();
         var wrapper = {
-          item: item,
-          scope: itemScope
+          item: item
         };
 
-        itemScope[itemName] = item;
+        //            itemScope[itemName] = item;
 
-        linker(itemScope, function (clone) {
-          return wrapper.element = clone;
-        });
+        //            linker(itemScope, (clone) => {wrapper.element = clone;});
 
+        //              scope: itemScope
         if (operation % 1 === 0) {
           // it is an insert
           wrapper.op = 'insert';
@@ -738,14 +736,24 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function insertWrapperContent(wrapper, sibling) {
-      viewport.insertElement(wrapper.element, sibling);
+
+      createElement(wrapper, sibling);
 
       if (isElementVisible(wrapper)) return true;
-
       wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function () {
         return visibilityWatcher(wrapper);
       });
       return false;
+    }
+
+    function createElement(wrapper, sibling) {
+      linker(function (clone, scope) {
+        viewport.insertElement(clone, sibling);
+        wrapper.element = clone;
+        wrapper.scope = scope;
+        scope[itemName] = wrapper.item;
+      });
+      return wrapper.element;
     }
 
     function updateDOM(rid) {
@@ -770,7 +778,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
             inserted.push(wrapper);
             break;
           case 'insert':
-            promises = promises.concat(viewport.insertElementAnimated(wrapper.element, getPreSibling(i)));
+            promises = promises.concat(viewport.insertElementAnimated(createElement(wrapper, getPreSibling(i))));
             wrapper.op = 'none';
             inserted.push(wrapper);
             break;
@@ -831,74 +839,70 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       return adjustedPaddingHeight > 0 || effectiveHeight(updates.inserted) > 0;
     }
-
-    function processBufferedItems(rid) {
-      return updatePaddings(rid, updateDOM(rid));
-    }
-
-    function processBufferedItemsOld(rid) {
-      var keepFetching = false;
-      var promises = [];
-      var toBePrepended = [];
-      var toBeRemoved = [];
-
-      function getPreSibling(i) {
-        return i > 0 ? buffer[i - 1].element : undefined;
-      }
-
-      buffer.forEach(function (wrapper, i) {
-        switch (wrapper.op) {
-          case 'prepend':
-            toBePrepended.unshift(wrapper);
-            break;
-          case 'append':
-            keepFetching = insertWrapperContent(wrapper, getPreSibling(i)) || keepFetching;
-            wrapper.op = 'none';
-            break;
-          case 'insert':
-            promises = promises.concat(viewport.insertElementAnimated(wrapper.element, getPreSibling(i)));
-            wrapper.op = 'none';
-            break;
-          case 'remove':
-            toBeRemoved.push(wrapper);
-        }
-      });
-
-      toBeRemoved.forEach(function (wrapper) {
-        return promises = promises.concat(buffer.remove(wrapper));
-      });
-
-      if (toBePrepended.length) {
-        var adjustedPaddingHeight = 0;
-
-        toBePrepended.forEach(function (wrapper) {
-          keepFetching = insertWrapperContent(wrapper) || keepFetching;
-          wrapper.op = 'none';
-          adjustedPaddingHeight += wrapper.element.outerHeight(true);
-        });
-
-        viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
-      }
-
-      // re-index the buffer
-      buffer.forEach(function (item, i) {
-        return item.scope.$index = buffer.first + i;
-      });
-
-      // schedule another adjustBuffer after animation completion
-      if (promises.length) {
-        $q.all(promises).then(function () {
-          viewport.adjustPadding();
-          // log 'Animation completed rid #{rid}'
-          return adjustBuffer(rid);
-        });
-      } else {
-        viewport.adjustPadding();
-      }
-
-      return keepFetching;
-    }
-
+    /*
+            function processBufferedItems(rid) {
+              return updatePaddings(rid, updateDOM(rid));
+            }
+    
+            function processBufferedItemsOld(rid) {
+              let keepFetching = false;
+              let promises = [];
+              const toBePrepended = [];
+              const toBeRemoved = [];
+    
+              function getPreSibling(i) {
+                return (i > 0) ? buffer[i - 1].element : undefined;
+              }
+    
+              buffer.forEach((wrapper, i) => {
+                switch (wrapper.op) {
+                  case 'prepend':
+                    toBePrepended.unshift(wrapper);
+                    break;
+                  case 'append':
+                    keepFetching = insertWrapperContent(wrapper, getPreSibling(i)) || keepFetching;
+                    wrapper.op = 'none';
+                    break;
+                  case 'insert':
+                    promises = promises.concat(viewport.insertElementAnimated(wrapper.element, getPreSibling(i)));
+                    wrapper.op = 'none';
+                    break;
+                  case 'remove':
+                    toBeRemoved.push(wrapper);
+                }
+              });
+    
+              toBeRemoved.forEach((wrapper) => promises = promises.concat(buffer.remove(wrapper)));
+    
+              if (toBePrepended.length) {
+                let adjustedPaddingHeight = 0;
+    
+                toBePrepended.forEach((wrapper) => {
+                  keepFetching = insertWrapperContent(wrapper) || keepFetching;
+                  wrapper.op = 'none';
+                  adjustedPaddingHeight += wrapper.element.outerHeight(true);
+                });
+    
+                viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
+              }
+    
+              // re-index the buffer
+              buffer.forEach((item, i) => item.scope.$index = buffer.first + i);
+    
+              // schedule another adjustBuffer after animation completion
+              if (promises.length) {
+                $q.all(promises).then(() => {
+                  viewport.adjustPadding();
+                  // log 'Animation completed rid #{rid}'
+                  return adjustBuffer(rid);
+                });
+              } else {
+                viewport.adjustPadding();
+              }
+    
+              return keepFetching;
+            }
+    */
     function enqueueFetch(rid, keepFetching) {
       if (viewport.shouldLoadBottom() && keepFetching) {
         // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
@@ -917,10 +921,13 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function adjustBuffer(rid) {
+      var updates = updateDOM(rid);
+
       // We need the item bindings to be processed before we can do adjustment
       $timeout(function () {
 
-        processBufferedItems(rid);
+        //processBufferedItems(rid);
+        updatePaddings(rid, updates);
         enqueueFetch(rid, true);
 
         if (!pending.length) {
@@ -930,10 +937,13 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function adjustBufferAfterFetch(rid) {
+      var updates = updateDOM(rid);
+
       // We need the item bindings to be processed before we can do adjustment
       $timeout(function () {
 
-        enqueueFetch(rid, processBufferedItems(rid));
+        //enqueueFetch(rid, processBufferedItems(rid));
+        enqueueFetch(rid, updatePaddings(rid, updates));
         pending.shift();
 
         if (pending.length) fetch(rid);else {

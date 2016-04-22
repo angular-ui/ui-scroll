@@ -36,11 +36,9 @@ angular.module('ui.scroll.grid', [])
   }])
   .directive('uiScrollTd', ['$log', function (console) {
     return {
-      require: ['?^^uiScrollViewport', '?^^uiScroll'],
+      require: ['?^^uiScrollViewport'],
       link: ($scope, element, $attr, controllers, linker) => {
         
-        //gridAdapter = controllers[0].gridAdapter;            
-        //gridAdapter.registerColumn(element);
         gridAdapter = controllers[0].gridAdapter;            
         gridAdapter.registerColumn(element);
 
