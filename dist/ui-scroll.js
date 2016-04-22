@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-21T22:06:47.596Z
+ * Version: 1.4.1 -- 2016-04-22T16:52:47.916Z
  * License: MIT
  */
  
@@ -37,39 +37,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       });
     }]
   };
-}).directive('uiScrollTh', ['$log', function (console) {
-  return {
-    require: ['^uiScrollViewport'],
-    link: function link($scope, element, $attr, controllers, linker) {
-
-      function GridAdapter() {
-        var headers = [];
-        var columns = [];
-        this.registerHeader = function (header) {
-          headers.push(header);
-        };
-        this.registerColumn = function (column) {
-          headers.push(column);
-          console.log(column);
-        };
-      }
-
-      gridAdapter = controllers[0].gridAdapter = controllers[0].gridAdapter || new GridAdapter();
-      gridAdapter.registerHeader(element);
-    }
-  };
-}]).directive('uiScrollTd', ['$log', function (console) {
-  return {
-    require: ['?^uiScrollViewport'],
-    link: function link($scope, element, $attr, controllers, linker) {
-
-      //gridAdapter = controllers[0].gridAdapter;           
-      //gridAdapter.registerColumn(element);
-      element.attr('ui-scroll-td', '1');
-      console.log(controllers[0]);
-    }
-  };
-}]).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $q, $parse) {
+}).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $q, $parse) {
   var $animate = $injector.has && $injector.has('$animate') ? $injector.get('$animate') : null;
   var isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
   //const log = console.debug || console.log;
