@@ -186,7 +186,23 @@ angular.module('ui.scroll', [])
 
           setLower() {
             buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
+          },
+
+          effectiveHeight(elements) {
+            if (elements.length == 0)
+              return 0;
+            let top = Number.MAX_VALUE;
+            let bottom = Number.MIN_VALUE;
+            elements.forEach((wrapper) => {
+              if (wrapper.element[0].offsetParent) {
+                // element style is not display:none
+                top = Math.min(top, wrapper.element.offset().top);
+                bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
+              }
+            });
+            return Math.max(0, bottom - top);
           }
+
 
         });
 
@@ -554,44 +570,34 @@ angular.module('ui.scroll', [])
               throw new Error(datasourceName + ' is not a valid datasource');
             }
           }
-
-          let minIndexDesc = Object.getOwnPropertyDescriptor(_datasource, 'minIndex');
-          if(!minIndexDesc || (!minIndexDesc.set && !minIndexDesc.get)) {
-            Object.defineProperty(_datasource, 'minIndex', {
-              set: function (value) {
-                this._minIndex = value;
-                onDatasourceMinIndexChanged(value);
-              },
-              get: function get() {
-                return this._minIndex;
-              }
-            });
-          }
-
-          let maxIndexDesc = Object.getOwnPropertyDescriptor(_datasource, 'maxIndex');
-          if(!maxIndexDesc || (!maxIndexDesc.set && !maxIndexDesc.get)) {
-            Object.defineProperty(_datasource, 'maxIndex', {
-              set: function (value) {
-                this._maxIndex = value;
-                onDatasourceMaxIndexChanged(value);
-              },
-              get: function get() {
-                return this._maxIndex;
-              }
-            });
-          }
-
           return _datasource;
         })();
+/*
+        let minIndexDesc = Object.getOwnPropertyDescriptor(datasource, 'minIndex');
+        if(!minIndexDesc || (!minIndexDesc.set && !minIndexDesc.get)) {
+          Object.defineProperty(datasource, 'minIndex', {
+            set: function (value) {
+              this._minIndex = value;
+              onDatasourceMinIndexChanged(value);
+            },
+            get: function get() {
+              return this._minIndex;
+            }
+          });
+        }
 
-        let ridActual = 0;// current data revision id
-        let pending = [];
-        let buffer = new Buffer(itemName, $scope, linker, bufferSize);
-        let viewport = new Viewport(buffer, element, controllers, $attr);
-        let adapter = new Adapter($attr, viewport, buffer, () => {
-          dismissPendingRequests();
-          adjustBuffer(ridActual);
-        });
+        let maxIndexDesc = Object.getOwnPropertyDescriptor(datasource, 'maxIndex');
+        if(!maxIndexDesc || (!maxIndexDesc.set && !maxIndexDesc.get)) {
+          Object.defineProperty(datasource, 'maxIndex', {
+            set: function (value) {
+              this._maxIndex = value;
+              onDatasourceMaxIndexChanged(value);
+            },
+            get: function get() {
+              return this._maxIndex;
+            }
+          });
+        }
 
         var onDatasourceMinIndexChanged = function(value) {
           $timeout(function(){
@@ -609,6 +615,48 @@ angular.module('ui.scroll', [])
             }
           });
         };
+*/
+        function defineProperty(datasource, name, setter) {
+          var descriptor = Object.getOwnPropertyDescriptor(datasource, name);
+          if (!descriptor || (!descriptor.set && ! descriptor.get)) {
+            Object.defineProperty(datasource, name, {
+              set: function (value) {
+                this['_' + name] = value;
+                setter(value);
+              },
+              get: function () {
+                return this['_' + name];
+              }
+            })
+          }
+        }
+
+        defineProperty(datasource, 'minIndex', (value) => {
+          $timeout(() => {
+            buffer.minIndexUser = value;
+            if(!pending.length) {
+              viewport.adjustPadding(true);
+            }
+          });
+        })
+
+        defineProperty(datasource, 'maxIndex', (value) => {
+          $timeout(() => {
+            buffer.maxIndexUser = value;
+            if(!pending.length) {
+              viewport.adjustPadding(true);
+            }
+          });
+        })
+
+        let ridActual = 0;// current data revision id
+        let pending = [];
+        let buffer = new Buffer(itemName, $scope, linker, bufferSize);
+        let viewport = new Viewport(buffer, element, controllers, $attr);
+        let adapter = new Adapter($attr, viewport, buffer, () => {
+          dismissPendingRequests();
+          adjustBuffer(ridActual);
+        });
 
         const fetchNext = (() => {
           if (datasource.get.length !== 2) {
@@ -789,7 +837,12 @@ angular.module('ui.scroll', [])
 
           buffer.forEach((item, i) => item.scope.$index = buffer.first + i);
 
+          var estimatedPaddingIncrement = buffer.effectiveHeight(toBePrepended);
+
+          //viewport.adjustScrollTopAfterPrepend(estimatedPaddingIncrement);
+
           return {
+            estimatedPaddingIncrement: 0, //estimatedPaddingIncrement,
             prepended: toBePrepended,
             removed: toBeRemoved,
             inserted: inserted,
@@ -800,22 +853,7 @@ angular.module('ui.scroll', [])
 
         function updatePaddings(rid, updates) {
 
-          function effectiveHeight(list) {
-            if (list.length == 0)
-              return 0;
-            let top = Number.MAX_VALUE;
-            let bottom = Number.MIN_VALUE;
-            list.forEach((wrapper) => {
-              if (wrapper.element[0].offsetParent) {
-                // element style is not display:none
-                top = Math.min(top, wrapper.element.offset().top);
-                bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
-              }
-            });
-            return Math.max(0, bottom - top);
-          }
-
-          let adjustedPaddingHeight = effectiveHeight(updates.prepended);
+          let adjustedPaddingHeight = buffer.effectiveHeight(updates.prepended) - updates.estimatedPaddingIncrement;
 
           viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
 
@@ -830,7 +868,7 @@ angular.module('ui.scroll', [])
             viewport.adjustPadding();
           }
 
-          return adjustedPaddingHeight > 0 || effectiveHeight(updates.inserted) > 0;
+          return adjustedPaddingHeight > 0 || buffer.effectiveHeight(updates.inserted) > 0;
 
         }
 

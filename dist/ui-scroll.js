@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-27T20:39:03.122Z
+ * Version: 1.4.1 -- 2016-04-27T21:29:54.138Z
  * License: MIT
  */
  
@@ -199,6 +199,19 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       },
       setLower: function setLower() {
         buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
+      },
+      effectiveHeight: function effectiveHeight(elements) {
+        if (elements.length == 0) return 0;
+        var top = Number.MAX_VALUE;
+        var bottom = Number.MIN_VALUE;
+        elements.forEach(function (wrapper) {
+          if (wrapper.element[0].offsetParent) {
+            // element style is not display:none
+            top = Math.min(top, wrapper.element.offset().top);
+            bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
+          }
+        });
+        return Math.max(0, bottom - top);
       }
     });
 
@@ -556,35 +569,84 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           throw new Error(datasourceName + ' is not a valid datasource');
         }
       }
-
-      var minIndexDesc = Object.getOwnPropertyDescriptor(_datasource, 'minIndex');
-      if (!minIndexDesc || !minIndexDesc.set && !minIndexDesc.get) {
-        Object.defineProperty(_datasource, 'minIndex', {
-          set: function set(value) {
-            this._minIndex = value;
-            onDatasourceMinIndexChanged(value);
-          },
-          get: function get() {
-            return this._minIndex;
-          }
-        });
-      }
-
-      var maxIndexDesc = Object.getOwnPropertyDescriptor(_datasource, 'maxIndex');
-      if (!maxIndexDesc || !maxIndexDesc.set && !maxIndexDesc.get) {
-        Object.defineProperty(_datasource, 'maxIndex', {
-          set: function set(value) {
-            this._maxIndex = value;
-            onDatasourceMaxIndexChanged(value);
-          },
-          get: function get() {
-            return this._maxIndex;
-          }
-        });
-      }
-
       return _datasource;
     }();
+    /*
+            let minIndexDesc = Object.getOwnPropertyDescriptor(datasource, 'minIndex');
+            if(!minIndexDesc || (!minIndexDesc.set && !minIndexDesc.get)) {
+              Object.defineProperty(datasource, 'minIndex', {
+                set: function (value) {
+                  this._minIndex = value;
+                  onDatasourceMinIndexChanged(value);
+                },
+                get: function get() {
+                  return this._minIndex;
+                }
+              });
+            }
+    
+            let maxIndexDesc = Object.getOwnPropertyDescriptor(datasource, 'maxIndex');
+            if(!maxIndexDesc || (!maxIndexDesc.set && !maxIndexDesc.get)) {
+              Object.defineProperty(datasource, 'maxIndex', {
+                set: function (value) {
+                  this._maxIndex = value;
+                  onDatasourceMaxIndexChanged(value);
+                },
+                get: function get() {
+                  return this._maxIndex;
+                }
+              });
+            }
+    
+            var onDatasourceMinIndexChanged = function(value) {
+              $timeout(function(){
+                buffer.minIndexUser = value;
+                if(!pending.length) {
+                  viewport.adjustPadding(true);
+                }
+              });
+            };
+            var onDatasourceMaxIndexChanged = function(value) {
+              $timeout(function(){
+                buffer.maxIndexUser = value;
+                if(!pending.length) {
+                  viewport.adjustPadding();
+                }
+              });
+            };
+    */
+    function defineProperty(datasource, name, setter) {
+      var descriptor = Object.getOwnPropertyDescriptor(datasource, name);
+      if (!descriptor || !descriptor.set && !descriptor.get) {
+        Object.defineProperty(datasource, name, {
+          set: function set(value) {
+            this['_' + name] = value;
+            setter(value);
+          },
+          get: function get() {
+            return this['_' + name];
+          }
+        });
+      }
+    }
+
+    defineProperty(datasource, 'minIndex', function (value) {
+      $timeout(function () {
+        buffer.minIndexUser = value;
+        if (!pending.length) {
+          viewport.adjustPadding(true);
+        }
+      });
+    });
+
+    defineProperty(datasource, 'maxIndex', function (value) {
+      $timeout(function () {
+        buffer.maxIndexUser = value;
+        if (!pending.length) {
+          viewport.adjustPadding(true);
+        }
+      });
+    });
 
     var ridActual = 0; // current data revision id
     var pending = [];
@@ -594,23 +656,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       dismissPendingRequests();
       adjustBuffer(ridActual);
     });
-
-    var onDatasourceMinIndexChanged = function onDatasourceMinIndexChanged(value) {
-      $timeout(function () {
-        buffer.minIndexUser = value;
-        if (!pending.length) {
-          viewport.adjustPadding(true);
-        }
-      });
-    };
-    var onDatasourceMaxIndexChanged = function onDatasourceMaxIndexChanged(value) {
-      $timeout(function () {
-        buffer.maxIndexUser = value;
-        if (!pending.length) {
-          viewport.adjustPadding();
-        }
-      });
-    };
 
     var fetchNext = function () {
       if (datasource.get.length !== 2) {
@@ -798,7 +843,12 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         return item.scope.$index = buffer.first + i;
       });
 
+      var estimatedPaddingIncrement = buffer.effectiveHeight(toBePrepended);
+
+      //viewport.adjustScrollTopAfterPrepend(estimatedPaddingIncrement);
+
       return {
+        estimatedPaddingIncrement: 0, //estimatedPaddingIncrement,
         prepended: toBePrepended,
         removed: toBeRemoved,
         inserted: inserted,
@@ -808,21 +858,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     function updatePaddings(rid, updates) {
 
-      function effectiveHeight(list) {
-        if (list.length == 0) return 0;
-        var top = Number.MAX_VALUE;
-        var bottom = Number.MIN_VALUE;
-        list.forEach(function (wrapper) {
-          if (wrapper.element[0].offsetParent) {
-            // element style is not display:none
-            top = Math.min(top, wrapper.element.offset().top);
-            bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
-          }
-        });
-        return Math.max(0, bottom - top);
-      }
-
-      var adjustedPaddingHeight = effectiveHeight(updates.prepended);
+      var adjustedPaddingHeight = buffer.effectiveHeight(updates.prepended) - updates.estimatedPaddingIncrement;
 
       viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
 
@@ -837,7 +873,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         viewport.adjustPadding();
       }
 
-      return adjustedPaddingHeight > 0 || effectiveHeight(updates.inserted) > 0;
+      return adjustedPaddingHeight > 0 || buffer.effectiveHeight(updates.inserted) > 0;
     }
 
     function enqueueFetch(rid, keepFetching) {
