@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-27T21:29:54.138Z
+ * Version: 1.4.1 -- 2016-04-27T22:08:51.219Z
  * License: MIT
  */
  
@@ -571,50 +571,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       }
       return _datasource;
     }();
-    /*
-            let minIndexDesc = Object.getOwnPropertyDescriptor(datasource, 'minIndex');
-            if(!minIndexDesc || (!minIndexDesc.set && !minIndexDesc.get)) {
-              Object.defineProperty(datasource, 'minIndex', {
-                set: function (value) {
-                  this._minIndex = value;
-                  onDatasourceMinIndexChanged(value);
-                },
-                get: function get() {
-                  return this._minIndex;
-                }
-              });
-            }
-    
-            let maxIndexDesc = Object.getOwnPropertyDescriptor(datasource, 'maxIndex');
-            if(!maxIndexDesc || (!maxIndexDesc.set && !maxIndexDesc.get)) {
-              Object.defineProperty(datasource, 'maxIndex', {
-                set: function (value) {
-                  this._maxIndex = value;
-                  onDatasourceMaxIndexChanged(value);
-                },
-                get: function get() {
-                  return this._maxIndex;
-                }
-              });
-            }
-    
-            var onDatasourceMinIndexChanged = function(value) {
-              $timeout(function(){
-                buffer.minIndexUser = value;
-                if(!pending.length) {
-                  viewport.adjustPadding(true);
-                }
-              });
-            };
-            var onDatasourceMaxIndexChanged = function(value) {
-              $timeout(function(){
-                buffer.maxIndexUser = value;
-                if(!pending.length) {
-                  viewport.adjustPadding();
-                }
-              });
-            };
-    */
+
     function defineProperty(datasource, name, setter) {
       var descriptor = Object.getOwnPropertyDescriptor(datasource, name);
       if (!descriptor || !descriptor.set && !descriptor.get) {
@@ -657,37 +614,25 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       adjustBuffer(ridActual);
     });
 
-    var fetchNext = function () {
-      if (datasource.get.length !== 2) {
-        return function (success) {
-          return datasource.get(buffer.next, bufferSize, success);
-        };
-      }
+    var fetchNext = datasource.get.length !== 2 ? function (success) {
+      return datasource.get(buffer.next, bufferSize, success);
+    } : function (success) {
+      datasource.get({
+        index: buffer.next,
+        append: buffer.length ? buffer[buffer.length - 1].item : void 0,
+        count: bufferSize
+      }, success);
+    };
 
-      return function (success) {
-        datasource.get({
-          index: buffer.next,
-          append: buffer.length ? buffer[buffer.length - 1].item : void 0,
-          count: bufferSize
-        }, success);
-      };
-    }();
-
-    var fetchPrevious = function () {
-      if (datasource.get.length !== 2) {
-        return function (success) {
-          return datasource.get(buffer.first - bufferSize, bufferSize, success);
-        };
-      }
-
-      return function (success) {
-        datasource.get({
-          index: buffer.first - bufferSize,
-          prepend: buffer.length ? buffer[0].item : void 0,
-          count: bufferSize
-        }, success);
-      };
-    }();
+    var fetchPrevious = datasource.get.length !== 2 ? function (success) {
+      return datasource.get(buffer.first - bufferSize, bufferSize, success);
+    } : function (success) {
+      datasource.get({
+        index: buffer.first - bufferSize,
+        prepend: buffer.length ? buffer[0].item : void 0,
+        count: bufferSize
+      }, success);
+    };
 
     if ($attr.adapter) {
       // so we have an adapter on $scope

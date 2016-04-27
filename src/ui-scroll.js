@@ -615,32 +615,23 @@ angular.module('ui.scroll', [])
           adjustBuffer(ridActual);
         });
 
-        const fetchNext = 
-          if (datasource.get.length !== 2) {
-            return (success) => datasource.get(buffer.next, bufferSize, success);
-          } else {
-            return (success) => {
+        const fetchNext = (datasource.get.length !== 2) ? (success) => datasource.get(buffer.next, bufferSize, success)
+          : (success) => {
               datasource.get({
                 index: buffer.next,
                 append: buffer.length ? buffer[buffer.length - 1].item : void 0,
                 count: bufferSize
               }, success);
             };
-          };
 
-
-        const fetchPrevious = 
-          if (datasource.get.length !== 2) {
-            return (success) => datasource.get(buffer.first - bufferSize, bufferSize, success);
-          } else {
-            return (success) => {
+        const fetchPrevious = (datasource.get.length !== 2) ? (success) => datasource.get(buffer.first - bufferSize, bufferSize, success)
+          : (success) => {
               datasource.get({
                 index: buffer.first - bufferSize,
                 prepend: buffer.length ? buffer[0].item : void 0,
                 count: bufferSize
               }, success);
             };
-        };
 
         if ($attr.adapter) {
           // so we have an adapter on $scope
