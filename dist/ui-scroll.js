@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-22T21:13:57.462Z
+ * Version: 1.4.1 -- 2016-04-27T20:39:03.122Z
  * License: MIT
  */
  
@@ -735,9 +735,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       }
     }
 
-    function insertWrapperContent(wrapper, sibling) {
+    function insertWrapperContent(wrapper, insertAfter) {
 
-      createElement(wrapper, sibling);
+      createElement(wrapper, insertAfter, viewport.insertElement);
 
       if (isElementVisible(wrapper)) return true;
       wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function () {
@@ -746,14 +746,16 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       return false;
     }
 
-    function createElement(wrapper, sibling) {
+    function createElement(wrapper, insertAfter, insertElement) {
+      var promises;
+      var sibling = insertAfter > 0 ? buffer[insertAfter - 1].element : undefined;
       linker(function (clone, scope) {
-        viewport.insertElement(clone, sibling);
+        promises = viewport.insertElement(clone, sibling);
         wrapper.element = clone;
         wrapper.scope = scope;
         scope[itemName] = wrapper.item;
       });
-      return wrapper.element;
+      return promises;
     }
 
     function updateDOM(rid) {
@@ -763,22 +765,18 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       var toBeRemoved = [];
       var inserted = [];
 
-      function getPreSibling(i) {
-        return i > 0 ? buffer[i - 1].element : undefined;
-      }
-
       buffer.forEach(function (wrapper, i) {
         switch (wrapper.op) {
           case 'prepend':
             toBePrepended.unshift(wrapper);
             break;
           case 'append':
-            insertWrapperContent(wrapper, getPreSibling(i));
+            insertWrapperContent(wrapper, i);
             wrapper.op = 'none';
             inserted.push(wrapper);
             break;
           case 'insert':
-            promises = promises.concat(viewport.insertElementAnimated(createElement(wrapper, getPreSibling(i))));
+            promises = promises.concat(createElement(wrapper, i, viewport.insertElementAnimated));
             wrapper.op = 'none';
             inserted.push(wrapper);
             break;
@@ -786,6 +784,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
             toBeRemoved.push(wrapper);
         }
       });
+
       toBeRemoved.forEach(function (wrapper) {
         return promises = promises.concat(buffer.remove(wrapper));
       });
@@ -798,6 +797,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       buffer.forEach(function (item, i) {
         return item.scope.$index = buffer.first + i;
       });
+
       return {
         prepended: toBePrepended,
         removed: toBeRemoved,
@@ -839,70 +839,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       return adjustedPaddingHeight > 0 || effectiveHeight(updates.inserted) > 0;
     }
-    /*
-            function processBufferedItems(rid) {
-              return updatePaddings(rid, updateDOM(rid));
-            }
-    
-            function processBufferedItemsOld(rid) {
-              let keepFetching = false;
-              let promises = [];
-              const toBePrepended = [];
-              const toBeRemoved = [];
-    
-              function getPreSibling(i) {
-                return (i > 0) ? buffer[i - 1].element : undefined;
-              }
-    
-              buffer.forEach((wrapper, i) => {
-                switch (wrapper.op) {
-                  case 'prepend':
-                    toBePrepended.unshift(wrapper);
-                    break;
-                  case 'append':
-                    keepFetching = insertWrapperContent(wrapper, getPreSibling(i)) || keepFetching;
-                    wrapper.op = 'none';
-                    break;
-                  case 'insert':
-                    promises = promises.concat(viewport.insertElementAnimated(wrapper.element, getPreSibling(i)));
-                    wrapper.op = 'none';
-                    break;
-                  case 'remove':
-                    toBeRemoved.push(wrapper);
-                }
-              });
-    
-              toBeRemoved.forEach((wrapper) => promises = promises.concat(buffer.remove(wrapper)));
-    
-              if (toBePrepended.length) {
-                let adjustedPaddingHeight = 0;
-    
-                toBePrepended.forEach((wrapper) => {
-                  keepFetching = insertWrapperContent(wrapper) || keepFetching;
-                  wrapper.op = 'none';
-                  adjustedPaddingHeight += wrapper.element.outerHeight(true);
-                });
-    
-                viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
-              }
-    
-              // re-index the buffer
-              buffer.forEach((item, i) => item.scope.$index = buffer.first + i);
-    
-              // schedule another adjustBuffer after animation completion
-              if (promises.length) {
-                $q.all(promises).then(() => {
-                  viewport.adjustPadding();
-                  // log 'Animation completed rid #{rid}'
-                  return adjustBuffer(rid);
-                });
-              } else {
-                viewport.adjustPadding();
-              }
-    
-              return keepFetching;
-            }
-    */
+
     function enqueueFetch(rid, keepFetching) {
       if (viewport.shouldLoadBottom() && keepFetching) {
         // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
@@ -925,8 +862,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       // We need the item bindings to be processed before we can do adjustment
       $timeout(function () {
-
-        //processBufferedItems(rid);
         updatePaddings(rid, updates);
         enqueueFetch(rid, true);
 
@@ -941,8 +876,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       // We need the item bindings to be processed before we can do adjustment
       $timeout(function () {
-
-        //enqueueFetch(rid, processBufferedItems(rid));
         enqueueFetch(rid, updatePaddings(rid, updates));
         pending.shift();
 
