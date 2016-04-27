@@ -747,7 +747,17 @@ angular.module('ui.scroll', [])
             wrapper.scope = scope;
             scope[itemName] = wrapper.item;
           });
-          return wrapper.element;
+        }
+
+        function createElementAnimated(wrapper, sibling) {
+          var promises;
+          linker((clone, scope) => {
+            promises = viewport.insertElementAnimated(clone, sibling);
+            wrapper.element = clone;
+            wrapper.scope = scope;
+            scope[itemName] = wrapper.item;
+          });
+          return promises;
         }
 
         function updateDOM(rid) {
@@ -772,7 +782,7 @@ angular.module('ui.scroll', [])
                 inserted.push(wrapper);
                 break;
               case 'insert':
-                promises = promises.concat(viewport.insertElementAnimated(createElement(wrapper, getPreSibling(i))));
+                promises = promises.concat(createElementAnimated(wrapper, getPreSibling(i)));
                 wrapper.op = 'none';
                 inserted.push(wrapper);
                 break;
