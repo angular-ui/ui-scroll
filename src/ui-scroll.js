@@ -572,50 +572,7 @@ angular.module('ui.scroll', [])
           }
           return _datasource;
         })();
-/*
-        let minIndexDesc = Object.getOwnPropertyDescriptor(datasource, 'minIndex');
-        if(!minIndexDesc || (!minIndexDesc.set && !minIndexDesc.get)) {
-          Object.defineProperty(datasource, 'minIndex', {
-            set: function (value) {
-              this._minIndex = value;
-              onDatasourceMinIndexChanged(value);
-            },
-            get: function get() {
-              return this._minIndex;
-            }
-          });
-        }
 
-        let maxIndexDesc = Object.getOwnPropertyDescriptor(datasource, 'maxIndex');
-        if(!maxIndexDesc || (!maxIndexDesc.set && !maxIndexDesc.get)) {
-          Object.defineProperty(datasource, 'maxIndex', {
-            set: function (value) {
-              this._maxIndex = value;
-              onDatasourceMaxIndexChanged(value);
-            },
-            get: function get() {
-              return this._maxIndex;
-            }
-          });
-        }
-
-        var onDatasourceMinIndexChanged = function(value) {
-          $timeout(function(){
-            buffer.minIndexUser = value;
-            if(!pending.length) {
-              viewport.adjustPadding(true);
-            }
-          });
-        };
-        var onDatasourceMaxIndexChanged = function(value) {
-          $timeout(function(){
-            buffer.maxIndexUser = value;
-            if(!pending.length) {
-              viewport.adjustPadding();
-            }
-          });
-        };
-*/
         function defineProperty(datasource, name, setter) {
           var descriptor = Object.getOwnPropertyDescriptor(datasource, name);
           if (!descriptor || (!descriptor.set && ! descriptor.get)) {
@@ -658,33 +615,32 @@ angular.module('ui.scroll', [])
           adjustBuffer(ridActual);
         });
 
-        const fetchNext = (() => {
+        const fetchNext = 
           if (datasource.get.length !== 2) {
             return (success) => datasource.get(buffer.next, bufferSize, success);
-          }
-
-          return (success) => {
-            datasource.get({
-              index: buffer.next,
-              append: buffer.length ? buffer[buffer.length - 1].item : void 0,
-              count: bufferSize
-            }, success);
+          } else {
+            return (success) => {
+              datasource.get({
+                index: buffer.next,
+                append: buffer.length ? buffer[buffer.length - 1].item : void 0,
+                count: bufferSize
+              }, success);
+            };
           };
-        })();
 
-        const fetchPrevious = (() => {
+
+        const fetchPrevious = 
           if (datasource.get.length !== 2) {
             return (success) => datasource.get(buffer.first - bufferSize, bufferSize, success);
-          }
-
-          return (success) => {
-            datasource.get({
-              index: buffer.first - bufferSize,
-              prepend: buffer.length ? buffer[0].item : void 0,
-              count: bufferSize
-            }, success);
-          };
-        })();
+          } else {
+            return (success) => {
+              datasource.get({
+                index: buffer.first - bufferSize,
+                prepend: buffer.length ? buffer[0].item : void 0,
+                count: bufferSize
+              }, success);
+            };
+        };
 
         if ($attr.adapter) {
           // so we have an adapter on $scope
