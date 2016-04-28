@@ -99,7 +99,7 @@ angular.module('ui.scroll', [])
         return [($animate.leave(wrapper.element)).then(() => wrapper.scope.$destroy())];
       }
 
-      function Buffer(itemName, $scope, linker, bufferSize) {
+      function Buffer(itemName, $scope, bufferSize) {
         const buffer = Object.create(Array.prototype);
 
         angular.extend(buffer, {
@@ -138,15 +138,9 @@ angular.module('ui.scroll', [])
            * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
            */
           insert(operation, item) {
-//            const itemScope = $scope.$new();
             const wrapper = {
-              item,
-//              scope: itemScope
+              item : item
             };
-
-//            itemScope[itemName] = item;
-
-//            linker(itemScope, (clone) => {wrapper.element = clone;});
 
             if (operation % 1 === 0) {// it is an insert
               wrapper.op = 'insert';
@@ -608,7 +602,7 @@ angular.module('ui.scroll', [])
 
         let ridActual = 0;// current data revision id
         let pending = [];
-        let buffer = new Buffer(itemName, $scope, linker, bufferSize);
+        let buffer = new Buffer(itemName, $scope, bufferSize);
         let viewport = new Viewport(buffer, element, controllers, $attr);
         let adapter = new Adapter($attr, viewport, buffer, () => {
           dismissPendingRequests();

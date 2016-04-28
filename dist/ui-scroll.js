@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-27T22:08:51.219Z
+ * Version: 1.4.1 -- 2016-04-28T17:32:34.986Z
  * License: MIT
  */
  
@@ -113,7 +113,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     })];
   }
 
-  function Buffer(itemName, $scope, linker, bufferSize) {
+  function Buffer(itemName, $scope, bufferSize) {
     var buffer = Object.create(Array.prototype);
 
     angular.extend(buffer, {
@@ -151,16 +151,10 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
        * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
        */
       insert: function insert(operation, item) {
-        //            const itemScope = $scope.$new();
         var wrapper = {
           item: item
         };
 
-        //            itemScope[itemName] = item;
-
-        //            linker(itemScope, (clone) => {wrapper.element = clone;});
-
-        //              scope: itemScope
         if (operation % 1 === 0) {
           // it is an insert
           wrapper.op = 'insert';
@@ -607,7 +601,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     var ridActual = 0; // current data revision id
     var pending = [];
-    var buffer = new Buffer(itemName, $scope, linker, bufferSize);
+    var buffer = new Buffer(itemName, $scope, bufferSize);
     var viewport = new Viewport(buffer, element, controllers, $attr);
     var adapter = new Adapter($attr, viewport, buffer, function () {
       dismissPendingRequests();
