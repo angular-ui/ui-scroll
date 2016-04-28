@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-28T18:08:12.017Z
+ * Version: 1.4.1 -- 2016-04-28T18:18:58.425Z
  * License: MIT
  */
  
@@ -32,9 +32,9 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', function (
         this.registerHeader = function (header) {
           headers.push(header);
         };
-        this.registerColumn = function (column) {
+        this.registerColumn = function (scope, column) {
           headers.push(column);
-          console.log(column);
+          console.log(scope.$id);
         };
       }
 
@@ -48,7 +48,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', function (
     link: function link($scope, element, $attr, controllers, linker) {
 
       gridAdapter = controllers[0].gridAdapter;
-      gridAdapter.registerColumn(element);
+      gridAdapter.registerColumn($scope, element);
     }
   };
 }]);

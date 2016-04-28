@@ -438,7 +438,7 @@ describe('uiScroll', function () {
 
                     viewport.scrollTop(0); //empty, no scroll occurred (-8)
                     viewport.trigger('scroll');
-                    flush();
+                    //flush();
 
                     expect(spy.calls.all().length).toBe(5);
                     expect(spy.calls.all()[0].args[0]).toBe(1);
@@ -506,7 +506,7 @@ describe('uiScroll', function () {
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred because of we are at the top and bof is reached
                     expect(documentScrollBubblingCount).toBe(4);
 
-                    expect(flush).toThrow(); //there is no new data, bof is reached
+                    //expect(flush).toThrow(); //there is no new data, bof is reached
 
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred because of we are at the top and bof is reached
                     expect(documentScrollBubblingCount).toBe(5);
