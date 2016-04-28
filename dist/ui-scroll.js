@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-28T17:32:34.986Z
+ * Version: 1.4.1 -- 2016-04-28T18:08:12.017Z
  * License: MIT
  */
  
@@ -784,10 +784,10 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       var estimatedPaddingIncrement = buffer.effectiveHeight(toBePrepended);
 
-      //viewport.adjustScrollTopAfterPrepend(estimatedPaddingIncrement);
+      viewport.adjustScrollTopAfterPrepend(estimatedPaddingIncrement);
 
       return {
-        estimatedPaddingIncrement: 0, //estimatedPaddingIncrement,
+        estimatedPaddingIncrement: estimatedPaddingIncrement,
         prepended: toBePrepended,
         removed: toBeRemoved,
         inserted: inserted,
@@ -805,14 +805,14 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       if (updates.animated.length) {
         $q.all(updates.animated).then(function () {
           viewport.adjustPadding();
-          // log 'Animation completed rid #{rid}'
-          return adjustBuffer(rid);
+          adjustBuffer(rid);
         });
       } else {
         viewport.adjustPadding();
       }
 
-      return adjustedPaddingHeight > 0 || buffer.effectiveHeight(updates.inserted) > 0;
+      // return true if inserted elements have height > 0
+      return adjustedPaddingHeight + updates.estimatedPaddingIncrement > 0 || buffer.effectiveHeight(updates.inserted) > 0;
     }
 
     function enqueueFetch(rid, keepFetching) {

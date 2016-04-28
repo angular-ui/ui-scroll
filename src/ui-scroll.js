@@ -780,10 +780,10 @@ angular.module('ui.scroll', [])
 
           var estimatedPaddingIncrement = buffer.effectiveHeight(toBePrepended);
 
-          //viewport.adjustScrollTopAfterPrepend(estimatedPaddingIncrement);
+          viewport.adjustScrollTopAfterPrepend(estimatedPaddingIncrement);
 
           return {
-            estimatedPaddingIncrement: 0, //estimatedPaddingIncrement,
+            estimatedPaddingIncrement: estimatedPaddingIncrement,
             prepended: toBePrepended,
             removed: toBeRemoved,
             inserted: inserted,
@@ -802,14 +802,14 @@ angular.module('ui.scroll', [])
           if (updates.animated.length) {
             $q.all(updates.animated).then(() => {
               viewport.adjustPadding();
-              // log "Animation completed rid #{rid}"
-              return adjustBuffer(rid);
+              adjustBuffer(rid);
             });
           } else {
             viewport.adjustPadding();
           }
 
-          return adjustedPaddingHeight > 0 || buffer.effectiveHeight(updates.inserted) > 0;
+          // return true if inserted elements have height > 0
+          return adjustedPaddingHeight + updates.estimatedPaddingIncrement > 0 || buffer.effectiveHeight(updates.inserted) > 0;
 
         }
 
