@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-28T18:18:58.425Z
+ * Version: 1.4.1 -- 2016-04-28T21:14:34.194Z
  * License: MIT
  */
  
@@ -212,13 +212,13 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     return buffer;
   }
 
-  function Viewport(buffer, element, controllers, attrs) {
+  function Viewport(buffer, element, viewportController, attrs) {
     var PADDING_MIN = 0.3;
     var PADDING_DEFAULT = 0.5;
     var topPadding = null;
     var bottomPadding = null;
-    var viewport = controllers[0] && controllers[0].viewport ? controllers[0].viewport : angular.element(window);
-    var container = controllers[0] && controllers[0].container ? controllers[0].container : undefined;
+    var viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
+    var container = viewportController && viewportController.container ? viewportController.container : undefined;
 
     viewport.css({
       'overflow-y': 'auto',
@@ -549,6 +549,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var itemName = match[1];
     var datasourceName = match[2];
     var bufferSize = Math.max(3, +$attr.bufferSize || 10);
+    var viewportController = controllers[0];
     var startIndex = +$attr.startIndex || 1;
 
     var datasource = function () {
@@ -602,11 +603,12 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var ridActual = 0; // current data revision id
     var pending = [];
     var buffer = new Buffer(itemName, $scope, bufferSize);
-    var viewport = new Viewport(buffer, element, controllers, $attr);
+    var viewport = new Viewport(buffer, element, viewportController, $attr);
     var adapter = new Adapter($attr, viewport, buffer, function () {
       dismissPendingRequests();
       adjustBuffer(ridActual);
     });
+    viewportController.adapter = adapter;
 
     var fetchNext = datasource.get.length !== 2 ? function (success) {
       return datasource.get(buffer.next, bufferSize, success);
@@ -649,20 +651,16 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
      */
     linker(function (clone, scope) {
       viewport.createPaddingElements(clone[0]);
-      element.after(clone);
-      $timeout(function () {
-        // Destroy clone's scope to remove any watchers on it.
-        scope.$destroy();
-        // We don't need the clone anymore.
-        clone.remove();
-      });
+      // we do not include the clone in the DOM. It means that the nested directives will not
+      // be able to reach the parent directives, but in this case it is intentional because we
+      // created the clone to access the template tag name
+      scope.$destroy();
+      clone.remove();
     });
 
     adapter.reload = reload;
 
     $scope.$on('$destroy', function () {
-      // clear the buffer. It is necessary to remove the elements and $destroy the scopes
-      //  *******  buffer.clear(); there is no need to reset the buffer especially because the elements are not destroyed by this anyway
       unbindEvents();
       viewport.unbind('mousewheel', wheelHandler);
     });

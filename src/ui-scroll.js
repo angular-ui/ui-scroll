@@ -203,13 +203,13 @@ angular.module('ui.scroll', [])
         return buffer;
       }
 
-      function Viewport(buffer, element, controllers, attrs) {
+      function Viewport(buffer, element, viewportController, attrs) {
         const PADDING_MIN = 0.3;
         const PADDING_DEFAULT = 0.5;
         let topPadding = null;
         let bottomPadding = null;
-        const viewport = controllers[0] && controllers[0].viewport ? controllers[0].viewport : angular.element(window);
-        const container = controllers[0] && controllers[0].container ? controllers[0].container : undefined;
+        const viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
+        const container = viewportController && viewportController.container ? viewportController.container : undefined;
 
         viewport.css({
           'overflow-y': 'auto',
@@ -550,6 +550,7 @@ angular.module('ui.scroll', [])
         const itemName = match[1];
         const datasourceName = match[2];
         const bufferSize = Math.max(3, +$attr.bufferSize || 10);
+        const viewportController = controllers[0];
         var startIndex = +$attr.startIndex || 1;
 
         const datasource = (() => {
@@ -603,11 +604,12 @@ angular.module('ui.scroll', [])
         let ridActual = 0;// current data revision id
         let pending = [];
         let buffer = new Buffer(itemName, $scope, bufferSize);
-        let viewport = new Viewport(buffer, element, controllers, $attr);
+        let viewport = new Viewport(buffer, element, viewportController, $attr);
         let adapter = new Adapter($attr, viewport, buffer, () => {
           dismissPendingRequests();
           adjustBuffer(ridActual);
         });
+        viewportController.adapter = adapter;
 
         const fetchNext = (datasource.get.length !== 2) ? (success) => datasource.get(buffer.next, bufferSize, success)
           : (success) => {
@@ -648,20 +650,16 @@ angular.module('ui.scroll', [])
          */
         linker((clone, scope) => {
           viewport.createPaddingElements(clone[0]);
-          element.after(clone);
-          $timeout(() => {
-            // Destroy clone's scope to remove any watchers on it.
-            scope.$destroy();
-            // We don't need the clone anymore.
-            clone.remove();
-          });
+          // we do not include the clone in the DOM. It means that the nested directives will not 
+          // be able to reach the parent directives, but in this case it is intentional because we 
+          // created the clone to access the template tag name
+          scope.$destroy();
+          clone.remove();
         });
 
         adapter.reload = reload;
 
         $scope.$on('$destroy', () => {
-          // clear the buffer. It is necessary to remove the elements and $destroy the scopes
-          //  *******  buffer.clear(); there is no need to reset the buffer especially because the elements are not destroyed by this anyway
           unbindEvents();
           viewport.unbind('mousewheel', wheelHandler);
         });
