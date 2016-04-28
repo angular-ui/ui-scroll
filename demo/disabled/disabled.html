@@ -18,22 +18,18 @@
 	<h1 class="page-header page-header-exapmle">Disabling</h1>
 
 	<div class="description">
-		There is an extension of the adapter which allows to ignore user scroll/resize events. First you need an adapter:
+		There is an attribute "disabled" on ui-scroll which allows to ignore user scroll/resize events:
 
 		<div class="code">
-			<pre>&lt;div ui-scroll="item in datasource" adapter="myAdapter"&gt;{{item}<!---->}&lt;/div&gt;</pre>
+			<pre>&lt;div ui-scroll="item in datasource" disabled="needToDisable"&gt;{{item}<!---->}&lt;/div&gt;</pre>
 		</div>
-		And then you are able to call disable/enable methods with appropriate logic:
+		Here we have two-way binding, so just change appropriate property on appropriate scope:
 		<div class="code">
 			<pre>
-if(needToDisable) {
-  myAdapter.disable();
-}
-else {
-  myAdapter.enable();
-}</pre>
+$scope.needToDisable = true;
+</pre>
 		</div>
-		Since .disable() is called no user scroll is being processed by ui-scroll engine.
+		Since "disabled" is true no user scroll is being processed by ui-scroll engine.
 
 	</div>
 
@@ -43,7 +39,7 @@ else {
 	</div>
 
 	<div  class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
-		<div class="item" ui-scroll="item in datasource" adapter="myAdapter">{{item}}</div>
+		<div class="item" ui-scroll="item in datasource" adapter="myAdapter" disabled="needToDisable">{{item}}</div>
 	</div>
 
 </div>

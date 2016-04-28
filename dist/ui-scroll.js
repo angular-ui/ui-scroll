@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-22T18:26:23.254Z
+ * Version: 1.4.1 -- 2016-04-28T12:48:47.609Z
  * License: MIT
  */
  
@@ -437,20 +437,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
     var setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
 
-    var disabled = false;
-    this.disable = function () {
-      return disabled = true;
-    };
-    this.enable = function () {
-      if (disabled) {
-        adjustBuffer();
-        disabled = false;
-      }
-    };
-    this.isDisabled = function () {
-      return disabled;
-    };
-
     this.isLoading = false;
 
     function applyUpdate(wrapper, newItems) {
@@ -613,6 +599,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       dismissPendingRequests();
       adjustBuffer(ridActual);
     });
+    var disabled = false;
 
     var onDatasourceMinIndexChanged = function onDatasourceMinIndexChanged(value) {
       $timeout(function () {
@@ -695,18 +682,32 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     adapter.reload = reload;
 
+    var unregisterDisabledWatcher = function unregisterDisabledWatcher() {
+      return null;
+    };
+    if ($attr.hasOwnProperty('disabled')) {
+      unregisterDisabledWatcher = $scope.$watch($attr['disabled'], function (value) {
+        if (value && !disabled) {
+          disabled = true;
+        } else if (disabled) {
+          disabled = false;
+          adjustBuffer();
+        }
+      });
+    }
+
     $scope.$on('$destroy', function () {
       // clear the buffer. It is necessary to remove the elements and $destroy the scopes
       //  *******  buffer.clear(); there is no need to reset the buffer especially because the elements are not destroyed by this anyway
       unbindEvents();
       viewport.unbind('mousewheel', wheelHandler);
+      unregisterDisabledWatcher();
     });
 
     viewport.bind('mousewheel', wheelHandler);
 
     $timeout(function () {
       viewport.applyContainerStyle();
-
       reload();
     });
 
@@ -927,7 +928,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function resizeAndScrollHandler() {
-      if (!$rootScope.$$phase && !adapter.isLoading && !adapter.isDisabled()) {
+      if (!$rootScope.$$phase && !adapter.isLoading && !disabled) {
 
         enqueueFetch(ridActual, true);
 
@@ -941,7 +942,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function wheelHandler(event) {
-      if (!adapter.isDisabled()) {
+      if (!disabled) {
         var scrollTop = viewport[0].scrollTop;
         var yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
 

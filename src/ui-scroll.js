@@ -438,16 +438,6 @@ angular.module('ui.scroll', [])
         const setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
         const setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
 
-        let disabled = false;
-        this.disable = () => disabled = true;
-        this.enable = () => {
-          if(disabled) {
-            adjustBuffer();
-            disabled = false;
-          }
-        };
-        this.isDisabled = () => disabled;
-
         this.isLoading = false;
 
         function applyUpdate(wrapper, newItems) {
@@ -605,6 +595,7 @@ angular.module('ui.scroll', [])
           dismissPendingRequests();
           adjustBuffer(ridActual);
         });
+        let disabled = false;
 
         var onDatasourceMinIndexChanged = function(value) {
           $timeout(function(){
@@ -683,18 +674,32 @@ angular.module('ui.scroll', [])
 
         adapter.reload = reload;
 
+        let unregisterDisabledWatcher = () => null;
+        if($attr.hasOwnProperty('disabled')) {
+          unregisterDisabledWatcher =
+            $scope.$watch($attr['disabled'], (value) => {
+              if(value && !disabled) {
+                disabled = true;
+              }
+              else if(disabled) {
+                disabled = false;
+                adjustBuffer();
+              }
+            });
+        }
+
         $scope.$on('$destroy', () => {
           // clear the buffer. It is necessary to remove the elements and $destroy the scopes
           //  *******  buffer.clear(); there is no need to reset the buffer especially because the elements are not destroyed by this anyway
           unbindEvents();
           viewport.unbind('mousewheel', wheelHandler);
+          unregisterDisabledWatcher();
         });
 
         viewport.bind('mousewheel', wheelHandler);
 
         $timeout(() => {
           viewport.applyContainerStyle();
-
           reload();
         });
 
@@ -911,7 +916,7 @@ angular.module('ui.scroll', [])
         }
 
         function resizeAndScrollHandler() {
-          if (!$rootScope.$$phase && !adapter.isLoading && !adapter.isDisabled()) {
+          if (!$rootScope.$$phase && !adapter.isLoading && !disabled) {
 
             enqueueFetch(ridActual, true);
 
@@ -925,7 +930,7 @@ angular.module('ui.scroll', [])
         }
 
         function wheelHandler(event) {
-          if(!adapter.isDisabled()) {
+          if(!disabled) {
             let scrollTop = viewport[0].scrollTop;
             let yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
 

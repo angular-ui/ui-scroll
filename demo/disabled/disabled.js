@@ -14,15 +14,5 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite'])
 			};
 
 			$scope.datasource = datasource;
-
-			$scope.$watch('needToDisable', function (value) {
-				if(value) {
-					$scope.myAdapter.disable();
-				}
-				else {
-					$scope.myAdapter.enable();
-				}
-			});
-
 		}
 	]);
