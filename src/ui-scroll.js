@@ -183,7 +183,7 @@ angular.module('ui.scroll', [])
           },
 
           effectiveHeight(elements) {
-            if (elements.length == 0)
+            if (!elements.length)
               return 0;
             let top = Number.MAX_VALUE;
             let bottom = Number.MIN_VALUE;
@@ -551,7 +551,18 @@ angular.module('ui.scroll', [])
         const datasourceName = match[2];
         const bufferSize = Math.max(3, +$attr.bufferSize || 10);
         const viewportController = controllers[0];
-        var startIndex = +$attr.startIndex || 1;
+        let startIndex = +$attr.startIndex || 1;
+        let ridActual = 0;// current data revision id
+        let pending = [];
+        let disabled = false;
+
+        let buffer = new Buffer(itemName, $scope, bufferSize);
+        let viewport = new Viewport(buffer, element, viewportController, $attr);
+        let adapter = new Adapter($attr, viewport, buffer, () => {
+          dismissPendingRequests();
+          adjustBuffer(ridActual);
+        });
+        viewportController.adapter = adapter;
 
         const datasource = (() => {
           let isDatasourceValid = function () {
@@ -579,7 +590,7 @@ angular.module('ui.scroll', [])
               get: function () {
                 return this['_' + name];
               }
-            })
+            });
           }
         }
 
@@ -590,7 +601,7 @@ angular.module('ui.scroll', [])
               viewport.adjustPadding(true);
             }
           });
-        })
+        });
 
         defineProperty(datasource, 'maxIndex', (value) => {
           $timeout(() => {
@@ -599,17 +610,7 @@ angular.module('ui.scroll', [])
               viewport.adjustPadding(true);
             }
           });
-        })
-
-        let ridActual = 0;// current data revision id
-        let pending = [];
-        let buffer = new Buffer(itemName, $scope, bufferSize);
-        let viewport = new Viewport(buffer, element, viewportController, $attr);
-        let adapter = new Adapter($attr, viewport, buffer, () => {
-          dismissPendingRequests();
-          adjustBuffer(ridActual);
         });
-        viewportController.adapter = adapter;
 
         const fetchNext = (datasource.get.length !== 2) ? (success) => datasource.get(buffer.next, bufferSize, success)
           : (success) => {
@@ -659,18 +660,32 @@ angular.module('ui.scroll', [])
 
         adapter.reload = reload;
 
+        let unregisterDisabledWatcher = () => null;
+        if($attr.hasOwnProperty('disabled')) {
+          unregisterDisabledWatcher =
+            $scope.$watch($attr['disabled'], (value) => {
+              if(value && !disabled) {
+                disabled = true;
+              }
+              else if(disabled) {
+                disabled = false;
+                adjustBuffer();
+              }
+            });
+        }
+
         $scope.$on('$destroy', () => {
           unbindEvents();
           viewport.unbind('mousewheel', wheelHandler);
+          unregisterDisabledWatcher();
         });
 
         viewport.bind('mousewheel', wheelHandler);
 
         $timeout(() => {
           viewport.applyContainerStyle();
-
           reload();
-        })
+        });
 
         /* Functions definitions */
 
@@ -727,7 +742,7 @@ angular.module('ui.scroll', [])
           return false;
         }
 
-        function createElement(wrapper, insertAfter, insertElement) {
+        function createElement(wrapper, insertAfter) {
           var promises;
           var sibling = (insertAfter > 0) ? buffer[insertAfter - 1].element : undefined;
           linker((clone, scope) => {
@@ -739,7 +754,7 @@ angular.module('ui.scroll', [])
           return promises;
         }
 
-        function updateDOM(rid) {
+        function updateDOM() {
 
           let promises = [];
           const toBePrepended = [];
@@ -829,7 +844,7 @@ angular.module('ui.scroll', [])
         }          
 
         function adjustBuffer(rid) {
-          var updates = updateDOM(rid);
+          var updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
@@ -843,7 +858,7 @@ angular.module('ui.scroll', [])
         }
 
         function adjustBufferAfterFetch(rid) {
-          var updates = updateDOM(rid);
+          var updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
@@ -912,7 +927,7 @@ angular.module('ui.scroll', [])
         }
 
         function resizeAndScrollHandler() {
-          if (!$rootScope.$$phase && !adapter.isLoading) {
+          if (!$rootScope.$$phase && !adapter.isLoading && !disabled) {
 
             enqueueFetch(ridActual, true);
 
@@ -926,11 +941,13 @@ angular.module('ui.scroll', [])
         }
 
         function wheelHandler(event) {
-          let scrollTop = viewport[0].scrollTop;
-          let yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
+          if(!disabled) {
+            let scrollTop = viewport[0].scrollTop;
+            let yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
 
-          if ((scrollTop === 0 && !buffer.bof) || (scrollTop === yMax && !buffer.eof)) {
-            event.preventDefault();
+            if ((scrollTop === 0 && !buffer.bof) || (scrollTop === yMax && !buffer.eof)) {
+              event.preventDefault();
+            }
           }
         }
       }

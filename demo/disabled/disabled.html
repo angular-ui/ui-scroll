@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Disabling</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="../../dist/ui-scroll-jqlite.js"></script>
+	<script src="disabled.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-controller="mainController" ng-app="application">
+
+<div class="cont cont-global">
+
+	<a class="back" href="../index.html">browse other examples</a>
+
+	<h1 class="page-header page-header-exapmle">Disabled attribute</h1>
+
+	<div class="description">
+		There is an attribute "disabled" on ui-scroll which allows to ignore user scroll/resize events:
+
+		<div class="code">
+			<pre>&lt;div ui-scroll="item in datasource" disabled="needToDisable"&gt;{{item}<!---->}&lt;/div&gt;</pre>
+		</div>
+		Here we have two-way binding, so just change appropriate property on appropriate scope:
+		<div class="code">
+			<pre>
+$scope.needToDisable = true;
+</pre>
+		</div>
+		Since "disabled" is true no user scroll is being processed by ui-scroll engine.
+
+	</div>
+
+	<div class="actions" ng-init="needToDisable = false">
+		<button ng-click="needToDisable = !needToDisable"> {{needToDisable?"Enable":"Disable"}} </button>
+		User scroll processing is {{needToDisable ? "disabled" : "enabled"}}
+	</div>
+
+	<div  class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
+		<div class="item" ui-scroll="item in datasource" adapter="myAdapter" disabled="needToDisable">{{item}}</div>
+	</div>
+
+</div>
+
+</body>
+</html>
