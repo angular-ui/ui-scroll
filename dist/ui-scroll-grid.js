@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-29T19:17:54.800Z
+ * Version: 1.4.1 -- 2016-04-29T19:46:47.027Z
  * License: MIT
  */
  
@@ -58,7 +58,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
         current = scope;
       }
       if (index < columns.length) {
-        columns[index].observer.observe(cell[0], { attributes: true, attributeOldValue: true, attributeFilter: ['width'] });
+        columns[index].observer.observe(cell[0], { attributes: true, subtree: true, charachterData: true, attrsssibuteFilter: ['width'] });
         columns[index].cells.push(cell);
         return index++;
       }

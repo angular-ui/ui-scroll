@@ -46,15 +46,10 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite']).controller('mai
 			</thead>
 			<tbody>
 				<tr class="item" ui-scroll="item in datasource">
-					<td ui-scroll-td>{{item.col1}}</td>
+					<td ui-scroll-td>{{item.col1}}<input type="text", ng-model="text">{{text}}</td>
 					<td ui-scroll-td>{{item.col2}}</td>
 				</tr>
 			</tbody>
-			<!-- tbody>
-				<tr>
-					<td ng-repeat="i in [1,2]"><div ng-scroll-td>**{{i}}</div></td>
-				</tr>
-			</tbody -->
 		</table>
 
 	</div>

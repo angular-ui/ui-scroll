@@ -48,7 +48,7 @@ angular.module('ui.scroll.grid', [])
           current = scope;
         }
         if (index < columns.length) {
-          columns[index].observer.observe(cell[0], {attributes: true, attributeOldValue: true, attributeFilter: ['width']});
+          columns[index].observer.observe(cell[0], {attributes: true, subtree: true, charachterData: true, attrsssibuteFilter: ['width']});
           columns[index].cells.push(cell);
           return index++;
         }
