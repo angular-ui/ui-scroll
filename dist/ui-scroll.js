@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-29T12:21:34.640Z
+ * Version: 1.4.1 -- 2016-04-29T16:25:33.179Z
  * License: MIT
  */
  
@@ -113,7 +113,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     })];
   }
 
-  function Buffer(itemName, $scope, bufferSize) {
+  function Buffer(bufferSize) {
     var buffer = Object.create(Array.prototype);
 
     angular.extend(buffer, {
@@ -215,8 +215,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   function Viewport(buffer, element, viewportController, attrs) {
     var PADDING_MIN = 0.3;
     var PADDING_DEFAULT = 0.5;
-    var topPadding = null;
-    var bottomPadding = null;
+    var topPadding = undefined;
+    var bottomPadding = undefined;
     var viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
     var container = viewportController && viewportController.container ? viewportController.container : undefined;
 
@@ -366,7 +366,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           return;
         }
 
-        // percise heights calculation, items that were in buffer once
+        // precise heights calculation, items that were in buffer once
         var topPaddingHeight = 0;
         var bottomPaddingHeight = 0;
 
@@ -401,12 +401,12 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           bottomPaddingHeightAdd = adjustBottomPadding ? (buffer.maxIndexUser - buffer.maxIndex) * averageItemHeight : 0;
         }
 
-        // paddings combine adjustement
+        // paddings combine adjustment
         var topPaddingHeightOld = topPadding.height();
         topPadding.height(topPaddingHeight + topPaddingHeightAdd);
         bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
 
-        // additional scrollTop adjustement in case of datasource.minIndex external set
+        // additional scrollTop adjustment in case of datasource.minIndex external set
         if (adjustScrollTop && adjustTopPadding && topPaddingHeightAdd) {
           var diff = topPadding.height() - topPaddingHeightOld;
           viewport.scrollTop(viewport.scrollTop() + diff);
@@ -546,16 +546,18 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
     }
 
+    var datasource = null;
     var itemName = match[1];
     var datasourceName = match[2];
     var bufferSize = Math.max(3, +$attr.bufferSize || 10);
     var viewportController = controllers[0];
-    var startIndex = +$attr.startIndex || 1;
+    var startIndex = parseInt($attr.startIndex, 10);
+    startIndex = isNaN(startIndex) ? 1 : startIndex;
     var ridActual = 0; // current data revision id
     var pending = [];
     var disabled = false;
 
-    var buffer = new Buffer(itemName, $scope, bufferSize);
+    var buffer = new Buffer(bufferSize);
     var viewport = new Viewport(buffer, element, viewportController, $attr);
     var adapter = new Adapter($attr, viewport, buffer, function () {
       dismissPendingRequests();
@@ -563,53 +565,39 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     });
     viewportController.adapter = adapter;
 
-    var datasource = function () {
-      var isDatasourceValid = function isDatasourceValid() {
-        return angular.isObject(_datasource) && angular.isFunction(_datasource.get);
-      };
-
-      var _datasource = $parse(datasourceName)($scope); // try to get datasource on scope
+    var isDatasourceValid = function isDatasourceValid() {
+      return angular.isObject(datasource) && angular.isFunction(datasource.get);
+    };
+    datasource = $parse(datasourceName)($scope); // try to get datasource on scope
+    if (!isDatasourceValid()) {
+      datasource = $injector.get(datasourceName); // try to inject datasource as service
       if (!isDatasourceValid()) {
-        _datasource = $injector.get(datasourceName); // try to inject datasource as service
-        if (!isDatasourceValid()) {
-          throw new Error(datasourceName + ' is not a valid datasource');
-        }
+        throw new Error(datasourceName + ' is not a valid datasource');
       }
-      return _datasource;
-    }();
+    }
 
-    function defineProperty(datasource, name, setter) {
-      var descriptor = Object.getOwnPropertyDescriptor(datasource, name);
+    function defineProperty(datasource, propName, propUserName) {
+      var descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
       if (!descriptor || !descriptor.set && !descriptor.get) {
-        Object.defineProperty(datasource, name, {
+        Object.defineProperty(datasource, propName, {
           set: function set(value) {
-            this['_' + name] = value;
-            setter(value);
+            this['_' + propName] = value;
+            $timeout(function () {
+              buffer[propUserName] = value;
+              if (!pending.length) {
+                viewport.adjustPadding(true);
+              }
+            });
           },
           get: function get() {
-            return this['_' + name];
+            return this['_' + propName];
           }
         });
       }
     }
 
-    defineProperty(datasource, 'minIndex', function (value) {
-      $timeout(function () {
-        buffer.minIndexUser = value;
-        if (!pending.length) {
-          viewport.adjustPadding(true);
-        }
-      });
-    });
-
-    defineProperty(datasource, 'maxIndex', function (value) {
-      $timeout(function () {
-        buffer.maxIndexUser = value;
-        if (!pending.length) {
-          viewport.adjustPadding(true);
-        }
-      });
-    });
+    defineProperty(datasource, 'minIndex', 'minIndexUser');
+    defineProperty(datasource, 'maxIndex', 'maxIndexUser');
 
     var fetchNext = datasource.get.length !== 2 ? function (success) {
       return datasource.get(buffer.next, bufferSize, success);
