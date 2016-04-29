@@ -11,17 +11,28 @@
  element.scrollTop(value)
  */
 angular.module('ui.scroll.grid', [])
-  .directive('uiScrollTh', ['$log', function (console) {
+  .directive('uiScrollTh', ['$log', '$timeout', function (console, $timeout) {
 
-    function GridAdapter() {
-      var headers = [];
+    function GridAdapter(scope, scrollViewport) {
+      var columns = [];
       var current;
       var index;
 
-      //controllers[0].adapter.gridAdapter = this;
+      $timeout(() => {
+        scrollViewport.adapter.gridAdapter = this;
+        scope.$watch(() => scrollViewport.adapter.isLoading, (newValue, oldValue) => {
+          if (newValue)
+            return;
+          columns.forEach((column) => {
+            if (column.cells.length)
+              column.header.css('width', window.getComputedStyle(column.cells[0][0]).width);   
+          });
+        });
+      });
 
-      this.registerHeader = function(header) {
-        headers.push(
+
+      this.registerColumn = function(header) {
+        columns.push(
           {
             header:header, 
             cells:[],
@@ -36,30 +47,29 @@ angular.module('ui.scroll.grid', [])
           index = 0;
           current = scope;
         }
-        if (index < headers.length) {
-          headers[index].observer.observe(cell[0], {attributes: true, attributeOldValue: true});
-          headers[index].cells.push(cell);
-          headers[index].header.css('width', window.getComputedStyle(cell[0]).width);
+        if (index < columns.length) {
+          columns[index].observer.observe(cell[0], {attributes: true, attributeOldValue: true, attributeFilter: ['width']});
+          columns[index].cells.push(cell);
           return index++;
         }
         return -1;
       };
 
       this.unregisterCell = function(column, cell) {
-        var index = headers[column].cells.indexOf(cell);
-        headers[column].cells.splice(index,1);
+        var index = columns[column].cells.indexOf(cell);
+        columns[column].cells.splice(index,1);
       };
 
     }
 
     return {
       require: ['^uiScrollViewport'],
-      link: { pre: () => {}, post: ($scope, element, $attr, controllers, linker) => {
+      link: ($scope, element, $attr, controllers, linker) => {
         
-        gridAdapter = controllers[0].gridAdapter = controllers[0].gridAdapter || new GridAdapter();            
-        gridAdapter.registerHeader(element);
+        gridAdapter = controllers[0].gridAdapter = controllers[0].gridAdapter || new GridAdapter($scope, controllers[0]);            
+        gridAdapter.registerColumn(element);
           
-      }}
+      }
     }
   }])
   .directive('uiScrollTd', ['$log', function (console) {

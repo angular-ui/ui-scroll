@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-28T21:14:34.194Z
+ * Version: 1.4.1 -- 2016-04-29T19:17:54.800Z
  * License: MIT
  */
  
@@ -21,17 +21,29 @@
  element.scrollTop()
  element.scrollTop(value)
  */
-angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', function (console) {
+angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout', function (console, $timeout) {
 
-  function GridAdapter() {
-    var headers = [];
+  function GridAdapter(scope, scrollViewport) {
+    var _this = this;
+
+    var columns = [];
     var current;
     var index;
 
-    //controllers[0].adapter.gridAdapter = this;
+    $timeout(function () {
+      scrollViewport.adapter.gridAdapter = _this;
+      scope.$watch(function () {
+        return scrollViewport.adapter.isLoading;
+      }, function (newValue, oldValue) {
+        if (newValue) return;
+        columns.forEach(function (column) {
+          if (column.cells.length) column.header.css('width', window.getComputedStyle(column.cells[0][0]).width);
+        });
+      });
+    });
 
-    this.registerHeader = function (header) {
-      headers.push({
+    this.registerColumn = function (header) {
+      columns.push({
         header: header,
         cells: [],
         observer: new MutationObserver(function (mutations) {
@@ -45,28 +57,27 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', function (
         index = 0;
         current = scope;
       }
-      if (index < headers.length) {
-        headers[index].observer.observe(cell[0], { attributes: true, attributeOldValue: true });
-        headers[index].cells.push(cell);
-        headers[index].header.css('width', window.getComputedStyle(cell[0]).width);
+      if (index < columns.length) {
+        columns[index].observer.observe(cell[0], { attributes: true, attributeOldValue: true, attributeFilter: ['width'] });
+        columns[index].cells.push(cell);
         return index++;
       }
       return -1;
     };
 
     this.unregisterCell = function (column, cell) {
-      var index = headers[column].cells.indexOf(cell);
-      headers[column].cells.splice(index, 1);
+      var index = columns[column].cells.indexOf(cell);
+      columns[column].cells.splice(index, 1);
     };
   }
 
   return {
     require: ['^uiScrollViewport'],
-    link: { pre: function pre() {}, post: function post($scope, element, $attr, controllers, linker) {
+    link: function link($scope, element, $attr, controllers, linker) {
 
-        gridAdapter = controllers[0].gridAdapter = controllers[0].gridAdapter || new GridAdapter();
-        gridAdapter.registerHeader(element);
-      } }
+      gridAdapter = controllers[0].gridAdapter = controllers[0].gridAdapter || new GridAdapter($scope, controllers[0]);
+      gridAdapter.registerColumn(element);
+    }
   };
 }]).directive('uiScrollTd', ['$log', function (console) {
   return {
