@@ -476,9 +476,8 @@ describe('uiScroll', function () {
             });
 
             runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
+                function (viewport) {
                     var wheelEventElement = viewport[0];
-                    var flush = $timeout.flush;
 
                     angular.element(document.body).bind('mousewheel', incrementDocumentScrollCount); //spy for wheel-events bubbling
 
@@ -553,7 +552,7 @@ describe('uiScroll', function () {
             runTest(scrollSettings,
                 function (viewport, scope, $timeout) {
                     var bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
-                  
+
                     // scroll up + expectation
                     for(var i = 0; i < 6; i++) {
                         viewport.scrollTop(-5000);
@@ -696,6 +695,56 @@ describe('uiScroll', function () {
 					viewport.trigger('scroll');
 
 					expect(topVisibleChangeCount).toBe(2);
+				}
+			);
+		});
+
+	});
+
+	describe('disabled property', function () {
+
+		it('should prevent datasource.get call', function () {
+			var spy;
+			inject(function (myInfiniteDatasource) {
+				spy = spyOn(myInfiniteDatasource, 'get').and.callThrough();
+			});
+
+			runTest({datasource: 'myInfiniteDatasource', disabled: 'needToDisable'},
+				function (viewport, scope, $timeout) {
+
+					expect(spy.calls.all().length).toBe(3); // three initial requests
+
+					scope.needToDisable = true;
+					scope.$digest();
+
+					viewport.scrollTop(1000); // scroll to bottom
+					viewport.trigger('scroll');
+
+					expect($timeout.flush).toThrow();
+					expect(spy.calls.all().length).toBe(3); // nothing changes
+				}
+			);
+		});
+
+		it('should fetch new data after disabled = false', function () {
+			var spy;
+			inject(function (myInfiniteDatasource) {
+				spy = spyOn(myInfiniteDatasource, 'get').and.callThrough();
+			});
+
+			runTest({datasource: 'myInfiniteDatasource', disabled: 'needToDisable'},
+				function (viewport, scope, $timeout) {
+
+					scope.needToDisable = true;
+					scope.$digest();
+					viewport.scrollTop(1000); // scroll to bottom
+					viewport.trigger('scroll');
+
+					scope.needToDisable = false;
+					scope.$digest(); // propagate disabled = false into scroller
+					$timeout.flush(); // here new data must be fetched
+
+					expect(spy.calls.all().length).toBe(4); // 3 + 1 requests
 				}
 			);
 		});

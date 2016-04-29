@@ -4,12 +4,13 @@ var createHtml = function (settings) {
     var bufferSize = settings.bufferSize ? ' buffer-size="' + settings.bufferSize + '"' : '';
     var isLoading = settings.isLoading ? ' is-loading="' + settings.isLoading + '"' : '';
     var topVisible = settings.topVisible ? ' top-visible="' + settings.topVisible + '"' : '';
+    var disabled = settings.disabled ? ' disabled="' + settings.disabled + '"' : '';
     var adapter = settings.adapter ? ' adapter="' + settings.adapter + '"' : '';
     var template = settings.template ? settings.template : '{{$index}}: {{item}}';
     return '<div ui-scroll-viewport' + viewportStyle + '>' +
         '<div ui-scroll="item in ' + settings.datasource + '"' +
         adapter +
-        itemStyle + bufferSize + isLoading + topVisible + '>' +
+        itemStyle + bufferSize + isLoading + topVisible + disabled + '>' +
         template +
         '</div>' +
         '</div>';
