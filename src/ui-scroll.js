@@ -541,10 +541,7 @@ angular.module('ui.scroll', [])
 
         let buffer = new Buffer(bufferSize);
         let viewport = new Viewport(buffer, element, viewportController, $attr);
-        let adapter = new Adapter($attr, viewport, buffer, () => {
-          dismissPendingRequests();
-          adjustBuffer(ridActual);
-        });
+        let adapter = new Adapter($attr, viewport, buffer, adjustBuffer);
         viewportController.adapter = adapter;
 
         let isDatasourceValid = () => angular.isObject(datasource) && angular.isFunction(datasource.get);
@@ -565,7 +562,7 @@ angular.module('ui.scroll', [])
                 $timeout(() => {
                   buffer[propUserName] = value;
                   if(!pending.length) {
-                    viewport.adjustPadding(true);
+                    viewport.adjustPadding(propName === 'minIndex');
                   }
                 });
               },
@@ -666,13 +663,7 @@ angular.module('ui.scroll', [])
           viewport.unbind('scroll', resizeAndScrollHandler);
         }
 
-        function dismissPendingRequests() {
-          ridActual++;
-          pending = [];
-        }
-
         function reload() {
-          dismissPendingRequests();
           viewport.resetTopPadding();
           viewport.resetBottomPadding();
 
@@ -680,7 +671,7 @@ angular.module('ui.scroll', [])
             startIndex = arguments[0];
 
           buffer.reset(startIndex);
-          adjustBuffer(ridActual);
+          adjustBuffer();
         }
 
         function isElementVisible(wrapper) {
@@ -790,7 +781,6 @@ angular.module('ui.scroll', [])
 
           // return true if inserted elements have height > 0
           return adjustedPaddingHeight + updates.estimatedPaddingIncrement > 0 || buffer.effectiveHeight(updates.inserted) > 0;
-
         }
 
         function enqueueFetch(rid, keepFetching) {
@@ -811,6 +801,11 @@ angular.module('ui.scroll', [])
         }          
 
         function adjustBuffer(rid) {
+          if(!rid) { // dismiss pending requests
+            pending = [];
+            rid = ++ridActual;
+          }
+
           var updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
