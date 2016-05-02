@@ -221,11 +221,10 @@ angular.module('ui.scroll', [])
 
           angular.extend(cache, {
             add(item) {
-              for (let i = cache.length - 1; i >= 0; i--) {
-                if(cache[i].index === item.scope.$index) {
-                  cache[i].height = item.element.outerHeight();
-                  return;
-                }
+              let existedItem = cache.find(i => i.index === item.scope.$index);
+              if (existedItem) {
+                existedItem.height = item.element.outerHeight();
+                return;
               }
               cache.push({
                 index: item.scope.$index,
@@ -273,7 +272,6 @@ angular.module('ui.scroll', [])
             element.before(topPadding);
             element.after(bottomPadding);
           },
-
 
           applyContainerStyle() {
             if (container && container !== viewport)
@@ -372,23 +370,10 @@ angular.module('ui.scroll', [])
             }
 
             // precise heights calculation, items that were in buffer once
-            let topPaddingHeight = 0;
-            let bottomPaddingHeight = 0;
-
-            if(topPadding.cache.length) {
-              for (let i = topPadding.cache.length - 1; i >= 0; i--) {
-                if (topPadding.cache[i].index < buffer.first) {
-                  topPaddingHeight += topPadding.cache[i].height;
-                }
-              }
-            }
-            if(bottomPadding.cache.length) {
-              for (let i = bottomPadding.cache.length - 1; i >= 0; i--) {
-                if(bottomPadding.cache[i].index >= buffer.next) {
-                  bottomPaddingHeight += bottomPadding.cache[i].height;
-                }
-              }
-            }
+            let topPaddingHeight =
+              topPadding.cache.reduce((summ, item) => summ + (item.index < buffer.first ? item.height : 0), 0);
+            let bottomPaddingHeight =
+              bottomPadding.cache.reduce((summ, item) => summ + (item.index >= buffer.next ? item.height : 0), 0);
 
             // average heights calculation, items that have never been reached
             let topPaddingHeightAdd = 0;
@@ -397,10 +382,7 @@ angular.module('ui.scroll', [])
             let adjustBottomPadding = buffer.maxIndexUser && buffer.maxIndex < buffer.maxIndexUser;
 
             if(adjustTopPadding || adjustBottomPadding) {
-              let visibleItemsHeight = 0;
-              for (let i = buffer.length - 1; i >= 0; i--) {
-                visibleItemsHeight += buffer[i].element.outerHeight(true);
-              }
+              let visibleItemsHeight = buffer.reduce((summ, item) => summ + item.element.outerHeight(true), 0);
               let averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
               topPaddingHeightAdd = adjustTopPadding ? (buffer.minIndex - buffer.minIndexUser) * averageItemHeight : 0;
               bottomPaddingHeightAdd = adjustBottomPadding ? (buffer.maxIndexUser - buffer.maxIndex) * averageItemHeight : 0;
@@ -533,7 +515,6 @@ angular.module('ui.scroll', [])
                 setTopVisibleScope(viewportScope, item.scope);
               }
               break;
-
             }
           }
         };
