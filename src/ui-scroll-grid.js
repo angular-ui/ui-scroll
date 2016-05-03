@@ -10,6 +10,7 @@ angular.module('ui.scroll.grid', [])
 
       $timeout(() => {
         scrollViewport.adapter.gridAdapter = new GridAdapter(this);
+      /*
         scope.$watch(() => scrollViewport.adapter.isLoading, (newValue, oldValue) => {
           if (newValue)
             return;
@@ -18,6 +19,7 @@ angular.module('ui.scroll.grid', [])
               column.header.css('width', window.getComputedStyle(column.cells[0][0]).width);   
           });
         });
+        */
       });
 
 

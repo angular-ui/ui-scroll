@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-29T19:46:47.027Z
+ * Version: 1.4.1 -- 2016-05-03T19:14:03.942Z
  * License: MIT
  */
  
@@ -9,21 +9,11 @@
  (function () {
 'use strict';
 
-/*!
- globals: angular, window
-
- List of used element methods available in JQuery but not in JQuery Lite
-
- element.before(elem)
- element.height()
- element.outerHeight(true)
- element.height(value) = only for Top/Bottom padding elements
- element.scrollTop()
- element.scrollTop(value)
- */
 angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout', function (console, $timeout) {
 
-  function GridAdapter(scope, scrollViewport) {
+  function GridAdapter() {}
+
+  function GridController(scope, scrollViewport) {
     var _this = this;
 
     var columns = [];
@@ -31,24 +21,23 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     var index;
 
     $timeout(function () {
-      scrollViewport.adapter.gridAdapter = _this;
-      scope.$watch(function () {
-        return scrollViewport.adapter.isLoading;
-      }, function (newValue, oldValue) {
-        if (newValue) return;
-        columns.forEach(function (column) {
-          if (column.cells.length) column.header.css('width', window.getComputedStyle(column.cells[0][0]).width);
+      scrollViewport.adapter.gridAdapter = new GridAdapter(_this);
+      /*
+        scope.$watch(() => scrollViewport.adapter.isLoading, (newValue, oldValue) => {
+          if (newValue)
+            return;
+          columns.forEach((column) => {
+            if (column.cells.length)
+              column.header.css('width', window.getComputedStyle(column.cells[0][0]).width);   
+          });
         });
-      });
+        */
     });
 
     this.registerColumn = function (header) {
       columns.push({
         header: header,
-        cells: [],
-        observer: new MutationObserver(function (mutations) {
-          console.log(mutations);
-        })
+        cells: []
       });
     };
 
@@ -58,7 +47,6 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
         current = scope;
       }
       if (index < columns.length) {
-        columns[index].observer.observe(cell[0], { attributes: true, subtree: true, charachterData: true, attrsssibuteFilter: ['width'] });
         columns[index].cells.push(cell);
         return index++;
       }
@@ -72,11 +60,11 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
   }
 
   return {
-    require: ['^uiScrollViewport'],
+    require: ['^^uiScrollViewport'],
     link: function link($scope, element, $attr, controllers, linker) {
 
-      gridAdapter = controllers[0].gridAdapter = controllers[0].gridAdapter || new GridAdapter($scope, controllers[0]);
-      gridAdapter.registerColumn(element);
+      var gridController = controllers[0].gridController = controllers[0].gridController || new GridController($scope, controllers[0]);
+      gridController.registerColumn(element);
     }
   };
 }]).directive('uiScrollTd', ['$log', function (console) {
@@ -84,12 +72,12 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     require: ['?^^uiScrollViewport'],
     link: function link($scope, element, $attr, controllers, linker) {
       if (controllers[0]) {
-        gridAdapter = controllers[0].gridAdapter;
-        var index = gridAdapter.registerCell($scope, element);
+        var gridController = controllers[0].gridController;
+        var index = gridController.registerCell($scope, element);
         if (index >= 0) {
           element.attr('ui-scroll-td', index);
           $scope.$on('$destroy', function () {
-            gridAdapter.unregisterCell(index, element);
+            gridController.unregisterCell(index, element);
           });
         }
       }

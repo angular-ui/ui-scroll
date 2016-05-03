@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-04-29T19:46:47.027Z
+ * Version: 1.4.1 -- 2016-05-03T19:14:03.942Z
  * License: MIT
  */
  
@@ -230,11 +230,12 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       angular.extend(cache, {
         add: function add(item) {
-          for (var i = cache.length - 1; i >= 0; i--) {
-            if (cache[i].index === item.scope.$index) {
-              cache[i].height = item.element.outerHeight();
-              return;
-            }
+          var existedItem = cache.find(function (i) {
+            return i.index === item.scope.$index;
+          });
+          if (existedItem) {
+            existedItem.height = item.element.outerHeight();
+            return;
           }
           cache.push({
             index: item.scope.$index,
@@ -367,23 +368,12 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         }
 
         // precise heights calculation, items that were in buffer once
-        var topPaddingHeight = 0;
-        var bottomPaddingHeight = 0;
-
-        if (topPadding.cache.length) {
-          for (var i = topPadding.cache.length - 1; i >= 0; i--) {
-            if (topPadding.cache[i].index < buffer.first) {
-              topPaddingHeight += topPadding.cache[i].height;
-            }
-          }
-        }
-        if (bottomPadding.cache.length) {
-          for (var _i = bottomPadding.cache.length - 1; _i >= 0; _i--) {
-            if (bottomPadding.cache[_i].index >= buffer.next) {
-              bottomPaddingHeight += bottomPadding.cache[_i].height;
-            }
-          }
-        }
+        var topPaddingHeight = topPadding.cache.reduce(function (summ, item) {
+          return summ + (item.index < buffer.first ? item.height : 0);
+        }, 0);
+        var bottomPaddingHeight = bottomPadding.cache.reduce(function (summ, item) {
+          return summ + (item.index >= buffer.next ? item.height : 0);
+        }, 0);
 
         // average heights calculation, items that have never been reached
         var topPaddingHeightAdd = 0;
@@ -392,10 +382,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         var adjustBottomPadding = buffer.maxIndexUser && buffer.maxIndex < buffer.maxIndexUser;
 
         if (adjustTopPadding || adjustBottomPadding) {
-          var visibleItemsHeight = 0;
-          for (var _i2 = buffer.length - 1; _i2 >= 0; _i2--) {
-            visibleItemsHeight += buffer[_i2].element.outerHeight(true);
-          }
+          var visibleItemsHeight = buffer.reduce(function (summ, item) {
+            return summ + item.element.outerHeight(true);
+          }, 0);
           var averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
           topPaddingHeightAdd = adjustTopPadding ? (buffer.minIndex - buffer.minIndexUser) * averageItemHeight : 0;
           bottomPaddingHeightAdd = adjustBottomPadding ? (buffer.maxIndexUser - buffer.maxIndex) * averageItemHeight : 0;
@@ -559,10 +548,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     var buffer = new Buffer(bufferSize);
     var viewport = new Viewport(buffer, element, viewportController, $attr);
-    var adapter = new Adapter($attr, viewport, buffer, function () {
-      dismissPendingRequests();
-      adjustBuffer(ridActual);
-    });
+    var adapter = new Adapter($attr, viewport, buffer, adjustBuffer);
     viewportController.adapter = adapter;
 
     var isDatasourceValid = function isDatasourceValid() {
@@ -585,7 +571,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
             $timeout(function () {
               buffer[propUserName] = value;
               if (!pending.length) {
-                viewport.adjustPadding(true);
+                viewport.adjustPadding(propName === 'minIndex');
               }
             });
           },
@@ -688,20 +674,14 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       viewport.unbind('scroll', resizeAndScrollHandler);
     }
 
-    function dismissPendingRequests() {
-      ridActual++;
-      pending = [];
-    }
-
     function reload() {
-      dismissPendingRequests();
       viewport.resetTopPadding();
       viewport.resetBottomPadding();
 
       if (arguments.length) startIndex = arguments[0];
 
       buffer.reset(startIndex);
-      adjustBuffer(ridActual);
+      adjustBuffer();
     }
 
     function isElementVisible(wrapper) {
@@ -834,6 +814,12 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function adjustBuffer(rid) {
+      if (!rid) {
+        // dismiss pending requests
+        pending = [];
+        rid = ++ridActual;
+      }
+
       var updates = updateDOM();
 
       // We need the item bindings to be processed before we can do adjustment

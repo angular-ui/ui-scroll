@@ -9,6 +9,7 @@
 	<script src="../../src/ui-scroll-jqlite.js"></script>
     <script src="grid.js" ></script>
 	<link rel="stylesheet" href="../../demo/css/style.css" type="text/css"/>
+	<link rel="stylesheet" href="grid.css" type="text/css"/>
 </head>
 <body ng-controller="mainController" ng-app="application">
 
@@ -40,14 +41,16 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite']).controller('mai
 		<table id="viewport-scopeDatasource" class="viewport" ui-scroll-viewport>
 			<thead style="display:block">
 				<tr>
-					<th ui-scroll-th>col1</th>
-					<th ui-scroll-th>col2</th>
+					<th ui-scroll-th class="col1">col1</th>
+					<th ui-scroll-th class="col2">col2</th>
 				</tr>
 			</thead>
 			<tbody>
 				<tr class="item" ui-scroll="item in datasource">
-					<td ui-scroll-td>{{item.col1}}<input type="text", ng-model="text">{{text}}</td>
-					<td ui-scroll-td>{{item.col2}}</td>
+					<td ui-scroll-td class="col1">{{item.col1}}
+					<!-- <input type="text", ng-model="text">{{text}} -->
+					</td>
+					<td ui-scroll-td class="col2">{{item.col2}}</td>
 				</tr>
 			</tbody>
 		</table>
