@@ -5,6 +5,14 @@ angular.module('ui.scroll.grid', [])
       this.columnWidth = function(column, width) {
         controller.columnWidth(column, width);
       }
+
+      this.getLayout = function() {
+        return controller.getLayout();
+      }
+
+      this.applyLayout = function(layout) {
+        controller.applyLayout(layout);
+      }
     }
 
     function GridController(scope, scrollViewport) {
@@ -27,10 +35,29 @@ angular.module('ui.scroll.grid', [])
       });
 
       this.columnWidth = function(column, width) {
-        columns[column].header.css('width', width);
-        columns[column].cells.forEach((cell) => {
-          cell.css('width', width);
-        });  
+        if (column >= 0 && column < columns.length) {
+          columns[column].header.css('width', width);
+          columns[column].cells.forEach((cell) => {
+            cell.css('width', width);
+          });  
+        }
+      }
+
+      this.getLayout = function() {
+        var result = [];
+        columns.forEach((column, index) => {
+          result.push({index: index, width: window.getComputedStyle(column.header[0]).width});
+        });
+        return result;
+      }
+
+      this.applyLayout = function(layout) {
+        layout.forEach((column, index) => {
+          if (index < 0 || index >= columns.length)
+            return;
+          if (column.width)
+            this.columnWidth(index, column.width);
+        });
       }
 
       this.registerColumn = function(header) {

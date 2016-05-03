@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-03T19:57:43.444Z
+ * Version: 1.4.1 -- 2016-05-03T20:23:56.516Z
  * License: MIT
  */
  
@@ -14,6 +14,14 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
   function GridAdapter(controller) {
     this.columnWidth = function (column, width) {
       controller.columnWidth(column, width);
+    };
+
+    this.getLayout = function () {
+      return controller.getLayout();
+    };
+
+    this.applyLayout = function (layout) {
+      controller.applyLayout(layout);
     };
   }
 
@@ -39,9 +47,28 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     });
 
     this.columnWidth = function (column, width) {
-      columns[column].header.css('width', width);
-      columns[column].cells.forEach(function (cell) {
-        cell.css('width', width);
+      if (column >= 0 && column < columns.length) {
+        columns[column].header.css('width', width);
+        columns[column].cells.forEach(function (cell) {
+          cell.css('width', width);
+        });
+      }
+    };
+
+    this.getLayout = function () {
+      var result = [];
+      columns.forEach(function (column, index) {
+        result.push({ index: index, width: window.getComputedStyle(column.header[0]).width });
+      });
+      return result;
+    };
+
+    this.applyLayout = function (layout) {
+      var _this2 = this;
+
+      layout.forEach(function (column, index) {
+        if (index < 0 || index >= columns.length) return;
+        if (column.width) _this2.columnWidth(index, column.width);
       });
     };
 
