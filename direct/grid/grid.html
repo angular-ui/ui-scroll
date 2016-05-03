@@ -37,7 +37,7 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite']).controller('mai
 	$scope.datasource.get = function...</pre>
 			</div>
 		</div>
-
+		<button ng-click="expand()">Expand</button></span>
 		<table id="viewport-scopeDatasource" class="viewport" ui-scroll-viewport>
 			<thead style="display:block">
 				<tr>
@@ -46,7 +46,7 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite']).controller('mai
 				</tr>
 			</thead>
 			<tbody>
-				<tr class="item" ui-scroll="item in datasource">
+				<tr class="item" ui-scroll="item in datasource" adapter="adapter">
 					<td ui-scroll-td class="col1">{{item.col1}}
 					<!-- <input type="text", ng-model="text">{{text}} -->
 					</td>

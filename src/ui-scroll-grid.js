@@ -1,7 +1,11 @@
 angular.module('ui.scroll.grid', [])
   .directive('uiScrollTh', ['$log', '$timeout', function (console, $timeout) {
 
-    function GridAdapter() {}
+    function GridAdapter(controller) {
+      this.columnWidth = function(column, width) {
+        controller.columnWidth(column, width);
+      }
+    }
 
     function GridController(scope, scrollViewport) {
       var columns = [];
@@ -22,6 +26,12 @@ angular.module('ui.scroll.grid', [])
         */
       });
 
+      this.columnWidth = function(column, width) {
+        columns[column].header.css('width', width);
+        columns[column].cells.forEach((cell) => {
+          cell.css('width', width);
+        });  
+      }
 
       this.registerColumn = function(header) {
         columns.push(

@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-03T19:14:03.942Z
+ * Version: 1.4.1 -- 2016-05-03T19:57:43.444Z
  * License: MIT
  */
  
@@ -606,15 +606,16 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     };
 
     if ($attr.adapter) {
-      // so we have an adapter on $scope
-      var adapterOnScope = $parse($attr.adapter)($scope);
-
-      if (!angular.isObject(adapterOnScope)) {
-        $parse($attr.adapter).assign($scope, {});
-        adapterOnScope = $parse($attr.adapter)($scope);
-      }
-
-      adapter = angular.extend(adapterOnScope, adapter);
+      $parse($attr.adapter).assign($scope, adapter);
+      /*
+                let adapterOnScope = $parse($attr.adapter)($scope);
+                if (!angular.isObject(adapterOnScope)) {
+                  $parse($attr.adapter).assign($scope, {});
+                  adapterOnScope = $parse($attr.adapter)($scope);
+                }
+      
+                adapter = angular.extend(adapterOnScope, adapter);
+      */
     }
 
     /**

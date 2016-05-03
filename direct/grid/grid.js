@@ -14,5 +14,9 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'
 			};
 
 			$scope.datasource = datasource;
+
+			$scope.expand=function() {
+				$scope.adapter.gridAdapter.columnWidth(0, '200px')
+			}
 		}
 	]);

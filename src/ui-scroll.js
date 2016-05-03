@@ -595,15 +595,17 @@ angular.module('ui.scroll', [])
             };
 
         if ($attr.adapter) {
-          // so we have an adapter on $scope
+          $parse($attr.adapter).assign($scope, adapter);        
+/*
           let adapterOnScope = $parse($attr.adapter)($scope);
-
           if (!angular.isObject(adapterOnScope)) {
             $parse($attr.adapter).assign($scope, {});
             adapterOnScope = $parse($attr.adapter)($scope);
           }
 
           adapter = angular.extend(adapterOnScope, adapter);
+*/
+
         }
 
         /**

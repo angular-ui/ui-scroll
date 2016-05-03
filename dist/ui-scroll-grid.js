@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-03T19:14:03.942Z
+ * Version: 1.4.1 -- 2016-05-03T19:57:43.444Z
  * License: MIT
  */
  
@@ -11,7 +11,11 @@
 
 angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout', function (console, $timeout) {
 
-  function GridAdapter() {}
+  function GridAdapter(controller) {
+    this.columnWidth = function (column, width) {
+      controller.columnWidth(column, width);
+    };
+  }
 
   function GridController(scope, scrollViewport) {
     var _this = this;
@@ -33,6 +37,13 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
         });
         */
     });
+
+    this.columnWidth = function (column, width) {
+      columns[column].header.css('width', width);
+      columns[column].cells.forEach(function (cell) {
+        cell.css('width', width);
+      });
+    };
 
     this.registerColumn = function (header) {
       columns.push({
