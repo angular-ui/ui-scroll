@@ -1,25 +1,15 @@
-/*!
- globals: angular, window
-
- List of used element methods available in JQuery but not in JQuery Lite
-
- element.before(elem)
- element.height()
- element.outerHeight(true)
- element.height(value) = only for Top/Bottom padding elements
- element.scrollTop()
- element.scrollTop(value)
- */
 angular.module('ui.scroll.grid', [])
   .directive('uiScrollTh', ['$log', '$timeout', function (console, $timeout) {
 
-    function GridAdapter(scope, scrollViewport) {
+    function GridAdapter() {}
+
+    function GridController(scope, scrollViewport) {
       var columns = [];
       var current;
       var index;
 
       $timeout(() => {
-        scrollViewport.adapter.gridAdapter = this;
+        scrollViewport.adapter.gridAdapter = new GridAdapter(this);
         scope.$watch(() => scrollViewport.adapter.isLoading, (newValue, oldValue) => {
           if (newValue)
             return;
@@ -35,10 +25,7 @@ angular.module('ui.scroll.grid', [])
         columns.push(
           {
             header:header, 
-            cells:[],
-            observer: new MutationObserver((mutations) => {
-              console.log(mutations);
-            })
+            cells:[]
           });
       };
 
@@ -48,7 +35,6 @@ angular.module('ui.scroll.grid', [])
           current = scope;
         }
         if (index < columns.length) {
-          columns[index].observer.observe(cell[0], {attributes: true, subtree: true, charachterData: true, attrsssibuteFilter: ['width']});
           columns[index].cells.push(cell);
           return index++;
         }
@@ -63,11 +49,11 @@ angular.module('ui.scroll.grid', [])
     }
 
     return {
-      require: ['^uiScrollViewport'],
+      require: ['^^uiScrollViewport'],
       link: ($scope, element, $attr, controllers, linker) => {
         
-        gridAdapter = controllers[0].gridAdapter = controllers[0].gridAdapter || new GridAdapter($scope, controllers[0]);            
-        gridAdapter.registerColumn(element);
+        var gridController = controllers[0].gridController = controllers[0].gridController || new GridController($scope, controllers[0]);            
+        gridController.registerColumn(element);
           
       }
     }
@@ -77,12 +63,12 @@ angular.module('ui.scroll.grid', [])
       require: ['?^^uiScrollViewport'],
       link: ($scope, element, $attr, controllers, linker) => {
         if (controllers[0]) {        
-          gridAdapter = controllers[0].gridAdapter;            
-          var index = gridAdapter.registerCell($scope, element);
+          var gridController = controllers[0].gridController;            
+          var index = gridController.registerCell($scope, element);
           if (index >= 0) {
             element.attr('ui-scroll-td', index);
             $scope.$on('$destroy', () => {
-              gridAdapter.unregisterCell(index, element);
+              gridController.unregisterCell(index, element);
             });
           }
         }
