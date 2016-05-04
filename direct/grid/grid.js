@@ -18,22 +18,18 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'
 
 			$scope.expand=function() {
 				$scope.adapter.gridAdapter.columns[0].css('width', '200px');
-				console.log(layout[0].layout.css);
 			}
 
 			$scope.collapse=function() {
 				$scope.adapter.gridAdapter.columns[0].css('width', '100px');
-				console.log(layout[0].layout.css);
 			}
 
 			$scope.getLayout=function() {
 				layout = $scope.adapter.gridAdapter.getLayout();
-				console.log(layout[0].layout.css);
 			}
 
 			$scope.applyLayout=function() {
 				$scope.adapter.gridAdapter.applyLayout(layout);
-				console.log(layout[0].layout.css);
 			}
 		}
 	]);
