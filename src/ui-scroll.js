@@ -42,7 +42,6 @@ angular.module('ui.scroll', [])
     function (console, $injector, $rootScope, $timeout, $q, $parse) {
       const $animate = ($injector.has && $injector.has('$animate')) ? $injector.get('$animate') : null;
       const isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
-      //const log = console.debug || console.log;
 
       return {
         require: ['?^uiScrollViewport'],
@@ -596,16 +595,6 @@ angular.module('ui.scroll', [])
 
         if ($attr.adapter) {
           $parse($attr.adapter).assign($scope, adapter);        
-/*
-          let adapterOnScope = $parse($attr.adapter)($scope);
-          if (!angular.isObject(adapterOnScope)) {
-            $parse($attr.adapter).assign($scope, {});
-            adapterOnScope = $parse($attr.adapter)($scope);
-          }
-
-          adapter = angular.extend(adapterOnScope, adapter);
-*/
-
         }
 
         /**
@@ -653,7 +642,7 @@ angular.module('ui.scroll', [])
           reload();
         });
 
-        /* Functions definitions */
+        /* Function definitions */
 
         function bindEvents() {
           viewport.bind('resize', resizeAndScrollHandler);

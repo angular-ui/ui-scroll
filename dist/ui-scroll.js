@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-03T20:23:56.516Z
+ * Version: 1.4.1 -- 2016-05-04T20:34:26.674Z
  * License: MIT
  */
  
@@ -40,7 +40,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 }).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $q, $parse) {
   var $animate = $injector.has && $injector.has('$animate') ? $injector.get('$animate') : null;
   var isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
-  //const log = console.debug || console.log;
 
   return {
     require: ['?^uiScrollViewport'],
@@ -607,15 +606,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     if ($attr.adapter) {
       $parse($attr.adapter).assign($scope, adapter);
-      /*
-                let adapterOnScope = $parse($attr.adapter)($scope);
-                if (!angular.isObject(adapterOnScope)) {
-                  $parse($attr.adapter).assign($scope, {});
-                  adapterOnScope = $parse($attr.adapter)($scope);
-                }
-      
-                adapter = angular.extend(adapterOnScope, adapter);
-      */
     }
 
     /**
@@ -663,7 +653,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       reload();
     });
 
-    /* Functions definitions */
+    /* Function definitions */
 
     function bindEvents() {
       viewport.bind('resize', resizeAndScrollHandler);

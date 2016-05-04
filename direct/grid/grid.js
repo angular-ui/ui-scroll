@@ -2,6 +2,7 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'
 	.controller('mainController', [
 		'$scope', '$log', '$timeout', function ($scope, console, $timeout) {
 			var datasource = {};
+			var layout;
 
 			datasource.get = function (index, count, success) {
 				$timeout(function () {
@@ -16,7 +17,23 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'
 			$scope.datasource = datasource;
 
 			$scope.expand=function() {
-				$scope.adapter.gridAdapter.columnWidth(0, '200px')
+				$scope.adapter.gridAdapter.columns[0].css('width', '200px');
+				console.log(layout[0].layout.css);
+			}
+
+			$scope.collapse=function() {
+				$scope.adapter.gridAdapter.columns[0].css('width', '100px');
+				console.log(layout[0].layout.css);
+			}
+
+			$scope.getLayout=function() {
+				layout = $scope.adapter.gridAdapter.getLayout();
+				console.log(layout[0].layout.css);
+			}
+
+			$scope.applyLayout=function() {
+				$scope.adapter.gridAdapter.applyLayout(layout);
+				console.log(layout[0].layout.css);
 			}
 		}
 	]);

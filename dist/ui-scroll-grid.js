@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-03T20:23:56.516Z
+ * Version: 1.4.1 -- 2016-05-04T20:34:26.674Z
  * License: MIT
  */
  
@@ -12,9 +12,6 @@
 angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout', function (console, $timeout) {
 
   function GridAdapter(controller) {
-    this.columnWidth = function (column, width) {
-      controller.columnWidth(column, width);
-    };
 
     this.getLayout = function () {
       return controller.getLayout();
@@ -22,6 +19,28 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     this.applyLayout = function (layout) {
       controller.applyLayout(layout);
+    };
+
+    Object.defineProperty(this, 'columns', { get: function get() {
+        return controller.getColumns();
+      } });
+  }
+
+  function ColumnAdapter(column) {
+
+    this.css = function () /* attr, value */{
+      var attr = arguments[0];
+      var value = arguments[1];
+      if (arguments.length == 1) {
+        return column.header.css(attr);
+      }
+      if (arguments.length == 2) {
+        column.header.css(attr, value);
+        column.cells.forEach(function (cell) {
+          cell.css(attr, value);
+        });
+        column.layout.css[attr] = value;
+      }
     };
   }
 
@@ -34,48 +53,38 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     $timeout(function () {
       scrollViewport.adapter.gridAdapter = new GridAdapter(_this);
-      /*
-        scope.$watch(() => scrollViewport.adapter.isLoading, (newValue, oldValue) => {
-          if (newValue)
-            return;
-          columns.forEach((column) => {
-            if (column.cells.length)
-              column.header.css('width', window.getComputedStyle(column.cells[0][0]).width);   
-          });
-        });
-        */
     });
 
-    this.columnWidth = function (column, width) {
-      if (column >= 0 && column < columns.length) {
-        columns[column].header.css('width', width);
-        columns[column].cells.forEach(function (cell) {
-          cell.css('width', width);
-        });
-      }
+    this.getColumns = function () {
+      var result = [];
+      columns.forEach(function (column) {
+        return result.push(new ColumnAdapter(column));
+      });
+      return result;
     };
 
     this.getLayout = function () {
       var result = [];
       columns.forEach(function (column, index) {
-        result.push({ index: index, width: window.getComputedStyle(column.header[0]).width });
+        result.push({ index: index, layout: { css: angular.extend({}, column.layout.css) } });
       });
       return result;
     };
 
-    this.applyLayout = function (layout) {
-      var _this2 = this;
-
-      layout.forEach(function (column, index) {
+    this.applyLayout = function (layouts) {
+      layouts.forEach(function (column, index) {
         if (index < 0 || index >= columns.length) return;
-        if (column.width) _this2.columnWidth(index, column.width);
+        for (var attr in column.layout.css) {
+          if (column.layout.css.hasOwnProperty(attr)) new ColumnAdapter(columns[index]).css(attr, column.layout.css[attr]);
+        }
       });
     };
 
     this.registerColumn = function (header) {
       columns.push({
         header: header,
-        cells: []
+        cells: [],
+        layout: { css: {} }
       });
     };
 
