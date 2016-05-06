@@ -23,7 +23,7 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite'])
 				return $rootScope.topVisible;
 			}), function () {
 				if ($rootScope.topVisible) {
-					$location.search('offset', $rootScope.topVisible.$index + offset);
+					$location.search('offset', $rootScope.topVisible.$index + offset-1);
 					$location.replace();
 				}
 			});
