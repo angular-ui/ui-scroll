@@ -33,7 +33,7 @@ uiScrollViewport directive (see below), browser window will be used as viewport.
 
 ### Dependencies
 
-To use the directive make sure the dist/ui-scroll.js is loaded in your page. You also have to include module name 'ui.scroll' on the list of your application module dependencies.
+To use the directive make sure the dist/ui-scroll.js is loaded in your page. You also have to include module name 'ui.scroll' on the list of your application module dependencies. The directive supports angular version 1.2 or later. Earlier versions of angular are no longer supported.
 
 The code in this file relies on a few DOM element methods of jQuery which are currently not implemented in jQlite, namely
 * before(elem)
@@ -75,7 +75,7 @@ The value is relative to the visible height of the area, the default is 0.5 and 
 * **start-index - value**, optional - index of the first item to be requested from the datasource. The default is 1.
 * **adapter - name**, optional - if provided a reference to the adapter object for the scroller instance will be placed in the member with the said name on the scope associated with the viewport. If the viewport is the window, the value will be placed on the $rootScope.
 
-Some of the properties offered by the adapter can also be accessed directly from the directive by using matching attributes. In the same way as for the adapter attribute, syntax for such attributes allows for providing a name to be used to access the corresponding value. A reference to the value will be placed on the scope associated with the viewport. If the viewport is the window, the value will be placed on the $rootScope. Below is a list of such attributes:
+Some of the properties offered by the adapter can also be accessed directly from the directive by using matching attributes. In the same way as for the adapter attribute, syntax for such attributes allows for providing a name to be used to access the corresponding value. A reference to the value will be placed on the scope associated with the viewport. If the viewport is the window, the value will be placed on the $rootScope. If you have multiple scrollers within the same viewport, make sure that evry one of them has its unique adapter name. Below is a list of such attributes:
 
 * **is-loading - name**, optional - a boolean value indicating whether there are any pending load requests will be placed in the member with the said name. See also `isLoading` adapter property.
 * **top-visible - name**, optional - a reference to the item currently in the topmost visible position will be placed in the member with the said name. See also `topVisible` adapter property.
