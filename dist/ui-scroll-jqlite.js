@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-04T20:34:26.674Z
+ * Version: 1.4.1 -- 2016-05-06T12:41:14.126Z
  * License: MIT
  */
  
@@ -71,11 +71,11 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
           return elem.currentStyle;
         };
         convertToPx = function convertToPx(elem, value) {
-          var left = void 0,
-              result = void 0,
-              rs = void 0,
-              rsLeft = void 0,
-              style = void 0;
+          var left = undefined,
+              result = undefined,
+              rs = undefined,
+              rsLeft = undefined,
+              style = undefined;
           var core_pnum = /[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source;
           var rnumnonpx = new RegExp('^(' + core_pnum + ')(?!px)[a-z%]+$', 'i');
 
@@ -103,18 +103,18 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
       }
 
       function getMeasurements(elem, measure) {
-        var base = void 0,
-            borderA = void 0,
-            borderB = void 0,
-            computedMarginA = void 0,
-            computedMarginB = void 0,
-            computedStyle = void 0,
-            dirA = void 0,
-            dirB = void 0,
-            marginA = void 0,
-            marginB = void 0,
-            paddingA = void 0,
-            paddingB = void 0;
+        var base = undefined,
+            borderA = undefined,
+            borderB = undefined,
+            computedMarginA = undefined,
+            computedMarginB = undefined,
+            computedStyle = undefined,
+            dirA = undefined,
+            dirB = undefined,
+            marginA = undefined,
+            marginB = undefined,
+            paddingA = undefined,
+            paddingB = undefined;
 
         if (isWindow(elem)) {
           base = document.documentElement[{ height: 'clientHeight', width: 'clientWidth' }[measure]];
@@ -163,8 +163,8 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
       }
 
       function getWidthHeight(elem, direction, measure) {
-        var computedStyle = void 0,
-            result = void 0;
+        var computedStyle = undefined,
+            result = undefined;
 
         var measurements = getMeasurements(elem, direction);
 
@@ -235,8 +235,8 @@ angular.module('ui.scroll.jqlite', ['ui.scroll']).service('jqLiteExtras', ['$log
          The offset setter method is not implemented
          */
         offset: function offset(value) {
-          var docElem = void 0,
-              win = void 0;
+          var docElem = undefined,
+              win = undefined;
           var self = this;
           var box = {
             top: 0,
