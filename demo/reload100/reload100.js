@@ -14,7 +14,6 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite'])
 			};
 
 			$scope.datasource = datasource;
-			$scope.adapter = {};
 
 			$scope.doReload = function () {
 				if (angular.isFunction($scope.adapter.reload)) {
@@ -23,11 +22,11 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite'])
 					$scope.adapter.reload(reloadIndex);
 				}
 			};
-
+/*
 			$scope.delay = false;
 			$timeout(function() {
 				$scope.delay = true;
 			}, 500);
-
+*/
 		}
 	]);

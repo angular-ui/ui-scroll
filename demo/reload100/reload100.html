@@ -26,7 +26,8 @@
 			<button ng-click="doReload(reloadIndex)"> Reload({{reloadIndex}}) </button>
 		</div>
 
-		<div ng-if="delay" class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
+		<!-- div ng-if="delay" class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport -->
+		<div class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
 			<div class="item" ui-scroll="item in datasource" adapter="adapter">{{item}}</div>
 		</div>
 
