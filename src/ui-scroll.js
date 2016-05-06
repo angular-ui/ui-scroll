@@ -692,11 +692,11 @@ angular.module('ui.scroll', [])
           return false;
         }
 
-        function createElement(wrapper, insertAfter) {
+        function createElement(wrapper, insertAfter, insertElement) {
           var promises;
           var sibling = (insertAfter > 0) ? buffer[insertAfter - 1].element : undefined;
           linker((clone, scope) => {
-            promises = viewport.insertElement(clone, sibling);
+            promises = insertElement(clone, sibling);
             wrapper.element = clone;
             wrapper.scope = scope;
             scope[itemName] = wrapper.item;

@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-06T15:27:49.358Z
+ * Version: 1.4.1 -- 2016-05-06T16:17:08.229Z
  * License: MIT
  */
  
@@ -702,11 +702,11 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       return false;
     }
 
-    function createElement(wrapper, insertAfter) {
+    function createElement(wrapper, insertAfter, insertElement) {
       var promises;
       var sibling = insertAfter > 0 ? buffer[insertAfter - 1].element : undefined;
       linker(function (clone, scope) {
-        promises = viewport.insertElement(clone, sibling);
+        promises = insertElement(clone, sibling);
         wrapper.element = clone;
         wrapper.scope = scope;
         scope[itemName] = wrapper.item;
