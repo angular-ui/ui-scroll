@@ -541,7 +541,8 @@ angular.module('ui.scroll', [])
         let buffer = new Buffer(bufferSize);
         let viewport = new Viewport(buffer, element, viewportController, $attr);
         let adapter = new Adapter($attr, viewport, buffer, adjustBuffer);
-        viewportController.adapter = adapter;
+        if (viewportController)
+          viewportController.adapter = adapter;
 
         let isDatasourceValid = () => angular.isObject(datasource) && angular.isFunction(datasource.get);
         datasource = $parse(datasourceName)($scope); // try to get datasource on scope

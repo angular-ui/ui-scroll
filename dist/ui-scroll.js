@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-06T12:41:14.126Z
+ * Version: 1.4.1 -- 2016-05-06T15:27:49.358Z
  * License: MIT
  */
  
@@ -214,8 +214,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   function Viewport(buffer, element, viewportController, attrs) {
     var PADDING_MIN = 0.3;
     var PADDING_DEFAULT = 0.5;
-    var topPadding = undefined;
-    var bottomPadding = undefined;
+    var topPadding = void 0;
+    var bottomPadding = void 0;
     var viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
     var container = viewportController && viewportController.container ? viewportController.container : undefined;
 
@@ -250,7 +250,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function Padding(template) {
-      var result = undefined;
+      var result = void 0;
 
       switch (template.tagName) {
         case 'dl':
@@ -437,7 +437,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         return;
       }
 
-      var keepIt = undefined;
+      var keepIt = void 0;
       var pos = buffer.indexOf(wrapper) + 1;
 
       newItems.reverse().forEach(function (newItem) {
@@ -494,12 +494,12 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     };
 
     this.calculateProperties = function () {
-      var i = undefined,
-          item = undefined,
-          itemHeight = undefined,
-          itemTop = undefined,
-          isNewRow = undefined,
-          rowTop = undefined;
+      var i = void 0,
+          item = void 0,
+          itemHeight = void 0,
+          itemTop = void 0,
+          isNewRow = void 0,
+          rowTop = void 0;
       var topHeight = 0;
       for (i = 0; i < buffer.length; i++) {
         item = buffer[i];
@@ -548,7 +548,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var buffer = new Buffer(bufferSize);
     var viewport = new Viewport(buffer, element, viewportController, $attr);
     var adapter = new Adapter($attr, viewport, buffer, adjustBuffer);
-    viewportController.adapter = adapter;
+    if (viewportController) viewportController.adapter = adapter;
 
     var isDatasourceValid = function isDatasourceValid() {
       return angular.isObject(datasource) && angular.isFunction(datasource.get);
