@@ -124,6 +124,7 @@ Adapter object implements the following properties:
 * `topVisible` - a reference to the item currently in the topmost visible position.
 * `topVisibleElement` - a reference to the DOM element currently in the topmost visible position.
 * `topVisibleScope` - a reference to the scope created for the item currently in the topmost visible position.
+* `disabled` - setting `disabled` to `true` disables scroller's scroll/resize events handlers. This can be useful if you have multiple scrollers within the same scrollViewport and you want to prevent some of them from responding to the events.
 
 Adapater object implements the following methods
 
