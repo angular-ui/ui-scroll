@@ -196,7 +196,6 @@ angular.module('ui.scroll', [])
             return Math.max(0, bottom - top);
           }
 
-
         });
 
         return buffer;
@@ -428,6 +427,15 @@ angular.module('ui.scroll', [])
         const setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : angular.noop;
         const setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
         const setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
+        var disabled = false;
+
+        Object.defineProperty(this, 'disabled', {
+          get: () => {return disabled;},
+          set: (value) => {
+            disabled = value;
+            adjustBuffer();
+          }
+        });
 
         this.isLoading = false;
 
@@ -523,9 +531,8 @@ angular.module('ui.scroll', [])
 
         const match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/);
 
-        if (!(match)) {
+        if (!(match))
           throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
-        }
 
         let datasource = null;
         const itemName = match[1];
@@ -536,7 +543,6 @@ angular.module('ui.scroll', [])
         startIndex = isNaN(startIndex) ? 1 : startIndex;
         let ridActual = 0;// current data revision id
         let pending = [];
-        let disabled = false;
 
         let buffer = new Buffer(bufferSize);
         let viewport = new Viewport(buffer, element, viewportController, $attr);
@@ -594,9 +600,9 @@ angular.module('ui.scroll', [])
               }, success);
             };
 
-        if ($attr.adapter) {
+        adapter.reload = reload;
+        if ($attr.adapter)
           $parse($attr.adapter).assign($scope, adapter);        
-        }
 
         /**
          * Build padding elements
@@ -614,26 +620,9 @@ angular.module('ui.scroll', [])
           clone.remove();
         });
 
-        adapter.reload = reload;
-
-        let unregisterDisabledWatcher = () => null;
-        if($attr.hasOwnProperty('disabled')) {
-          unregisterDisabledWatcher =
-            $scope.$watch($attr['disabled'], (value) => {
-              if(value && !disabled) {
-                disabled = true;
-              }
-              else if(disabled) {
-                disabled = false;
-                adjustBuffer();
-              }
-            });
-        }
-
         $scope.$on('$destroy', () => {
           unbindEvents();
           viewport.unbind('mousewheel', wheelHandler);
-          unregisterDisabledWatcher();
         });
 
         viewport.bind('mousewheel', wheelHandler);
@@ -881,7 +870,7 @@ angular.module('ui.scroll', [])
         }
 
         function resizeAndScrollHandler() {
-          if (!$rootScope.$$phase && !adapter.isLoading && !disabled) {
+          if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
 
             enqueueFetch(ridActual, true);
 
@@ -895,7 +884,7 @@ angular.module('ui.scroll', [])
         }
 
         function wheelHandler(event) {
-          if(!disabled) {
+          if(!adapter.disabled) {
             let scrollTop = viewport[0].scrollTop;
             let yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
 

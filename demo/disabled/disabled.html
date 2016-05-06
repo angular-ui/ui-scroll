@@ -21,12 +21,12 @@
 		There is an attribute "disabled" on ui-scroll which allows to ignore user scroll/resize events:
 
 		<div class="code">
-			<pre>&lt;div ui-scroll="item in datasource" disabled="needToDisable"&gt;{{item}<!---->}&lt;/div&gt;</pre>
+			<pre>&lt;div ui-scroll="item in datasource" adapter="myAdapter"&gt;{{item}<!---->}&lt;/div&gt;</pre>
 		</div>
 		Here we have two-way binding, so just change appropriate property on appropriate scope:
 		<div class="code">
 			<pre>
-$scope.needToDisable = true;
+$scope.myAdapter.disabled = true;
 </pre>
 		</div>
 		Since "disabled" is true no user scroll is being processed by ui-scroll engine.
@@ -34,12 +34,12 @@ $scope.needToDisable = true;
 	</div>
 
 	<div class="actions" ng-init="needToDisable = false">
-		<button ng-click="needToDisable = !needToDisable"> {{needToDisable?"Enable":"Disable"}} </button>
-		User scroll processing is {{needToDisable ? "disabled" : "enabled"}}
+		<button ng-click="myAdapter.disabled = !myAdapter.disabled"> {{myAdapter.disabled?"Enable":"Disable"}} </button>
+		User scroll processing is {{myAdapter.disabled ? "disabled" : "enabled"}}
 	</div>
 
 	<div  class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
-		<div class="item" ui-scroll="item in datasource" adapter="myAdapter" disabled="needToDisable">{{item}}</div>
+		<div class="item" ui-scroll="item in datasource" adapter="myAdapter" >{{item}}</div>
 	</div>
 
 </div>

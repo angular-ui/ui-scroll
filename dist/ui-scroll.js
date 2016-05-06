@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-06T16:17:08.229Z
+ * Version: 1.4.1 -- 2016-05-06T17:11:29.646Z
  * License: MIT
  */
  
@@ -429,6 +429,17 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : angular.noop;
     var setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
     var setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
+    var disabled = false;
+
+    Object.defineProperty(this, 'disabled', {
+      get: function get() {
+        return disabled;
+      },
+      set: function set(value) {
+        disabled = value;
+        adjustBuffer();
+      }
+    });
 
     this.isLoading = false;
 
@@ -530,9 +541,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     var match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/);
 
-    if (!match) {
-      throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
-    }
+    if (!match) throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
 
     var datasource = null;
     var itemName = match[1];
@@ -543,7 +552,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     startIndex = isNaN(startIndex) ? 1 : startIndex;
     var ridActual = 0; // current data revision id
     var pending = [];
-    var disabled = false;
 
     var buffer = new Buffer(bufferSize);
     var viewport = new Viewport(buffer, element, viewportController, $attr);
@@ -604,9 +612,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       }, success);
     };
 
-    if ($attr.adapter) {
-      $parse($attr.adapter).assign($scope, adapter);
-    }
+    adapter.reload = reload;
+    if ($attr.adapter) $parse($attr.adapter).assign($scope, adapter);
 
     /**
      * Build padding elements
@@ -624,26 +631,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       clone.remove();
     });
 
-    adapter.reload = reload;
-
-    var unregisterDisabledWatcher = function unregisterDisabledWatcher() {
-      return null;
-    };
-    if ($attr.hasOwnProperty('disabled')) {
-      unregisterDisabledWatcher = $scope.$watch($attr['disabled'], function (value) {
-        if (value && !disabled) {
-          disabled = true;
-        } else if (disabled) {
-          disabled = false;
-          adjustBuffer();
-        }
-      });
-    }
-
     $scope.$on('$destroy', function () {
       unbindEvents();
       viewport.unbind('mousewheel', wheelHandler);
-      unregisterDisabledWatcher();
     });
 
     viewport.bind('mousewheel', wheelHandler);
@@ -894,7 +884,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function resizeAndScrollHandler() {
-      if (!$rootScope.$$phase && !adapter.isLoading && !disabled) {
+      if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
 
         enqueueFetch(ridActual, true);
 
@@ -908,7 +898,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function wheelHandler(event) {
-      if (!disabled) {
+      if (!adapter.disabled) {
         var scrollTop = viewport[0].scrollTop;
         var yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
 
