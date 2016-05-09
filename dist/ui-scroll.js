@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-06T17:11:29.646Z
+ * Version: 1.4.1 -- 2016-05-09T16:49:23.122Z
  * License: MIT
  */
  
@@ -214,8 +214,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   function Viewport(buffer, element, viewportController, attrs) {
     var PADDING_MIN = 0.3;
     var PADDING_DEFAULT = 0.5;
-    var topPadding = void 0;
-    var bottomPadding = void 0;
+    var topPadding = undefined;
+    var bottomPadding = undefined;
     var viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
     var container = viewportController && viewportController.container ? viewportController.container : undefined;
 
@@ -250,7 +250,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function Padding(template) {
-      var result = void 0;
+      var result = undefined;
 
       switch (template.tagName) {
         case 'dl':
@@ -448,7 +448,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         return;
       }
 
-      var keepIt = void 0;
+      var keepIt = undefined;
       var pos = buffer.indexOf(wrapper) + 1;
 
       newItems.reverse().forEach(function (newItem) {
@@ -505,12 +505,12 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     };
 
     this.calculateProperties = function () {
-      var i = void 0,
-          item = void 0,
-          itemHeight = void 0,
-          itemTop = void 0,
-          isNewRow = void 0,
-          rowTop = void 0;
+      var i = undefined,
+          item = undefined,
+          itemHeight = undefined,
+          itemTop = undefined,
+          isNewRow = undefined,
+          rowTop = undefined;
       var topHeight = 0;
       for (i = 0; i < buffer.length; i++) {
         item = buffer[i];

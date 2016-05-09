@@ -710,7 +710,7 @@ describe('uiScroll', function () {
 			});
 
 			runTest({datasource: 'myInfiniteDatasource', adapter: 'adapter'},
-				function (viewport, scope, $timeout) {
+				function (viewport, scope) {
 
 					expect(spy.calls.all().length).toBe(3); // three initial requests
 
