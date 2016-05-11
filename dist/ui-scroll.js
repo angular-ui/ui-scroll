@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-09T16:49:23.122Z
+ * Version: 1.4.1 -- 2016-05-11T15:42:07.537Z
  * License: MIT
  */
  
@@ -424,6 +424,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   }
 
   function Adapter($attr, viewport, buffer, adjustBuffer) {
+    var _this = this;
+
     var viewportScope = viewport.scope() || $rootScope;
     var setTopVisible = $attr.topVisible ? $parse($attr.topVisible).assign : angular.noop;
     var setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : angular.noop;
@@ -436,8 +438,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         return disabled;
       },
       set: function set(value) {
-        disabled = value;
-        adjustBuffer();
+        return !(disabled = value) ? adjustBuffer() : null;
       }
     });
 
@@ -500,38 +501,56 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     };
 
     this.loading = function (value) {
-      this.isLoading = value;
+      _this.isLoading = value;
       setIsLoading(viewportScope, value);
     };
 
     this.calculateProperties = function () {
-      var i = undefined,
-          item = undefined,
-          itemHeight = undefined,
+      var itemHeight = undefined,
           itemTop = undefined,
           isNewRow = undefined,
           rowTop = undefined;
       var topHeight = 0;
-      for (i = 0; i < buffer.length; i++) {
-        item = buffer[i];
-        itemTop = item.element.offset().top;
-        isNewRow = rowTop !== itemTop;
-        rowTop = itemTop;
-        if (isNewRow) {
-          itemHeight = item.element.outerHeight(true);
-        }
-        if (isNewRow && viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos()) {
-          topHeight += itemHeight;
-        } else {
+      var _iteratorNormalCompletion = true;
+      var _didIteratorError = false;
+      var _iteratorError = undefined;
+
+      try {
+        for (var _iterator = buffer[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
+          var item = _step.value;
+
+          itemTop = item.element.offset().top;
+          isNewRow = rowTop !== itemTop;
+          rowTop = itemTop;
           if (isNewRow) {
-            this.topVisible = item.item;
-            this.topVisibleElement = item.element;
-            this.topVisibleScope = item.scope;
-            setTopVisible(viewportScope, item.item);
-            setTopVisibleElement(viewportScope, item.element);
-            setTopVisibleScope(viewportScope, item.scope);
+            itemHeight = item.element.outerHeight(true);
           }
-          break;
+          if (isNewRow && viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos()) {
+            topHeight += itemHeight;
+          } else {
+            if (isNewRow) {
+              _this.topVisible = item.item;
+              _this.topVisibleElement = item.element;
+              _this.topVisibleScope = item.scope;
+              setTopVisible(viewportScope, item.item);
+              setTopVisibleElement(viewportScope, item.element);
+              setTopVisibleScope(viewportScope, item.scope);
+            }
+            break;
+          }
+        }
+      } catch (err) {
+        _didIteratorError = true;
+        _iteratorError = err;
+      } finally {
+        try {
+          if (!_iteratorNormalCompletion && _iterator.return) {
+            _iterator.return();
+          }
+        } finally {
+          if (_didIteratorError) {
+            throw _iteratorError;
+          }
         }
       }
     };
@@ -569,12 +588,13 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       }
     }
 
+    var indexStore = {};
     function defineProperty(datasource, propName, propUserName) {
       var descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
       if (!descriptor || !descriptor.set && !descriptor.get) {
         Object.defineProperty(datasource, propName, {
           set: function set(value) {
-            this['_' + propName] = value;
+            indexStore[propName] = value;
             $timeout(function () {
               buffer[propUserName] = value;
               if (!pending.length) {
@@ -583,7 +603,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
             });
           },
           get: function get() {
-            return this['_' + propName];
+            return indexStore[propName];
           }
         });
       }
@@ -693,7 +713,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function createElement(wrapper, insertAfter, insertElement) {
-      var promises;
+      var promises = undefined;
       var sibling = insertAfter > 0 ? buffer[insertAfter - 1].element : undefined;
       linker(function (clone, scope) {
         promises = insertElement(clone, sibling);

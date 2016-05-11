@@ -427,14 +427,11 @@ angular.module('ui.scroll', [])
         const setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : angular.noop;
         const setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
         const setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
-        var disabled = false;
+        let disabled = false;
 
         Object.defineProperty(this, 'disabled', {
-          get: () => {return disabled;},
-          set: (value) => {
-            disabled = value;
-            adjustBuffer();
-          }
+          get: () => disabled,
+          set: (value) => (!(disabled = value)) ? adjustBuffer() : null
         });
 
         this.isLoading = false;
@@ -494,16 +491,15 @@ angular.module('ui.scroll', [])
           adjustBuffer();
         };
 
-        this.loading = function (value) {
+        this.loading = (value) => {
           this.isLoading = value;
           setIsLoading(viewportScope, value);
         };
 
-        this.calculateProperties = function () {
-          let i, item, itemHeight, itemTop, isNewRow, rowTop;
+        this.calculateProperties = () => {
+          let itemHeight, itemTop, isNewRow, rowTop;
           let topHeight = 0;
-          for (i = 0; i < buffer.length; i++) {
-            item = buffer[i];
+          for (let item of buffer) {
             itemTop = item.element.offset().top;
             isNewRow = rowTop !== itemTop;
             rowTop = itemTop;
@@ -559,12 +555,13 @@ angular.module('ui.scroll', [])
           }
         }
 
+        let indexStore = {};
         function defineProperty(datasource, propName, propUserName) {
           let descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
           if (!descriptor || (!descriptor.set && ! descriptor.get)) {
             Object.defineProperty(datasource, propName, {
-              set: function (value) {
-                this['_' + propName] = value;
+              set: (value) => {
+                indexStore[propName] = value;
                 $timeout(() => {
                   buffer[propUserName] = value;
                   if(!pending.length) {
@@ -572,9 +569,7 @@ angular.module('ui.scroll', [])
                   }
                 });
               },
-              get: function () {
-                return this['_' + propName];
-              }
+              get: () => indexStore[propName]
             });
           }
         }
@@ -682,8 +677,8 @@ angular.module('ui.scroll', [])
         }
 
         function createElement(wrapper, insertAfter, insertElement) {
-          var promises;
-          var sibling = (insertAfter > 0) ? buffer[insertAfter - 1].element : undefined;
+          let promises;
+          let sibling = (insertAfter > 0) ? buffer[insertAfter - 1].element : undefined;
           linker((clone, scope) => {
             promises = insertElement(clone, sibling);
             wrapper.element = clone;
@@ -730,7 +725,7 @@ angular.module('ui.scroll', [])
 
           buffer.forEach((item, i) => item.scope.$index = buffer.first + i);
 
-          var estimatedPaddingIncrement = buffer.effectiveHeight(toBePrepended);
+          let estimatedPaddingIncrement = buffer.effectiveHeight(toBePrepended);
 
           viewport.adjustScrollTopAfterPrepend(estimatedPaddingIncrement);
 
@@ -787,7 +782,7 @@ angular.module('ui.scroll', [])
             rid = ++ridActual;
           }
 
-          var updates = updateDOM();
+          let updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
@@ -801,7 +796,7 @@ angular.module('ui.scroll', [])
         }
 
         function adjustBufferAfterFetch(rid) {
-          var updates = updateDOM();
+          let updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {

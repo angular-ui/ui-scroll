@@ -18,24 +18,22 @@
 	<h1 class="page-header page-header-exapmle">Disabled attribute</h1>
 
 	<div class="description">
-		There is an attribute "disabled" on ui-scroll which allows to ignore user scroll/resize events:
+		There is an property "disabled" on the ui-scroll adapter which allows to ignore user scroll/resize events:
 
 		<div class="code">
 			<pre>&lt;div ui-scroll="item in datasource" adapter="myAdapter"&gt;{{item}<!---->}&lt;/div&gt;</pre>
 		</div>
-		Here we have two-way binding, so just change appropriate property on appropriate scope:
+		Here we have two-way binding, so just set the property in appropriate time:
 		<div class="code">
-			<pre>
-$scope.myAdapter.disabled = true;
-</pre>
+			<pre>$scope.myAdapter.disabled = true;</pre>
 		</div>
 		Since "disabled" is true no user scroll is being processed by ui-scroll engine.
 
 	</div>
 
 	<div class="actions" ng-init="needToDisable = false">
+		User scroll processing is {{myAdapter.disabled ? "disabled" : "enabled"}} now <br/>
 		<button ng-click="myAdapter.disabled = !myAdapter.disabled"> {{myAdapter.disabled?"Enable":"Disable"}} </button>
-		User scroll processing is {{myAdapter.disabled ? "disabled" : "enabled"}}
 	</div>
 
 	<div  class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>

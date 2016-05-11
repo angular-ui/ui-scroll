@@ -3,19 +3,21 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite']).factory('dataso
     var get, max, min;
     min = -50;
     max = 50;
+
     get = function(index, count, success) {
-      return $timeout(function() {
-        var i, j, ref, ref1, result;
-        result = [];
-        for (i = j = ref = index, ref1 = index + count - 1; ref <= ref1 ? j <= ref1 : j >= ref1; i = ref <= ref1 ? ++j : --j) {
-          if (i < min || i > max) {
-            break;
+      $timeout(function() {
+        var result = [];
+        var start = Math.max(min, index);
+        var end = Math.min(index + count - 1, max);
+        if (start <= end) {
+          for (var i = start; i <= end; i++) {
+            result.push("item #" + i);
           }
-          result.push("item #" + i);
         }
-        return success(result);
+         success(result);
       }, 50);
     };
+
     return {
       get: get
     };
