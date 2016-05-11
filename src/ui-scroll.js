@@ -497,9 +497,10 @@ angular.module('ui.scroll', [])
         };
 
         this.calculateProperties = () => {
-          let itemHeight, itemTop, isNewRow, rowTop;
+          let item, itemHeight, itemTop, isNewRow, rowTop;
           let topHeight = 0;
-          for (let item of buffer) {
+          for (let i = 0; i < buffer.length; i++) {
+            item = buffer[i];
             itemTop = item.element.offset().top;
             isNewRow = rowTop !== itemTop;
             rowTop = itemTop;

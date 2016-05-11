@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-11T15:42:07.537Z
+ * Version: 1.4.1 -- 2016-05-11T16:31:15.604Z
  * License: MIT
  */
  
@@ -506,51 +506,32 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     };
 
     this.calculateProperties = function () {
-      var itemHeight = undefined,
+      var item = undefined,
+          itemHeight = undefined,
           itemTop = undefined,
           isNewRow = undefined,
           rowTop = undefined;
       var topHeight = 0;
-      var _iteratorNormalCompletion = true;
-      var _didIteratorError = false;
-      var _iteratorError = undefined;
-
-      try {
-        for (var _iterator = buffer[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-          var item = _step.value;
-
-          itemTop = item.element.offset().top;
-          isNewRow = rowTop !== itemTop;
-          rowTop = itemTop;
-          if (isNewRow) {
-            itemHeight = item.element.outerHeight(true);
-          }
-          if (isNewRow && viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos()) {
-            topHeight += itemHeight;
-          } else {
-            if (isNewRow) {
-              _this.topVisible = item.item;
-              _this.topVisibleElement = item.element;
-              _this.topVisibleScope = item.scope;
-              setTopVisible(viewportScope, item.item);
-              setTopVisibleElement(viewportScope, item.element);
-              setTopVisibleScope(viewportScope, item.scope);
-            }
-            break;
-          }
+      for (var i = 0; i < buffer.length; i++) {
+        item = buffer[i];
+        itemTop = item.element.offset().top;
+        isNewRow = rowTop !== itemTop;
+        rowTop = itemTop;
+        if (isNewRow) {
+          itemHeight = item.element.outerHeight(true);
         }
-      } catch (err) {
-        _didIteratorError = true;
-        _iteratorError = err;
-      } finally {
-        try {
-          if (!_iteratorNormalCompletion && _iterator.return) {
-            _iterator.return();
+        if (isNewRow && viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos()) {
+          topHeight += itemHeight;
+        } else {
+          if (isNewRow) {
+            _this.topVisible = item.item;
+            _this.topVisibleElement = item.element;
+            _this.topVisibleScope = item.scope;
+            setTopVisible(viewportScope, item.item);
+            setTopVisibleElement(viewportScope, item.element);
+            setTopVisibleScope(viewportScope, item.scope);
           }
-        } finally {
-          if (_didIteratorError) {
-            throw _iteratorError;
-          }
+          break;
         }
       }
     };
