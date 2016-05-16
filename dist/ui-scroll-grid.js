@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-09T16:49:23.122Z
+ * Version: 1.4.1 -- 2016-05-16T17:48:18.797Z
  * License: MIT
  */
  
@@ -71,11 +71,13 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       return result;
     };
 
-    this.applyLayout = function (layouts) {
-      layouts.forEach(function (column, index) {
+    this.applyLayout = function (columnDescriptors) {
+      columnDescriptors.forEach(function (columnDescriptor, index) {
         if (index < 0 || index >= columns.length) return;
-        for (var attr in column.layout.css) {
-          if (column.layout.css.hasOwnProperty(attr)) new ColumnAdapter(columns[index]).css(attr, column.layout.css[attr]);
+        var columnAdapter = new ColumnAdapter(columns[index]);
+        columns[index].reset();
+        for (var attr in columnDescriptor.layout.css) {
+          if (columnDescriptor.layout.css.hasOwnProperty(attr)) new columnAdapter.css(attr, columnDescriptor.layout.css[attr]);
         }
       });
     };
@@ -84,7 +86,13 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       columns.push({
         header: header,
         cells: [],
-        layout: { css: {} }
+        layout: { css: {} },
+        reset: function reset() {
+          this.header.removeAttr('style');
+          this.cells.forEach(function (cell) {
+            return cell.removeAttr('style');
+          });
+        }
       });
     };
 

@@ -58,13 +58,15 @@ angular.module('ui.scroll.grid', [])
         return result;
       }
 
-      this.applyLayout = function(layouts) {
-        layouts.forEach((column, index) => {
+      this.applyLayout = function(columnDescriptors) {
+        columnDescriptors.forEach((columnDescriptor, index) => {
           if (index < 0 || index >= columns.length)
             return;
-          for (var attr in column.layout.css)
-            if (column.layout.css.hasOwnProperty(attr))
-              new ColumnAdapter(columns[index]).css(attr, column.layout.css[attr]);
+          var columnAdapter = new ColumnAdapter(columns[index]);
+          columns[index].reset();
+          for (var attr in columnDescriptor.layout.css)
+            if (columnDescriptor.layout.css.hasOwnProperty(attr))
+              new columnAdapter.css(attr, columnDescriptor.layout.css[attr]);
         });
       }
 
@@ -73,7 +75,11 @@ angular.module('ui.scroll.grid', [])
           {
             header:header, 
             cells:[],
-            layout: {css: {}}
+            layout: {css: {}},
+            reset: function() {
+              this.header.removeAttr('style');
+              this.cells.forEach((cell) => cell.removeAttr('style'));
+            }
           });
       };
 
