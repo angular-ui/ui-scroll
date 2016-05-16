@@ -16,7 +16,7 @@ angular.module('ui.scroll.grid', [])
       }})
     }
 
-    function ColumnAdapter(column) {
+    function ColumnAdapter(controller, column) {
 
       this.css = function(/* attr, value */) {
         var attr = arguments[0];
@@ -33,6 +33,10 @@ angular.module('ui.scroll.grid', [])
         }
       }
 
+      this.moveBefore = function(index) {
+        controller.moveBefore(this, index);
+      }
+
     }
 
     function GridController(scope, scrollViewport) {
@@ -44,38 +48,13 @@ angular.module('ui.scroll.grid', [])
         scrollViewport.adapter.gridAdapter = new GridAdapter(this);
       });
 
-      this.getColumns = function() {
-        var result = [];
-        columns.forEach((column) => result.push(new ColumnAdapter(column)));
-        return result;
-      }
-
-      this.getLayout = function() {
-        var result = [];
-        columns.forEach((column, index) => {
-          result.push({index: index, layout: {css: angular.extend({}, column.layout.css)}});
-        });
-        return result;
-      }
-
-      this.applyLayout = function(columnDescriptors) {
-        columnDescriptors.forEach((columnDescriptor, index) => {
-          if (index < 0 || index >= columns.length)
-            return;
-          var columnAdapter = new ColumnAdapter(columns[index]);
-          columns[index].reset();
-          for (var attr in columnDescriptor.layout.css)
-            if (columnDescriptor.layout.css.hasOwnProperty(attr))
-              new columnAdapter.css(attr, columnDescriptor.layout.css[attr]);
-        });
-      }
-
       this.registerColumn = function(header) {
         columns.push(
           {
             header:header, 
             cells:[],
             layout: {css: {}},
+            mapTo: columns.length,
             reset: function() {
               this.header.removeAttr('style');
               this.cells.forEach((cell) => cell.removeAttr('style'));
@@ -99,6 +78,47 @@ angular.module('ui.scroll.grid', [])
         var index = columns[column].cells.indexOf(cell);
         columns[column].cells.splice(index,1);
       };
+
+      this.getColumns = function() {
+        var result = [];
+        columns.forEach((column) => result.push(new ColumnAdapter(this, column)));
+        return result;
+      }
+
+      this.getLayout = function() {
+        var result = [];
+        columns.forEach((column, index) => {
+          result.push({index: index, layout: {css: angular.extend({}, column.layout.css)}, mapTo: column.mapTo});
+        });
+        return result;
+      }
+
+      this.applyLayout = function(columnDescriptors) {
+        columnDescriptors.forEach((columnDescriptor, index) => {
+          if (index < 0 || index >= columns.length)
+            return;
+          var columnAdapter = new ColumnAdapter(this, columns[index]);
+          columns[index].reset();
+          for (var attr in columnDescriptor.layout.css)
+            if (columnDescriptor.layout.css.hasOwnProperty(attr))
+              new columnAdapter.css(attr, columnDescriptor.layout.css[attr]);
+        });
+      }
+
+      this.moveBefore = function(selected, index) {
+        if (index < 0 || index >= columns.length)
+          return;
+        columns.forEach((column) => {
+          if (column.mapTo >= index)
+            column.mapTo++;
+        });
+        columns.forEach((column) => {
+          if (column.mapTo > selected.mapTo)
+            column.mapTo--;
+        });
+        selected.mapTo = index;
+
+      }
 
     }
 
