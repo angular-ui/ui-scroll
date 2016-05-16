@@ -710,18 +710,15 @@ describe('uiScroll', function () {
 			});
 
 			runTest({datasource: 'myInfiniteDatasource', adapter: 'adapter'},
-				function (viewport, scope) {
+				function (viewport, scope, $timeout) {
 
 					expect(spy.calls.all().length).toBe(3); // three initial requests
 
 					scope.adapter.disabled = true;
-					scope.$digest();
-
 					viewport.scrollTop(1000); // scroll to bottom
 					viewport.trigger('scroll');
 
-					//expect($timeout.flush).toThrow();
-					expect(spy.calls.all().length).toBe(3); // nothing changes
+					expect($timeout.flush).toThrow(); // no new data fetch
 				}
 			);
 		});
@@ -736,15 +733,74 @@ describe('uiScroll', function () {
 				function (viewport, scope, $timeout) {
 
 					scope.adapter.disabled = true;
-					scope.$digest();
 					viewport.scrollTop(1000); // scroll to bottom
 					viewport.trigger('scroll');
 
 					scope.adapter.disabled = false;
-					scope.$digest(); // propagate disabled = false into scroller
 					$timeout.flush(); // here new data must be fetched
 
-					expect(spy.calls.all().length).toBe(4); // 3 + 1 requests
+					expect(spy.calls.all().length).toBe(4); // 3 initial + 1 new requests
+				}
+			);
+		});
+
+	});
+
+	describe('user min and max indexes', function () {
+
+		var viewportHeight = 120;
+		var itemHeight = 20;
+		var bufferSize = 3;
+		var userMinIndex = -100;
+		var userMaxIndex = 100;
+
+		var scrollSettings = {
+			datasource: 'myInfiniteDatasource',
+			viewportHeight: viewportHeight,
+			itemHeight: itemHeight,
+			bufferSize: bufferSize
+		};
+
+		it('should calculate bottom padding element\'s height after user max index is set', function () {
+
+			var setMaxIndex;
+			inject(function (myInfiniteDatasource) {
+				setMaxIndex = function () {
+					myInfiniteDatasource.maxIndex = userMaxIndex;
+				};
+			});
+
+			runTest(scrollSettings,
+				function (viewport, scope, $timeout) {
+					var bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
+
+					setMaxIndex();
+					$timeout.flush();
+
+					var virtualItemsAmount = userMaxIndex - (viewportHeight / itemHeight) - bufferSize;
+					expect(bottomPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
+				}
+			);
+		});
+
+		it('should calculate top padding element\'s height after user min index is set', function () {
+
+			var setMinIndex;
+			inject(function (myInfiniteDatasource) {
+				setMinIndex = function () {
+					myInfiniteDatasource.minIndex = userMinIndex;
+				};
+			});
+
+			runTest(scrollSettings,
+				function (viewport, scope, $timeout) {
+					var topPaddingElement = angular.element(viewport.children()[0]);
+
+					setMinIndex();
+					$timeout.flush();
+
+					var virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
+					expect(topPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
 				}
 			);
 		});

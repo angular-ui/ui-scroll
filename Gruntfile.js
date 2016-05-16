@@ -45,7 +45,7 @@ module.exports = function (grunt) {
           colors: true,
           configFile: './test/karma.conf.js',
           keepalive: true,
-          port: 8081,
+          port: 8082,
           runnerPort: 9100
         }
       },
