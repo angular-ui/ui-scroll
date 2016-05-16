@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-11T16:31:15.604Z
+ * Version: 1.4.1 -- 2016-05-16T13:08:59.745Z
  * License: MIT
  */
  
@@ -361,10 +361,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           buffer.first += overage;
         }
       },
-      adjustPadding: function adjustPadding(adjustScrollTop) {
-        if (!buffer.length) {
-          return;
-        }
+      adjustPadding: function adjustPadding() {
+        if (!buffer.length) return;
 
         // precise heights calculation, items that were in buffer once
         var topPaddingHeight = topPadding.cache.reduce(function (summ, item) {
@@ -374,35 +372,31 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           return summ + (item.index >= buffer.next ? item.height : 0);
         }, 0);
 
+        // average item height based on buffer data
+        var visibleItemsHeight = buffer.reduce(function (summ, item) {
+          return summ + item.element.outerHeight(true);
+        }, 0);
+        var averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
+
         // average heights calculation, items that have never been reached
-        var topPaddingHeightAdd = 0;
-        var bottomPaddingHeightAdd = 0;
         var adjustTopPadding = buffer.minIndexUser && buffer.minIndex > buffer.minIndexUser;
         var adjustBottomPadding = buffer.maxIndexUser && buffer.maxIndex < buffer.maxIndexUser;
-
-        if (adjustTopPadding || adjustBottomPadding) {
-          var visibleItemsHeight = buffer.reduce(function (summ, item) {
-            return summ + item.element.outerHeight(true);
-          }, 0);
-          var averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
-          topPaddingHeightAdd = adjustTopPadding ? (buffer.minIndex - buffer.minIndexUser) * averageItemHeight : 0;
-          bottomPaddingHeightAdd = adjustBottomPadding ? (buffer.maxIndexUser - buffer.maxIndex) * averageItemHeight : 0;
-        }
+        var topPaddingHeightAdd = adjustTopPadding ? (buffer.minIndex - buffer.minIndexUser) * averageItemHeight : 0;
+        var bottomPaddingHeightAdd = adjustBottomPadding ? (buffer.maxIndexUser - buffer.maxIndex) * averageItemHeight : 0;
 
         // paddings combine adjustment
-        var topPaddingHeightOld = topPadding.height();
         topPadding.height(topPaddingHeight + topPaddingHeightAdd);
         bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
-
+      },
+      adjustScrollTopAfterMinIndexSet: function adjustScrollTopAfterMinIndexSet(topPaddingHeightOld) {
         // additional scrollTop adjustment in case of datasource.minIndex external set
-        if (adjustScrollTop && adjustTopPadding && topPaddingHeightAdd) {
+        if (buffer.minIndexUser && buffer.minIndex > buffer.minIndexUser) {
           var diff = topPadding.height() - topPaddingHeightOld;
           viewport.scrollTop(viewport.scrollTop() + diff);
         }
       },
       adjustScrollTopAfterPrepend: function adjustScrollTopAfterPrepend(height) {
         var paddingHeight = topPadding.height() - height;
-
         if (paddingHeight >= 0) {
           topPadding.height(paddingHeight);
         } else {
@@ -579,7 +573,11 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
             $timeout(function () {
               buffer[propUserName] = value;
               if (!pending.length) {
-                viewport.adjustPadding(propName === 'minIndex');
+                var topPaddingHeightOld = viewport.topDataPos();
+                viewport.adjustPadding();
+                if (propName === 'minIndex') {
+                  viewport.adjustScrollTopAfterMinIndexSet(topPaddingHeightOld);
+                }
               }
             });
           },
@@ -817,6 +815,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     function adjustBufferAfterFetch(rid) {
       var updates = updateDOM();
+
+      viewport.adjustPadding();
 
       // We need the item bindings to be processed before we can do adjustment
       $timeout(function () {
