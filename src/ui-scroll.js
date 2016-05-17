@@ -787,6 +787,10 @@ angular.module('ui.scroll', [])
 
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
+            if (rid && rid !== ridActual || $scope.$$destroyed) {
+              return;
+            }
+
             updatePaddings(rid, updates);
             enqueueFetch(rid, true);
 
@@ -803,6 +807,10 @@ angular.module('ui.scroll', [])
 
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
+            if (rid && rid !== ridActual || $scope.$$destroyed) {
+              return;
+            }
+
             enqueueFetch(rid, updatePaddings(rid, updates));
             pending.shift();
 
