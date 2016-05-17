@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-09T16:49:23.122Z
+ * Version: 1.4.1 -- 2016-05-16T21:48:23.723Z
  * License: MIT
  */
  
@@ -26,7 +26,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       } });
   }
 
-  function ColumnAdapter(column) {
+  function ColumnAdapter(controller, column) {
 
     this.css = function () /* attr, value */{
       var attr = arguments[0];
@@ -42,6 +42,10 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
         column.layout.css[attr] = value;
       }
     };
+
+    this.moveBefore = function (index) {
+      controller.moveBefore(this, index);
+    };
   }
 
   function GridController(scope, scrollViewport) {
@@ -55,36 +59,18 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       scrollViewport.adapter.gridAdapter = new GridAdapter(_this);
     });
 
-    this.getColumns = function () {
-      var result = [];
-      columns.forEach(function (column) {
-        return result.push(new ColumnAdapter(column));
-      });
-      return result;
-    };
-
-    this.getLayout = function () {
-      var result = [];
-      columns.forEach(function (column, index) {
-        result.push({ index: index, layout: { css: angular.extend({}, column.layout.css) } });
-      });
-      return result;
-    };
-
-    this.applyLayout = function (layouts) {
-      layouts.forEach(function (column, index) {
-        if (index < 0 || index >= columns.length) return;
-        for (var attr in column.layout.css) {
-          if (column.layout.css.hasOwnProperty(attr)) new ColumnAdapter(columns[index]).css(attr, column.layout.css[attr]);
-        }
-      });
-    };
-
     this.registerColumn = function (header) {
       columns.push({
         header: header,
         cells: [],
-        layout: { css: {} }
+        layout: { css: {} },
+        mapTo: columns.length,
+        reset: function reset() {
+          this.header.removeAttr('style');
+          this.cells.forEach(function (cell) {
+            return cell.removeAttr('style');
+          });
+        }
       });
     };
 
@@ -103,6 +89,48 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     this.unregisterCell = function (column, cell) {
       var index = columns[column].cells.indexOf(cell);
       columns[column].cells.splice(index, 1);
+    };
+
+    this.getColumns = function () {
+      var _this2 = this;
+
+      var result = [];
+      columns.forEach(function (column) {
+        return result.push(new ColumnAdapter(_this2, column));
+      });
+      return result;
+    };
+
+    this.getLayout = function () {
+      var result = [];
+      columns.forEach(function (column, index) {
+        result.push({ index: index, layout: { css: angular.extend({}, column.layout.css) }, mapTo: column.mapTo });
+      });
+      return result;
+    };
+
+    this.applyLayout = function (columnDescriptors) {
+      var _this3 = this;
+
+      columnDescriptors.forEach(function (columnDescriptor, index) {
+        if (index < 0 || index >= columns.length) return;
+        var columnAdapter = new ColumnAdapter(_this3, columns[index]);
+        columns[index].reset();
+        for (var attr in columnDescriptor.layout.css) {
+          if (columnDescriptor.layout.css.hasOwnProperty(attr)) new columnAdapter.css(attr, columnDescriptor.layout.css[attr]);
+        }
+      });
+    };
+
+    this.moveBefore = function (selected, index) {
+      if (index < 0 || index >= columns.length) return;
+      columns.forEach(function (column) {
+        if (column.mapTo >= index) column.mapTo++;
+      });
+      columns.forEach(function (column) {
+        if (column.mapTo > selected.mapTo) column.mapTo--;
+      });
+      selected.mapTo = index;
     };
   }
 
