@@ -761,6 +761,10 @@ angular.module('ui.scroll', [])
         }
 
         function enqueueFetch(rid, keepFetching) {
+          if (rid && rid !== ridActual || $scope.$$destroyed) {
+            return;
+          }
+
           if (viewport.shouldLoadBottom() && keepFetching) {
                 // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
             if (pending.push(true) === 1) {
