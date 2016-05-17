@@ -70,7 +70,7 @@ var createGridHtml = function(settings) {
             '</table>';
     return html;
 
-}
+};
 
 var runGridTest = function (scrollSettings, run, options) {
     inject(function ($rootScope, $compile, $window, $timeout) {

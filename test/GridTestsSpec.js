@@ -1,4 +1,4 @@
-/*global describe, beforeEach, module, inject, it, spyOn, expect, runTest */
+/*global describe, beforeEach, module, it, expect, runGridTest */
 describe('uiScroll', function () {
     'use strict';
 

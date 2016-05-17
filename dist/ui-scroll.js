@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-16T21:48:23.723Z
+ * Version: 1.4.1 -- 2016-05-17T15:02:37.211Z
  * License: MIT
  */
  
@@ -214,8 +214,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   function Viewport(buffer, element, viewportController, attrs) {
     var PADDING_MIN = 0.3;
     var PADDING_DEFAULT = 0.5;
-    var topPadding = void 0;
-    var bottomPadding = void 0;
+    var topPadding = undefined;
+    var bottomPadding = undefined;
     var viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
     var container = viewportController && viewportController.container ? viewportController.container : undefined;
 
@@ -250,7 +250,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function Padding(template) {
-      var result = void 0;
+      var result = undefined;
 
       switch (template.tagName) {
         case 'dl':
@@ -443,7 +443,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         return;
       }
 
-      var keepIt = void 0;
+      var keepIt = undefined;
       var pos = buffer.indexOf(wrapper) + 1;
 
       newItems.reverse().forEach(function (newItem) {
@@ -500,11 +500,11 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     };
 
     this.calculateProperties = function () {
-      var item = void 0,
-          itemHeight = void 0,
-          itemTop = void 0,
-          isNewRow = void 0,
-          rowTop = void 0;
+      var item = undefined,
+          itemHeight = undefined,
+          itemTop = undefined,
+          isNewRow = undefined,
+          rowTop = undefined;
       var topHeight = 0;
       for (var i = 0; i < buffer.length; i++) {
         item = buffer[i];
@@ -644,6 +644,10 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     /* Function definitions */
 
+    function isInvalid(rid) {
+      return rid && rid !== ridActual || $scope.$$destroyed;
+    }
+
     function bindEvents() {
       viewport.bind('resize', resizeAndScrollHandler);
       viewport.bind('scroll', resizeAndScrollHandler);
@@ -692,7 +696,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function createElement(wrapper, insertAfter, insertElement) {
-      var promises = void 0;
+      var promises = undefined;
       var sibling = insertAfter > 0 ? buffer[insertAfter - 1].element : undefined;
       linker(function (clone, scope) {
         promises = insertElement(clone, sibling);
@@ -804,6 +808,10 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       // We need the item bindings to be processed before we can do adjustment
       $timeout(function () {
+        if (isInvalid(rid)) {
+          return;
+        }
+
         updatePaddings(rid, updates);
         enqueueFetch(rid, true);
 
@@ -820,6 +828,10 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       // We need the item bindings to be processed before we can do adjustment
       $timeout(function () {
+        if (isInvalid(rid)) {
+          return;
+        }
+
         enqueueFetch(rid, updatePaddings(rid, updates));
         pending.shift();
 
@@ -838,7 +850,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           adjustBufferAfterFetch(rid);
         } else {
           fetchNext(function (result) {
-            if (rid && rid !== ridActual || $scope.$$destroyed) {
+            if (isInvalid(rid)) {
               return;
             }
 
@@ -861,7 +873,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           adjustBufferAfterFetch(rid);
         } else {
           fetchPrevious(function (result) {
-            if (rid && rid !== ridActual || $scope.$$destroyed) {
+            if (isInvalid(rid)) {
               return;
             }
 

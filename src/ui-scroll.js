@@ -630,6 +630,10 @@ angular.module('ui.scroll', [])
 
         /* Function definitions */
 
+        function isInvalid(rid) {
+          return (rid && rid !== ridActual) || $scope.$$destroyed;
+        }
+
         function bindEvents() {
           viewport.bind('resize', resizeAndScrollHandler);
           viewport.bind('scroll', resizeAndScrollHandler);
@@ -787,7 +791,7 @@ angular.module('ui.scroll', [])
 
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
-            if (rid && rid !== ridActual || $scope.$$destroyed) {
+            if (isInvalid(rid)) {
               return;
             }
 
@@ -807,14 +811,14 @@ angular.module('ui.scroll', [])
 
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
-            if (rid && rid !== ridActual || $scope.$$destroyed) {
+            if (isInvalid(rid)) {
               return;
             }
-
+            
             enqueueFetch(rid, updatePaddings(rid, updates));
             pending.shift();
 
-            if (pending.length) 
+            if (pending.length)
               fetch(rid);
             else {
               adapter.loading(false);
@@ -830,7 +834,7 @@ angular.module('ui.scroll', [])
               adjustBufferAfterFetch(rid);
             } else {
               fetchNext((result) => {
-                if ((rid && rid !== ridActual) || $scope.$$destroyed) {
+                if (isInvalid(rid)) {
                   return;
                 }
 
@@ -852,7 +856,7 @@ angular.module('ui.scroll', [])
               adjustBufferAfterFetch(rid);
             } else {
               fetchPrevious((result) => {
-                if ((rid && rid !== ridActual) || $scope.$$destroyed) {
+                if (isInvalid(rid)) {
                   return;
                 }
 
