@@ -313,3 +313,23 @@
   background-color: #e6e6e6;
 }
 /*!viewport*/
+.chat {
+  height: 300px;
+  padding-left: 10px;
+}
+.chat .item {
+  height: 50px;
+  list-style-type: none;
+  border: 0 dotted #ddd;
+  border-bottom-width: 1px;
+}
+.chat .item .number {
+  font-weight: bolder;
+}
+.chat .item .text {
+  margin-left: 10px;
+  font-style: italic;
+}
+.chat .item:last-child {
+  border-bottom-width: 0;
+}
