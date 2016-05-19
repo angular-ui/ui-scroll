@@ -43,6 +43,11 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'
 				return indexes;
 			}
 
+			$scope.click = function (evt) {
+				console.log(evt);
+				console.log($scope.adapter.gridAdapter.columnFromPoint(evt.clientX, evt.clientY));
+			}
+
 			$scope.onSortEnd = function () {
 				var target;
 				for (var i = 0; i < $scope.headers.length; i++) {

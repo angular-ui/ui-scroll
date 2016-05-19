@@ -104,11 +104,25 @@ describe('uiScroll', function () {
             );
         });
 
-        it('column mappings should reflect 0 -> 1 move', function () {
+        it('column mappings should reflect 0 -> 1 move (it is a noop)', function () {
             runGridTest(scrollSettings,
                 function (viewport, scope, $timeout) {
                     $timeout.flush();
                     scope.adapter.gridAdapter.columns[0].moveBefore(1);
+                    var layout = scope.adapter.gridAdapter.getLayout();
+                    expect(layout[0].mapTo).toBe(0);
+                    expect(layout[1].mapTo).toBe(1);
+                    expect(layout[2].mapTo).toBe(2);
+                    expect(layout[3].mapTo).toBe(3);
+                }
+            );
+        });
+
+        it('column mappings should reflect 2 -> 2 move (it is a noop)', function () {
+            runGridTest(scrollSettings,
+                function (viewport, scope, $timeout) {
+                    $timeout.flush();
+                    scope.adapter.gridAdapter.columns[2].moveBefore(2);
                     var layout = scope.adapter.gridAdapter.getLayout();
                     expect(layout[0].mapTo).toBe(0);
                     expect(layout[1].mapTo).toBe(1);

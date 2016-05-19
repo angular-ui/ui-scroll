@@ -7,6 +7,8 @@ angular.module('ui.scroll.grid', [])
 
       this.applyLayout = (layout) => controller.applyLayout(layout);
 
+      this.columnFromPoint = (x,y) => controller.columnFromPoint(x,y);
+
       Object.defineProperty(this, 'columns', {get: () => controller.getColumns()});
     }
 
@@ -34,6 +36,37 @@ angular.module('ui.scroll.grid', [])
       };
     }
 
+    function ColumnController(columns, header) {
+
+      this.header = header;
+      this.cells = [];
+      this.layout = {css: {}};
+      this.mapTo = columns.length;
+      
+      this.reset = function () {
+        this.header.removeAttr('style');
+        this.cells.forEach((cell) => cell.removeAttr('style'));
+      };
+
+      this.moveBefore = function (nextTo) {
+
+      }
+
+      function insidePoint(element, x,y) {
+        let offset = element.offset();
+        if (x < offset.left || offset.left + element.outerWidth(true) < x )
+          return false;
+        if (y < offset.top || offset.top + element.outerHeight(true) < y )
+          return false;
+        return true;
+      }
+
+      this.columnFromPoint = function (x,y) {
+        if (insidePoint(header, x,y))
+          return this;
+      } 
+    }
+
     function GridController(scope, scrollViewport) {
       let columns = [];
       let current;
@@ -42,18 +75,7 @@ angular.module('ui.scroll.grid', [])
       $timeout(() => scrollViewport.adapter.gridAdapter = new GridAdapter(this));
 
       this.registerColumn = function (header) {
-        columns.push(
-          {
-            header: header,
-            cells: [],
-            layout: {css: {}},
-            mapTo: columns.length,
-            index: columns.length,
-            reset: function () {
-              this.header.removeAttr('style');
-              this.cells.forEach((cell) => cell.removeAttr('style'));
-            }
-          });
+        columns.push(new ColumnController(columns, header));
       };
 
       this.applyCss = function (target, css) {
@@ -135,7 +157,16 @@ angular.module('ui.scroll.grid', [])
           return;
         columns.find(c => c.mapTo === index).mapTo = selected.mapTo;
         selected.mapTo = index;
-      }
+      };
+
+      this.columnFromPoint = function(x,y) {
+        for (let i=0; i<columns.length; i++) {
+          var column = columns[i].columnFromPoint(x,y);
+          if (column)
+            break;
+        }
+        return column;
+      };
     }
 
     return {

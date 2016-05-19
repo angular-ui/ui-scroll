@@ -26,14 +26,14 @@
 
 	</div>
 
-	<table class="grid" ui-scroll-viewport>
+	<table class="grid" ui-scroll-viewport ng-click="click($event)">
 		<thead style="display:block">
 		<tr dnd-sortable-list="headers" >
 			<th ng-repeat="item in headers"
 				class="col{{item.index + 1}}"
 				ui-scroll-th
 				dnd-sortable
-				dnd-on-sortend="onSortEnd()">
+				dnd-on-sortend="onSortEnd($event)">
 				{{item.name}}
 			</th>
 		</tr>

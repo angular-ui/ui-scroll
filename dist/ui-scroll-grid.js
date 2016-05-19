@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-19T17:17:54.024Z
+ * Version: 1.4.1 -- 2016-05-19T20:39:10.323Z
  * License: MIT
  */
  
@@ -19,6 +19,10 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     this.applyLayout = function (layout) {
       return controller.applyLayout(layout);
+    };
+
+    this.columnFromPoint = function (x, y) {
+      return controller.columnFromPoint(x, y);
     };
 
     Object.defineProperty(this, 'columns', { get: function get() {
@@ -52,6 +56,34 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     };
   }
 
+  function ColumnController(columns, header) {
+
+    this.header = header;
+    this.cells = [];
+    this.layout = { css: {} };
+    this.mapTo = columns.length;
+
+    this.reset = function () {
+      this.header.removeAttr('style');
+      this.cells.forEach(function (cell) {
+        return cell.removeAttr('style');
+      });
+    };
+
+    this.moveBefore = function (nextTo) {};
+
+    function insidePoint(element, x, y) {
+      var offset = element.offset();
+      if (x < offset.left || offset.left + element.outerWidth(true) < x) return false;
+      if (y < offset.top || offset.top + element.outerHeight(true) < y) return false;
+      return true;
+    }
+
+    this.columnFromPoint = function (x, y) {
+      if (insidePoint(header, x, y)) return this;
+    };
+  }
+
   function GridController(scope, scrollViewport) {
     var _this = this;
 
@@ -64,19 +96,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     });
 
     this.registerColumn = function (header) {
-      columns.push({
-        header: header,
-        cells: [],
-        layout: { css: {} },
-        mapTo: columns.length,
-        index: columns.length,
-        reset: function reset() {
-          this.header.removeAttr('style');
-          this.cells.forEach(function (cell) {
-            return cell.removeAttr('style');
-          });
-        }
-      });
+      columns.push(new ColumnController(columns, header));
     };
 
     this.applyCss = function (target, css) {
@@ -167,6 +187,14 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
         return c.mapTo === index;
       }).mapTo = selected.mapTo;
       selected.mapTo = index;
+    };
+
+    this.columnFromPoint = function (x, y) {
+      for (var i = 0; i < columns.length; i++) {
+        var column = columns[i].columnFromPoint(x, y);
+        if (column) break;
+      }
+      return column;
     };
   }
 
