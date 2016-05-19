@@ -27,7 +27,11 @@ angular.module('ui.scroll.grid', [])
 
       this.moveBefore = function (index) {
         controller.moveBefore(this, index);
-      }
+      };
+
+      this.exchangeWith = function (index) {
+        controller.exchangeWith(column, index);
+      };
     }
 
     function GridController(scope, scrollViewport) {
@@ -117,8 +121,14 @@ angular.module('ui.scroll.grid', [])
             column.mapTo--;
         });
         selected.mapTo = index;
-      }
+      };
 
+      this.exchangeWith = function (selected, index) {
+        if (index < 0 || index >= columns.length)
+          return;
+        columns.find(c => c.mapTo === index).mapTo = selected.mapTo;
+        selected.mapTo = index;
+      }
     }
 
     return {
