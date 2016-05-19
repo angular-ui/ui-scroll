@@ -64,6 +64,9 @@ angular.module('ui.scroll.grid', [])
       this.columnFromPoint = function (x,y) {
         if (insidePoint(header, x,y))
           return this;
+        for (let i=0; i<this.cells.length; i++)
+          if (insidePoint(this.cells[i], x,y))
+            return this;
       } 
     }
 

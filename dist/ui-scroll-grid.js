@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-19T20:39:10.323Z
+ * Version: 1.4.1 -- 2016-05-19T20:45:35.128Z
  * License: MIT
  */
  
@@ -81,6 +81,9 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     this.columnFromPoint = function (x, y) {
       if (insidePoint(header, x, y)) return this;
+      for (var i = 0; i < this.cells.length; i++) {
+        if (insidePoint(this.cells[i], x, y)) return this;
+      }
     };
   }
 
