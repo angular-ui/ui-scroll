@@ -26,7 +26,7 @@ angular.module('ui.scroll.grid', [])
       };
 
       this.moveBefore = function (index) {
-        controller.moveBefore(this, index);
+        controller.moveBefore(column, index);
       };
 
       this.exchangeWith = function (index) {
@@ -48,6 +48,7 @@ angular.module('ui.scroll.grid', [])
             cells: [],
             layout: {css: {}},
             mapTo: columns.length,
+            index: columns.length,
             reset: function () {
               this.header.removeAttr('style');
               this.cells.forEach((cell) => cell.removeAttr('style'));
@@ -81,7 +82,8 @@ angular.module('ui.scroll.grid', [])
 
       this.getColumns = function () {
         let result = [];
-        columns.forEach((column) => result.push(new ColumnAdapter(this, column)));
+        columns.slice().sort((a,b) => {return a.mapTo - b.mapTo;})
+          .forEach((column) => result.push(new ColumnAdapter(this, column)));
         return result;
       };
 
@@ -110,17 +112,22 @@ angular.module('ui.scroll.grid', [])
       };
 
       this.moveBefore = function (selected, index) {
-        if (index < 0 || index >= columns.length)
-          return;
-        columns.forEach((column) => {
-          if (column.mapTo >= index)
-            column.mapTo++;
-        });
-        columns.forEach((column) => {
-          if (column.mapTo > selected.mapTo)
-            column.mapTo--;
-        });
-        selected.mapTo = index;
+        if (index < 0)
+          return; // throw an error?
+
+        let visible = columns.slice().sort((a,b) => {return a.mapTo - b.mapTo;})
+
+        // remove selected from the old position
+        visible.splice(selected.mapTo, 1);
+
+        if (selected.mapTo < index)
+          index--;
+
+        // insert selected in the new position
+        visible.splice(index, 0, selected);
+
+        visible.forEach((column, index) => {column.mapTo = index;})
+
       };
 
       this.exchangeWith = function (selected, index) {

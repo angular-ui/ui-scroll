@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-19T13:02:22.068Z
+ * Version: 1.4.1 -- 2016-05-19T17:17:54.024Z
  * License: MIT
  */
  
@@ -44,7 +44,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     };
 
     this.moveBefore = function (index) {
-      controller.moveBefore(this, index);
+      controller.moveBefore(column, index);
     };
 
     this.exchangeWith = function (index) {
@@ -56,8 +56,8 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     var _this = this;
 
     var columns = [];
-    var current = undefined;
-    var index = undefined;
+    var current = void 0;
+    var index = void 0;
 
     $timeout(function () {
       return scrollViewport.adapter.gridAdapter = new GridAdapter(_this);
@@ -69,6 +69,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
         cells: [],
         layout: { css: {} },
         mapTo: columns.length,
+        index: columns.length,
         reset: function reset() {
           this.header.removeAttr('style');
           this.cells.forEach(function (cell) {
@@ -106,7 +107,9 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       var _this2 = this;
 
       var result = [];
-      columns.forEach(function (column) {
+      columns.slice().sort(function (a, b) {
+        return a.mapTo - b.mapTo;
+      }).forEach(function (column) {
         return result.push(new ColumnAdapter(_this2, column));
       });
       return result;
@@ -139,14 +142,23 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     };
 
     this.moveBefore = function (selected, index) {
-      if (index < 0 || index >= columns.length) return;
-      columns.forEach(function (column) {
-        if (column.mapTo >= index) column.mapTo++;
+      if (index < 0) return; // throw an error?
+
+      var visible = columns.slice().sort(function (a, b) {
+        return a.mapTo - b.mapTo;
       });
-      columns.forEach(function (column) {
-        if (column.mapTo > selected.mapTo) column.mapTo--;
+
+      // remove selected from the old position
+      visible.splice(selected.mapTo, 1);
+
+      if (selected.mapTo < index) index--;
+
+      // insert selected in the new position
+      visible.splice(index, 0, selected);
+
+      visible.forEach(function (column, index) {
+        column.mapTo = index;
       });
-      selected.mapTo = index;
     };
 
     this.exchangeWith = function (selected, index) {
