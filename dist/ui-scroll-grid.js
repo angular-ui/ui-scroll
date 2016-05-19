@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-18T23:24:55.895Z
+ * Version: 1.4.1 -- 2016-05-19T13:02:22.068Z
  * License: MIT
  */
  
@@ -45,6 +45,10 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     this.moveBefore = function (index) {
       controller.moveBefore(this, index);
+    };
+
+    this.exchangeWith = function (index) {
+      controller.exchangeWith(column, index);
     };
   }
 
@@ -142,6 +146,14 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       columns.forEach(function (column) {
         if (column.mapTo > selected.mapTo) column.mapTo--;
       });
+      selected.mapTo = index;
+    };
+
+    this.exchangeWith = function (selected, index) {
+      if (index < 0 || index >= columns.length) return;
+      columns.find(function (c) {
+        return c.mapTo === index;
+      }).mapTo = selected.mapTo;
       selected.mapTo = index;
     };
   }
