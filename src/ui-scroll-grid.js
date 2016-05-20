@@ -157,33 +157,25 @@ angular.module('ui.scroll.grid', [])
       };
 
       this.moveBefore = function (selected, target) {
-        
         let index = target;
 
-        if (target%1 !== 0)
-          if (target)
-            index = columns[target.columnId].mapTo;
-          else
-            index = columns.length;
+        if (target % 1 !== 0)
+          index = target ? columns[target.columnId].mapTo : columns.length;
 
-        if (index < 0)
+        if (index < 0 || index > columns.length)
           return; // throw an error?
 
-        let visible = columns.slice().sort((a,b) => {return a.mapTo - b.mapTo;})
+        let mapTo = selected.mapTo, next;
+        index -= mapTo < index ? 1 : 0;
 
-        // remove selected from the old position
-        visible.splice(selected.mapTo, 1);
+        columns.forEach(c => {
+          c.mapTo -= c.mapTo > mapTo ? 1 : 0;
+          c.mapTo += c.mapTo >= index ? 1 : 0;
+          next = c.mapTo === index + 1 ? c : next;
+        });
 
-        if (selected.mapTo < index)
-          index--;
-
-        // insert selected in the new position
-        visible.splice(index, 0, selected);
-
-        visible.forEach((column, i) => {column.mapTo = i;})
-
-        selected.moveBefore(visible[index+1]); // if index >= visisble.length the argument will be undefined as intended
-
+        selected.mapTo = index;
+        selected.moveBefore(next);
       };
 
       this.exchangeWith = function (selected, index) {
