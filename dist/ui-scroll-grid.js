@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-20T16:06:28.403Z
+ * Version: 1.4.1 -- 2016-05-20T21:24:05.127Z
  * License: MIT
  */
  
@@ -75,7 +75,17 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       });
     };
 
-    this.moveBefore = function (nextTo) {};
+    function moveBefore(element, target) {
+      element.detach();
+      target.before(element);
+    }
+
+    this.moveBefore = function (target) {
+      moveBefore(header, target.header);
+      this.cells.forEach(function (cell, i) {
+        return moveBefore(cell, target.cells[i]);
+      });
+    };
 
     function insidePoint(element, x, y) {
       var offset = element.offset();
@@ -169,7 +179,12 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       });
     };
 
-    this.moveBefore = function (selected, index) {
+    this.moveBefore = function (selected, target) {
+
+      var index = target;
+
+      if (target % 1 !== 0) if (target) index = columns[target.columnId].mapTo;else index = columns.length;
+
       if (index < 0) return; // throw an error?
 
       var visible = columns.slice().sort(function (a, b) {
@@ -184,9 +199,11 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       // insert selected in the new position
       visible.splice(index, 0, selected);
 
-      visible.forEach(function (column, index) {
-        column.mapTo = index;
+      visible.forEach(function (column, i) {
+        column.mapTo = i;
       });
+
+      selected.moveBefore(visible[index + 1]); // if index >= visisble.length the argument will be undefined as intended
     };
 
     this.exchangeWith = function (selected, index) {

@@ -44,15 +44,28 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'
 			}
 
 			$scope.dragStart = function (evt) {
-				let column = $scope.adapter.gridAdapter.columnFromPoint(evt.clientX, evt.clientY); 
-				evt.dataTransfer.setData('application/x-data', column);
-				console.log(column.columnId);
+				let column = $scope.adapter.gridAdapter.columnFromPoint(evt.clientX, evt.clientY);
+
+				evt.dataTransfer.setData('application/x-data', 
+					$scope.adapter.gridAdapter.columns.findIndex((c) => c.columnId === column.columnId)	
+				);
+//				evt.dataTransfer.effectAllowed = "move";
+//				console.log(column.columnId);
+			}
+
+			$scope.dragOver = function (evt) {
+				evt.preventDefault();
+//				evt.dataTransfer.dropEffect = "move";
+//				console.log(column.columnId);
+				return false;
 			}
 
 			$scope.dragDrop = function (evt) {
-				let column = $scope.adapter.gridAdapter.columnFromPoint(evt.clientX, evt.clientY); 
+				let target = $scope.adapter.gridAdapter.columnFromPoint(evt.clientX, evt.clientY); 
+				let column = $scope.adapter.gridAdapter.columns[evt.dataTransfer.getData('application/x-data')];
+				column.moveBefore(target);
 				console.log(evt.dataTransfer);//.setData('application/x-data', column);
-				console.log(column.columnId);
+//				console.log(column.columnId);
 			}
 
 			$scope.onSortEnd = function () {

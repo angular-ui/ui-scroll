@@ -32,7 +32,7 @@
 			<th ng-repeat="item in headers"
 				draggable="true" 
 					ondragstart="angular.element(arguments[0].currentTarget).scope().dragStart(arguments[0])"
-					ondragover="return false"
+					ondragover="angular.element(arguments[0].currentTarget).scope().dragOver(arguments[0])"
 					ondrop="angular.element(arguments[0].currentTarget).scope().dragDrop(arguments[0])"
 				class="col{{item.index + 1}}"
 				ui-scroll-th

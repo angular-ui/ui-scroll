@@ -76,6 +76,20 @@ describe('uiScroll', function () {
             );
         });
 
+        it('column mappings should reflect 1 -> 0 move', function () {
+            runGridTest(scrollSettings,
+                function (viewport, scope, $timeout) {
+                    $timeout.flush();
+                    scope.adapter.gridAdapter.columns[1].moveBefore(scope.adapter.gridAdapter.columns[0]);
+                    var layout = scope.adapter.gridAdapter.getLayout();
+                    expect(layout[0].mapTo).toBe(1);
+                    expect(layout[1].mapTo).toBe(0);
+                    expect(layout[2].mapTo).toBe(2);
+                    expect(layout[3].mapTo).toBe(3);
+                }
+            );
+        });
+
         it('column mappings should reflect 3 -> 0 move', function () {
             runGridTest(scrollSettings,
                 function (viewport, scope, $timeout) {

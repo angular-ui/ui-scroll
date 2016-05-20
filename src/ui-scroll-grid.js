@@ -51,8 +51,14 @@ angular.module('ui.scroll.grid', [])
         this.cells.forEach((cell) => cell.removeAttr('style'));
       };
 
-      this.moveBefore = function (nextTo) {
+      function moveBefore(element, target) {
+        element.detach();
+        target.before(element);
+      }
 
+      this.moveBefore = function(target) {
+        moveBefore(header, target.header);
+        this.cells.forEach((cell, i) => moveBefore(cell, target.cells[i]))
       }
 
       function insidePoint(element, x,y) {
@@ -139,7 +145,16 @@ angular.module('ui.scroll.grid', [])
         });
       };
 
-      this.moveBefore = function (selected, index) {
+      this.moveBefore = function (selected, target) {
+        
+        let index = target;
+
+        if (target%1 !== 0)
+          if (target)
+            index = columns[target.columnId].mapTo;
+          else
+            index = columns.length;
+
         if (index < 0)
           return; // throw an error?
 
@@ -154,7 +169,9 @@ angular.module('ui.scroll.grid', [])
         // insert selected in the new position
         visible.splice(index, 0, selected);
 
-        visible.forEach((column, index) => {column.mapTo = index;})
+        visible.forEach((column, i) => {column.mapTo = i;})
+
+        selected.moveBefore(visible[index+1]); // if index >= visisble.length the argument will be undefined as intended
 
       };
 
