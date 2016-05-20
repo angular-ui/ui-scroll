@@ -1,4 +1,4 @@
-angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid', 'dnd'])
+angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'])
 	.controller('gridController', [
 		'$scope', '$log', '$timeout', function ($scope, console, $timeout) {
 			var datasource = {};
@@ -33,16 +33,6 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'
 				sortable: true
 			}];
 
-			var indexes = getIndexes();
-
-			function getIndexes() {
-				var indexes = [];
-				for (var i = 0; i < $scope.headers.length - 1; i++) {
-					indexes.push($scope.headers[i].index);
-				}
-				return indexes;
-			}
-
 			$scope.dragStart = function (evt) {
 				let column = $scope.adapter.gridAdapter.columnFromPoint(evt.clientX, evt.clientY);
 
@@ -67,21 +57,6 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'
 				console.log(evt.dataTransfer);//.setData('application/x-data', column);
 //				console.log(column.columnId);
 			}
-
-			$scope.onSortEnd = function () {
-				var target;
-				for (var i = 0; i < $scope.headers.length; i++) {
-					var index = $scope.headers[i].index;
-					if (index !== indexes[i]) {
-						if(target) {
-							target.exchangeWith(index);
-							break;
-						}
-						target = $scope.adapter.gridAdapter.columns[index];
-					}
-				}
-				indexes = getIndexes();
-			};
 
 		}
 	]);
