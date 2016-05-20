@@ -34,6 +34,8 @@ angular.module('ui.scroll.grid', [])
       this.exchangeWith = function (index) {
         controller.exchangeWith(column, index);
       };
+
+      Object.defineProperty(this, 'columnId', {get: () => column.id})
     }
 
     function ColumnController(columns, header) {
@@ -42,6 +44,7 @@ angular.module('ui.scroll.grid', [])
       this.cells = [];
       this.layout = {css: {}};
       this.mapTo = columns.length;
+      this.id = columns.length;
       
       this.reset = function () {
         this.header.removeAttr('style');
@@ -168,7 +171,9 @@ angular.module('ui.scroll.grid', [])
           if (column)
             break;
         }
-        return column;
+        if (column)
+          return new ColumnAdapter(this, column);
+        return undefined;
       };
     }
 

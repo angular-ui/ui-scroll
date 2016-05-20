@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-19T20:45:35.128Z
+ * Version: 1.4.1 -- 2016-05-20T16:06:28.403Z
  * License: MIT
  */
  
@@ -54,6 +54,10 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     this.exchangeWith = function (index) {
       controller.exchangeWith(column, index);
     };
+
+    Object.defineProperty(this, 'columnId', { get: function get() {
+        return column.id;
+      } });
   }
 
   function ColumnController(columns, header) {
@@ -62,6 +66,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     this.cells = [];
     this.layout = { css: {} };
     this.mapTo = columns.length;
+    this.id = columns.length;
 
     this.reset = function () {
       this.header.removeAttr('style');
@@ -197,7 +202,8 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
         var column = columns[i].columnFromPoint(x, y);
         if (column) break;
       }
-      return column;
+      if (column) return new ColumnAdapter(this, column);
+      return undefined;
     };
   }
 

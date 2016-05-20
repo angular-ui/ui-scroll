@@ -43,9 +43,16 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'
 				return indexes;
 			}
 
-			$scope.click = function (evt) {
-				console.log(evt);
-				console.log($scope.adapter.gridAdapter.columnFromPoint(evt.clientX, evt.clientY));
+			$scope.dragStart = function (evt) {
+				let column = $scope.adapter.gridAdapter.columnFromPoint(evt.clientX, evt.clientY); 
+				evt.dataTransfer.setData('application/x-data', column);
+				console.log(column.columnId);
+			}
+
+			$scope.dragDrop = function (evt) {
+				let column = $scope.adapter.gridAdapter.columnFromPoint(evt.clientX, evt.clientY); 
+				console.log(evt.dataTransfer);//.setData('application/x-data', column);
+				console.log(column.columnId);
 			}
 
 			$scope.onSortEnd = function () {

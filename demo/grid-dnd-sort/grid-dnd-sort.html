@@ -26,10 +26,14 @@
 
 	</div>
 
-	<table class="grid" ui-scroll-viewport ng-click="click($event)">
+	<table class="grid" ui-scroll-viewport>
 		<thead style="display:block">
 		<tr dnd-sortable-list="headers" >
 			<th ng-repeat="item in headers"
+				draggable="true" 
+					ondragstart="angular.element(arguments[0].currentTarget).scope().dragStart(arguments[0])"
+					ondragover="return false"
+					ondrop="angular.element(arguments[0].currentTarget).scope().dragDrop(arguments[0])"
 				class="col{{item.index + 1}}"
 				ui-scroll-th
 				dnd-sortable
