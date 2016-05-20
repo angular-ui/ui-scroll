@@ -56,9 +56,20 @@ angular.module('ui.scroll.grid', [])
         target.before(element);
       }
 
+      function moveLast(element, target) {
+        let parent = element.parent();
+        element.detach();
+        parent.append(element);
+      }
+
       this.moveBefore = function(target) {
-        moveBefore(header, target.header);
-        this.cells.forEach((cell, i) => moveBefore(cell, target.cells[i]))
+        if (target) {
+          moveBefore(header, target.header);
+          this.cells.forEach((cell, i) => moveBefore(cell, target.cells[i]))
+        } else {
+          moveLast(header);
+          this.cells.forEach((cell) => moveLast(cell));
+        }
       }
 
       function insidePoint(element, x,y) {

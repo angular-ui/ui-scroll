@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-20T21:24:05.127Z
+ * Version: 1.4.1 -- 2016-05-20T21:33:46.554Z
  * License: MIT
  */
  
@@ -80,11 +80,24 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       target.before(element);
     }
 
+    function moveLast(element, target) {
+      var parent = element.parent();
+      element.detach();
+      parent.append(element);
+    }
+
     this.moveBefore = function (target) {
-      moveBefore(header, target.header);
-      this.cells.forEach(function (cell, i) {
-        return moveBefore(cell, target.cells[i]);
-      });
+      if (target) {
+        moveBefore(header, target.header);
+        this.cells.forEach(function (cell, i) {
+          return moveBefore(cell, target.cells[i]);
+        });
+      } else {
+        moveLast(header);
+        this.cells.forEach(function (cell) {
+          return moveLast(cell);
+        });
+      }
     };
 
     function insidePoint(element, x, y) {
