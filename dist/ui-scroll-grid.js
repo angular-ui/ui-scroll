@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-20T21:33:46.554Z
+ * Version: 1.4.1 -- 2016-05-23T19:02:24.849Z
  * License: MIT
  */
  
@@ -119,12 +119,21 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     var _this = this;
 
     var columns = [];
+    var rowMap = new Map();
     var current = void 0;
     var index = void 0;
 
     $timeout(function () {
-      return scrollViewport.adapter.gridAdapter = new GridAdapter(_this);
+      scrollViewport.adapter.gridAdapter = new GridAdapter(_this);
+      scrollViewport.adapter.transform = function (item) {
+        return transform(item);
+      };
     });
+
+    function transform(item) {
+      console.log(item);
+      console.log(rowMap.size);
+    }
 
     this.registerColumn = function (header) {
       columns.push(new ColumnController(columns, header));
@@ -143,15 +152,26 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       }
       if (index < columns.length) {
         columns[index].cells.push(cell);
+        var row = rowMap.get(scope);
+        if (!row) {
+          row = [];
+          rowMap.set(scope, row);
+        }
+        row[index] = cell;
         this.applyCss(cell, columns[index].layout.css);
         return index++;
       }
       return -1;
     };
 
-    this.unregisterCell = function (column, cell) {
+    this.unregisterCell = function (scope, column, cell) {
       var index = columns[column].cells.indexOf(cell);
       columns[column].cells.splice(index, 1);
+
+      var row = rowMap.get(scope);
+      var i = row.indexOf(cell);
+      row.splice(i, 1);
+      if (!row.length) rowMap.delete(scope);
     };
 
     this.getColumns = function () {
@@ -193,30 +213,24 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     };
 
     this.moveBefore = function (selected, target) {
-
       var index = target;
 
-      if (target % 1 !== 0) if (target) index = columns[target.columnId].mapTo;else index = columns.length;
+      if (target % 1 !== 0) index = target ? columns[target.columnId].mapTo : columns.length;
 
-      if (index < 0) return; // throw an error?
+      if (index < 0 || index > columns.length) return; // throw an error?
 
-      var visible = columns.slice().sort(function (a, b) {
-        return a.mapTo - b.mapTo;
+      var mapTo = selected.mapTo,
+          next = void 0;
+      index -= mapTo < index ? 1 : 0;
+
+      columns.forEach(function (c) {
+        c.mapTo -= c.mapTo > mapTo ? 1 : 0;
+        c.mapTo += c.mapTo >= index ? 1 : 0;
+        next = c.mapTo === index + 1 ? c : next;
       });
 
-      // remove selected from the old position
-      visible.splice(selected.mapTo, 1);
-
-      if (selected.mapTo < index) index--;
-
-      // insert selected in the new position
-      visible.splice(index, 0, selected);
-
-      visible.forEach(function (column, i) {
-        column.mapTo = i;
-      });
-
-      selected.moveBefore(visible[index + 1]); // if index >= visisble.length the argument will be undefined as intended
+      selected.mapTo = index;
+      selected.moveBefore(next);
     };
 
     this.exchangeWith = function (selected, index) {
@@ -255,7 +269,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
           if (index >= 0) {
             element.attr('ui-scroll-td', index);
             $scope.$on('$destroy', function () {
-              return gridController.unregisterCell(index, element);
+              return gridController.unregisterCell($scope, index, element);
             });
           }
         })();

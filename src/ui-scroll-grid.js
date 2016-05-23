@@ -92,10 +92,19 @@ angular.module('ui.scroll.grid', [])
 
     function GridController(scope, scrollViewport) {
       let columns = [];
+      let rowMap = new Map();
       let current;
       let index;
 
-      $timeout(() => scrollViewport.adapter.gridAdapter = new GridAdapter(this));
+      $timeout(() => {
+        scrollViewport.adapter.gridAdapter = new GridAdapter(this);
+        scrollViewport.adapter.transform = (item) => transform(item);
+      });
+
+      function transform(item) {
+        console.log(item);
+        console.log(rowMap.size);
+      }
 
       this.registerColumn = function (header) {
         columns.push(new ColumnController(columns, header));
@@ -114,15 +123,28 @@ angular.module('ui.scroll.grid', [])
         }
         if (index < columns.length) {
           columns[index].cells.push(cell);
+          let row = rowMap.get(scope);
+          if (!row) {
+            row = [];
+            rowMap.set(scope, row);
+          }
+          row[index] = cell;
           this.applyCss(cell, columns[index].layout.css);
           return index++;
         }
         return -1;
       };
 
-      this.unregisterCell = function (column, cell) {
+      this.unregisterCell = function (scope, column, cell) {
         let index = columns[column].cells.indexOf(cell);
         columns[column].cells.splice(index, 1);
+
+        let row = rowMap.get(scope);
+        let i = row.indexOf(cell);
+        row.splice(i, 1);
+        if (!row.length)
+          rowMap.delete(scope);
+
       };
 
       this.getColumns = function () {
@@ -215,7 +237,7 @@ angular.module('ui.scroll.grid', [])
           let index = gridController.registerCell($scope, element);
           if (index >= 0) {
             element.attr('ui-scroll-td', index);
-            $scope.$on('$destroy', () => gridController.unregisterCell(index, element));
+            $scope.$on('$destroy', () => gridController.unregisterCell($scope, index, element));
           }
         }
       }
