@@ -686,12 +686,12 @@ angular.module('ui.scroll', [])
           let sibling = (insertAfter > 0) ? buffer[insertAfter - 1].element : undefined;
           linker((clone, scope) => {
             promises = insertElement(clone, sibling);
-            if (adapter.transform)
-              adapter.transform(clone);
             wrapper.element = clone;
             wrapper.scope = scope;
             scope[itemName] = wrapper.item;
           });
+          if (adapter.transform)
+            adapter.transform(wrapper.scope, wrapper.element);
           return promises;
         }
 

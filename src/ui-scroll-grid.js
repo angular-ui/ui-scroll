@@ -98,12 +98,14 @@ angular.module('ui.scroll.grid', [])
 
       $timeout(() => {
         scrollViewport.adapter.gridAdapter = new GridAdapter(this);
-        scrollViewport.adapter.transform = (item) => transform(item);
+        scrollViewport.adapter.transform = (scope, item) => this.transform(scope, item);
       });
 
-      function transform(item) {
-        console.log(item);
-        console.log(rowMap.size);
+      this.transform = function (scope, item) {
+        let row = rowMap.get(scope);
+        columns.forEach((column, index) => {
+          this.applyCss(row[index], column.layout.css);
+        })
       }
 
       this.registerColumn = function (header) {
@@ -123,13 +125,15 @@ angular.module('ui.scroll.grid', [])
         }
         if (index < columns.length) {
           columns[index].cells.push(cell);
+          
           let row = rowMap.get(scope);
           if (!row) {
             row = [];
             rowMap.set(scope, row);
           }
           row[index] = cell;
-          this.applyCss(cell, columns[index].layout.css);
+          
+//          this.applyCss(cell, columns[index].layout.css);
           return index++;
         }
         return -1;
