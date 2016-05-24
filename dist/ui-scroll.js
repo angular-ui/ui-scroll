@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-24T16:17:58.257Z
+ * Version: 1.4.1 -- 2016-05-24T16:58:17.499Z
  * License: MIT
  */
  
@@ -25,6 +25,7 @@ var _typeof = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol
  */
 angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   return {
+    restrict: 'A',
     controller: ['$log', '$scope', '$element', function (console, scope, element) {
       var self = this;
       self.container = element;
@@ -42,7 +43,8 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   var isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
 
   return {
-    require: ['?^uiScrollViewport'],
+    require: ['?^^uiScrollViewport'],
+    restrict: 'A',
     transclude: 'element',
     priority: 1000,
     terminal: true,

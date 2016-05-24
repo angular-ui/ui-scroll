@@ -13,6 +13,7 @@
 angular.module('ui.scroll', [])
   .directive('uiScrollViewport', function () {
     return {
+      restrict: 'A',
       controller: [
         '$log',
         '$scope',
@@ -44,7 +45,8 @@ angular.module('ui.scroll', [])
       const isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
 
       return {
-        require: ['?^uiScrollViewport'],
+        require: ['?^^uiScrollViewport'],
+        restrict: 'A',
         transclude: 'element',
         priority: 1000,
         terminal: true,

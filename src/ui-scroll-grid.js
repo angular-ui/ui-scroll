@@ -242,6 +242,7 @@ angular.module('ui.scroll.grid', [])
 
     return {
       require: ['^^uiScrollViewport'],
+      restrict: 'A',
       link: ($scope, element, $attr, controllers, linker) => {
         controllers[0].gridController = controllers[0].gridController || new GridController($scope, controllers[0]);
         controllers[0].gridController.registerColumn(element);
@@ -252,6 +253,7 @@ angular.module('ui.scroll.grid', [])
   .directive('uiScrollTd', ['$log', function (console) {
     return {
       require: ['?^^uiScrollViewport'],
+      restrict: 'A',
       link: ($scope, element, $attr, controllers, linker) => {
         if (controllers[0]) {
           let gridController = controllers[0].gridController;
