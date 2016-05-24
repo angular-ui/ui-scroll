@@ -103,9 +103,27 @@ angular.module('ui.scroll.grid', [])
 
       this.transform = function (scope, item) {
         let row = rowMap.get(scope);
+        let parent = row[0].parent();
+        let last = row[row.length-1].next();
+        let visible = [];
         columns.forEach((column, index) => {
           this.applyCss(row[index], column.layout.css);
-        })
+          visible[columns[index].mapTo] = row[index];
+        });
+        let current = visible.shift();
+        current.detach();
+        if (last.length)
+          last.before(current);
+        else
+          parent.append(current);
+
+        visible.forEach((cell) => {
+          cell.detach();
+          current.after(cell);
+          current = cell;
+        });
+
+
       }
 
       this.registerColumn = function (header) {
@@ -133,7 +151,6 @@ angular.module('ui.scroll.grid', [])
           }
           row[index] = cell;
           
-//          this.applyCss(cell, columns[index].layout.css);
           return index++;
         }
         return -1;
