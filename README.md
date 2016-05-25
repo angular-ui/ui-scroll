@@ -200,6 +200,33 @@ marked with uiScrollViewport directive, the browser window object will be used a
 </ANY>
 ```
 
+uiScrollTh and uiScrollTd directives
+-------------------
+###Description
+
+The uiScrollTh and uiScrollTd directives provide a way to build flexible dynamic grids. Handling of grid rows is done by the uiScroll directive itself. In addition to this uiScrollTh and uiScrollTd directive provide tools to programmatically change grid layout, inclduing applying styles to columns, changing column size and order, as well as saving the modifications to the layout and applying previosly saved layouts. 
+At this point the above functionality is supported only for table based scrollable grids.
+
+###Usage
+
+```html
+<TABLE ui-scroll-viewport>
+    <THEAD style="display:block">
+       <TR>
+         <TH ui-scroll-th>header 1...</TH>
+         <TH ui-scroll-th>header 2...</TH>
+         ...
+       </TR>
+    </THEAD>
+    <TBODY ui-scroll="item in datasource" adapter="adapter">
+       <TR>
+         <TD ui-scroll-td>...</TD>
+         <TD ui-scroll-td>...</TD>
+         ...
+       </TR>
+    </TBODY>
+</TABLE>
+```
 ###Examples
 
 Examples ([look here for sources](https://github.com/angular-ui/ui-scroll/tree/master/demo/examples)) consist of several pages (.html files) showing various ways to use the ui-scroll directive. Each page relays on its own datasource service (called `datasource`) defined in the javascript file with the same name and .js extension.
