@@ -50,6 +50,7 @@ angular.module('ui.scroll.grid', [])
 
       this.applyLayout = function(layout) {
           this.css = angular.extend({}, layout.css);
+          this.mapTo = layout.mapTo;
           applyCss(this.header, this.css);
       };
 

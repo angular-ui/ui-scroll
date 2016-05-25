@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-25T17:14:31.358Z
+ * Version: 1.4.1 -- 2016-05-25T17:20:36.922Z
  * License: MIT
  */
  
@@ -72,6 +72,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     this.applyLayout = function (layout) {
       this.css = angular.extend({}, layout.css);
+      this.mapTo = layout.mapTo;
       applyCss(this.header, this.css);
     };
 
