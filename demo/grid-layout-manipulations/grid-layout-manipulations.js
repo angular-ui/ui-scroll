@@ -22,15 +22,15 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid'
 			var cookieName = 'ui-scroll-grid-layout';
 
 			var defaultLayout = [
-				{index: 0, mapTo: 0, layout: {css: {}}},
-				{index: 1, mapTo: 1, layout: {css: {}}},
-				{index: 2, mapTo: 2, layout: {css: {}}}
+				{index: 0, mapTo: 0, css: {}},
+				{index: 1, mapTo: 1, css: {}},
+				{index: 2, mapTo: 2, css: {}}
 			];
 
 			var someLayout = [
-				{index: 0, mapTo: 0, layout: {css: {backgroundColor: '#f99'}}},
-				{index: 1, mapTo: 1, layout: {css: {backgroundColor: '#9f9'}}},
-				{index: 2, mapTo: 2, layout: {css: {backgroundColor: '#99f'}}}
+				{index: 0, mapTo: 0, css: {backgroundColor: '#f99'}},
+				{index: 1, mapTo: 1, css: {backgroundColor: '#9f9'}},
+				{index: 2, mapTo: 2, css: {backgroundColor: '#99f'}}
 			];
 
 			$scope.layout = defaultLayout;
