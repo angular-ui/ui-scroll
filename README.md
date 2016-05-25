@@ -237,17 +237,13 @@ GridAdapter object (along with ColumnAdapter objects) provides methods and prope
 
 * Property `columns` - returns a ColumnAdapters collection to be used to control the scrollable grid layout. The columns are listed in the same order as they appear in the browser.
 
-`GridAdapter` implements the following methods:
+`GridAdapter` object implements the following methods:
 
 * Method `getLayout()` - returns an object describing current scrollable grid layout.
 * Method `applyLayout(layout)` - restores scrollabel grid layout to the state as defined by the object passed as the parameter
 * Method `columnFromPoint(x,y)` - returns if the coordinates belong to a scrollable grid column returns the appropriate ColumnAdapter object. Otherwise it returns `undefined`.
 
-`ColumnAdapter` object implements the following properties:
-
-* Property `columns` - returns a ColumnAdapters collection to be used to control the scrollable grid layout. The columns are listed in the same order as they appear in the browser.
-
-`ColumnAdapter` implements the following methods:
+`ColumnAdapter` object implements the following methods:
 
 * Method `css(name, value)` - sets the css property `name` to `value` for the column header as well as for the column cells.
 * Method `moveBefore(column)` - moves the column in front of the column refrenced by the parameter. If the parameter is null the column will become the rightmost column.
