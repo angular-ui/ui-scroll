@@ -220,26 +220,15 @@ angular.module('ui.scroll.grid', [])
 
       function transform (row) {
         let parent = row[0].parent();
-        let last = row[row.length-1].next();
         let visible = [];
 
         row.forEach((cell, index) => {
           columns[index].applyCss(cell);
           visible[columns[index].mapTo] = row[index];
+          row[index].detach();
         });
 
-        let current = visible.shift();
-        current.detach();
-        if (last.length)
-          last.before(current);
-        else
-          parent.append(current);
-
-        visible.forEach((cell) => {
-          cell.detach();
-          current.after(cell);
-          current = cell;
-        });
+        visible.forEach(cell => parent.append(cell));
       }
 
     }

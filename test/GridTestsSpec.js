@@ -391,8 +391,8 @@ describe('uiScroll', function () {
 					applyOrderLayout(scope, [1, 3, 2, 0]);
 					expectLastRowContents(body, ['col3', 'col0', 'col2', 'col1']);
 
-					applyOrderLayout(scope, [0, 2, 3, 1]); // this is broken !!
-					//expectLastRowContents(body, ['col0', 'col3', 'col1', 'col2']);
+					applyOrderLayout(scope, [0, 2, 3, 1]);
+					expectLastRowContents(body, ['col0', 'col3', 'col1', 'col2']);
 				}
 			);
 		});
