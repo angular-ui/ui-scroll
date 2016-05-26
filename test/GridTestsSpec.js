@@ -6,6 +6,12 @@ describe('uiScroll', function () {
 	beforeEach(module('ui.scroll.grid'));
 	beforeEach(module('ui.scroll.test.datasources'));
 
+	var scrollSettings = {
+		datasource: 'myGridDatasource',
+		viewportHeight: 120,
+		itemHeight: 20,
+		bufferSize: 3
+	};
 
 	function expectLayoutMap(scope, map) {
 		var layout = scope.adapter.gridAdapter.getLayout();
@@ -175,13 +181,6 @@ describe('uiScroll', function () {
 
 
 	describe('moveBefore method', function () {
-		var scrollSettings = {
-			datasource: 'myGridDatasource',
-			viewportHeight: 120,
-			itemHeight: 20,
-			bufferSize: 3
-		};
-
 		it('should reorder headers', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope) {
@@ -224,7 +223,7 @@ describe('uiScroll', function () {
 
 					scope.adapter.gridAdapter.columns[2].moveBefore(1);
 
-					body.scrollTop(1000); // scroll to bottom
+					body.scrollTop(1000);
 					body.trigger('scroll');
 					$timeout.flush();
 
@@ -242,13 +241,6 @@ describe('uiScroll', function () {
 
 
 	describe('css method', function () {
-		var scrollSettings = {
-			datasource: 'myGridDatasource',
-			viewportHeight: 120,
-			itemHeight: 20,
-			bufferSize: 3
-		};
-
 		var attr = 'backgroundColor', value = 'yellow';
 
 		it('should apply css right after the call', function () {
@@ -273,7 +265,7 @@ describe('uiScroll', function () {
 
 					scope.adapter.gridAdapter.columns[0].css(attr, value);
 
-					body.scrollTop(1000); // scroll to bottom
+					body.scrollTop(1000);
 					body.trigger('scroll');
 					$timeout.flush();
 
@@ -284,6 +276,131 @@ describe('uiScroll', function () {
 				}
 			);
 		});
+	});
+
+
+	describe('get and apply layout', function () {
+		var layout = [
+			{index: 0, mapTo: 3, css: {zIndex: '1'}},
+			{index: 1, mapTo: 2, css: {zIndex: '20'}},
+			{index: 2, mapTo: 1, css: {zIndex: '300'}},
+			{index: 3, mapTo: 0, css: {zIndex: '4000'}}
+		];
+		var layoutCss = [
+			{index: 0, mapTo: 0, css: {zIndex: '1'}},
+			{index: 1, mapTo: 1, css: {zIndex: '20'}},
+			{index: 2, mapTo: 2, css: {zIndex: '300'}},
+			{index: 3, mapTo: 3, css: {zIndex: '4000'}}
+		];
+		var layoutOrder = [
+			{index: 0, mapTo: 3, css: {}},
+			{index: 1, mapTo: 2, css: {}},
+			{index: 2, mapTo: 1, css: {}},
+			{index: 3, mapTo: 0, css: {}}
+		];
+
+		it('should get empty layout', function () {
+			runGridTest(scrollSettings,
+				function (head, body, scope) {
+					scope.adapter.gridAdapter.getLayout().forEach((column, index) => {
+						expect(column.css['zIndex']).toBeFalsy();
+						expect(column.mapTo).toBe(index);
+					});
+				}
+			);
+		});
+
+		it('should apply some layout and then get it', function () {
+			runGridTest(scrollSettings,
+				function (head, body, scope) {
+					scope.adapter.gridAdapter.applyLayout(layout);
+
+					scope.adapter.gridAdapter.getLayout().forEach((column, index) => {
+						expect(column.css['zIndex']).toBe(layout[index].css['zIndex']);
+						expect(column.mapTo).toBe(layout[index].mapTo);
+					});
+				}
+			);
+		});
+
+		it('should apply css layout to header elements', function () {
+			runGridTest(scrollSettings,
+				function (head, body, scope) {
+					scope.adapter.gridAdapter.applyLayout(layoutCss);
+					layoutCss.forEach((column, index) => {
+						expect(getHeaderElement(head, index).style['zIndex']).toBe(column.css['zIndex']);
+					});
+				}
+			);
+		});
+
+		it('should apply css layout to existed body elements', function () {
+			runGridTest(scrollSettings,
+				function (head, body, scope) {
+					scope.adapter.gridAdapter.applyLayout(layoutCss);
+					layoutCss.forEach((column, index) => {
+						expect(getLastRowElement(body, index).style['zIndex']).toBe(column.css['zIndex']);
+					});
+				}
+			);
+		});
+
+		it('should apply css layout to new body elements', function () {
+			runGridTest(scrollSettings,
+				function (head, body, scope, $timeout) {
+					scope.adapter.gridAdapter.applyLayout(layoutCss);
+
+					body.scrollTop(1000);
+					body.trigger('scroll');
+					$timeout.flush();
+
+					layoutCss.forEach((column, index) => {
+						expect(getLastRowElement(body, index).style['zIndex']).toBe(column.css['zIndex']);
+					});
+				}
+			);
+		});
+
+		/*it('should apply order layout to header elements', function () {
+			runGridTest(scrollSettings,
+				function (head, body, scope) {
+					scope.adapter.gridAdapter.applyLayout(layoutOrder);
+					layoutOrder.forEach((column, index) => {
+						expect(getHeaderElement(head, index).innerHTML).toBe('col' + (layoutOrder.length - index));
+					});
+				}
+			);
+		});*/
+
+		it('should apply order layout to existed body elements', function () {
+			runGridTest(scrollSettings,
+				function (head, body, scope) {
+					scope.adapter.gridAdapter.applyLayout(layoutOrder);
+					expect(getLastRowElement(body, 0).innerHTML, 'false' || 'true');
+					expect(getLastRowElement(body, 1).innerHTML, '');
+					expect(getLastRowElement(body, 2).innerHTML.indexOf('item'), 0);
+					expect(parseInt(getLastRowElement(body, 3).innerHTML, 10) > 0, true);
+				}
+			);
+		});
+
+		it('should apply order layout to existed body elements', function () {
+			runGridTest(scrollSettings,
+				function (head, body, scope, $timeout) {
+					scope.adapter.gridAdapter.applyLayout(layoutOrder);
+
+					body.scrollTop(1000);
+					body.trigger('scroll');
+					$timeout.flush();
+
+					expect(getLastRowElement(body, 0).innerHTML, 'false' || 'true');
+					expect(getLastRowElement(body, 1).innerHTML, '');
+					expect(getLastRowElement(body, 2).innerHTML.indexOf('item'), 0);
+					expect(parseInt(getLastRowElement(body, 3).innerHTML, 10) > 0, true);
+				}
+			);
+		});
+
 	});
 
 });
