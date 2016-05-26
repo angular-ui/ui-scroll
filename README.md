@@ -231,7 +231,7 @@ Here is the basic html template for scrollable grid using the uiScrollTh and uiS
 
 ### Dependencies
 
-The grid directives have the same dependency requirements as the uiScroll directive itself. To use the directives make sure the `ui.scroll.grid` module is on the list of the module dependencies. Also you have to load the dist/ui-scroll-grid.js file is loaded in your page. 
+The grid directives have the same dependency requirements as the uiScroll directive itself. To use the directives make sure the `ui.scroll.grid` module is on the list of the module dependencies. Also you have to load the dist/ui-scroll-grid.js file in your page. 
 
 ### Controlling scrollable grid with the GirdAdapter
 
