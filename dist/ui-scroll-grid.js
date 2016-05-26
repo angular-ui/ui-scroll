@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-26T15:37:59.662Z
+ * Version: 1.4.1 -- 2016-05-26T17:04:13.254Z
  * License: MIT
  */
  
@@ -40,8 +40,8 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       }
       if (arguments.length == 2) {
         column.header.css(attr, value);
-        column.cells.forEach(function (cell) {
-          return cell.css(attr, value);
+        controller.forEachRow(function (row) {
+          return row[column.id].css(attr, value);
         });
         column.css[attr] = value;
       }
@@ -60,7 +60,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       } });
   }
 
-  function ColumnController(columns, header) {
+  function ColumnController(controller, columns, header) {
 
     this.header = header;
     this.cells = [];
@@ -77,24 +77,30 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     };
 
     this.moveBefore = function (target) {
+      var _this = this;
+
       if (target) {
         moveBefore(header, target.header);
-        this.cells.forEach(function (cell, i) {
-          return moveBefore(cell, target.cells[i]);
+        controller.forEachRow(function (row) {
+          return moveBefore(row[_this.id], row[target.id]);
         });
       } else {
         moveLast(header);
-        this.cells.forEach(function (cell) {
-          return moveLast(cell);
+        controller.forEachRow(function (row) {
+          return moveLast(row[_this.id]);
         });
       }
     };
 
     this.columnFromPoint = function (x, y) {
+      var _this2 = this;
+
       if (insidePoint(header, x, y)) return this;
-      for (var i = 0; i < this.cells.length; i++) {
-        if (insidePoint(this.cells[i], x, y)) return this;
-      }
+      var result = void 0;
+      controller.forEachRow(function (row) {
+        if (insidePoint(row[_this2.id], x, y)) result = _this2;
+      });
+      return result;
     };
 
     this.applyCss = function (target) {
@@ -130,7 +136,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
   }
 
   function GridController(scope, scrollViewport) {
-    var _this = this;
+    var _this3 = this;
 
     var columns = [];
     var rowMap = new Map();
@@ -138,14 +144,14 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     var index = void 0;
 
     $timeout(function () {
-      scrollViewport.adapter.gridAdapter = new GridAdapter(_this);
+      scrollViewport.adapter.gridAdapter = new GridAdapter(_this3);
       scrollViewport.adapter.transform = function (scope, item) {
         return transform(rowMap.get(scope), item);
       };
     });
 
     this.registerColumn = function (header) {
-      columns.push(new ColumnController(columns, header));
+      columns.push(new ColumnController(this, columns, header));
     };
 
     this.registerCell = function (scope, cell) {
@@ -178,14 +184,18 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       if (!row.length) rowMap.delete(scope);
     };
 
+    this.forEachRow = function (callback) {
+      rowMap.forEach(callback);
+    };
+
     this.getColumns = function () {
-      var _this2 = this;
+      var _this4 = this;
 
       var result = [];
       columns.slice().sort(function (a, b) {
         return a.mapTo - b.mapTo;
       }).forEach(function (column) {
-        return result.push(new ColumnAdapter(_this2, column));
+        return result.push(new ColumnAdapter(_this4, column));
       });
       return result;
     };

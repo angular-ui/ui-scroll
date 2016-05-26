@@ -22,7 +22,7 @@ angular.module('ui.scroll.grid', [])
         }
         if (arguments.length == 2) {
           column.header.css(attr, value);
-          column.cells.forEach((cell) => cell.css(attr, value));
+          controller.forEachRow((row) => row[column.id].css(attr, value));
           column.css[attr] = value;
         }
       };
@@ -38,7 +38,7 @@ angular.module('ui.scroll.grid', [])
       Object.defineProperty(this, 'columnId', {get: () => column.id})
     }
 
-    function ColumnController(columns, header) {
+    function ColumnController(controller, columns, header) {
 
       this.header = header;
       this.cells = [];
@@ -57,19 +57,22 @@ angular.module('ui.scroll.grid', [])
       this.moveBefore = function(target) {
         if (target) {
           moveBefore(header, target.header);
-          this.cells.forEach((cell, i) => moveBefore(cell, target.cells[i]))
+          controller.forEachRow((row) => moveBefore(row[this.id], row[target.id]));
         } else {
           moveLast(header);
-          this.cells.forEach((cell) => moveLast(cell));
+          controller.forEachRow((row) => moveLast(row[this.id]));
         }
       };
 
       this.columnFromPoint = function (x,y) {
         if (insidePoint(header, x,y))
           return this;
-        for (let i=0; i<this.cells.length; i++)
-          if (insidePoint(this.cells[i], x,y))
-            return this;
+        let result;
+        controller.forEachRow((row) => { 
+          if (insidePoint(row[this.id], x,y))
+            result = this;
+        });
+        return result;
       }; 
 
       this.applyCss = function(target) {
@@ -119,7 +122,7 @@ angular.module('ui.scroll.grid', [])
       });
 
       this.registerColumn = function (header) {
-        columns.push(new ColumnController(columns, header));
+        columns.push(new ColumnController(this, columns, header));
       };
 
       this.registerCell = function (scope, cell) {
@@ -151,6 +154,10 @@ angular.module('ui.scroll.grid', [])
         row.splice(i, 1);
         if (!row.length)
           rowMap.delete(scope);
+      };
+
+      this.forEachRow = function (callback) {
+        rowMap.forEach(callback);
       };
 
       this.getColumns = function () {
