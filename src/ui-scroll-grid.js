@@ -113,8 +113,6 @@ angular.module('ui.scroll.grid', [])
     function GridController(scope, scrollViewport) {
       let columns = [];
       let rowMap = new Map();
-      let current;
-      let index;
 
       $timeout(() => {
         scrollViewport.adapter.gridAdapter = new GridAdapter(this);
@@ -126,29 +124,20 @@ angular.module('ui.scroll.grid', [])
       };
 
       this.registerCell = function (scope, cell) {
-        if (current !== scope) {
-          index = 0;
-          current = scope;
+        let row = rowMap.get(scope);
+
+        if (!row) {
+          row = [];
+          rowMap.set(scope, row);
         }
-        if (index < columns.length) {
-          columns[index].cells.push(cell);
-          
-          let row = rowMap.get(scope);
-          if (!row) {
-            row = [];
-            rowMap.set(scope, row);
-          }
-          row[index] = cell;
-          
-          return index++;
-        }
-        return -1;
+
+        if (row.length >= columns.length)
+          return false;
+        row.push(cell);
+        return true;
       };
 
-      this.unregisterCell = function (scope, column, cell) {
-        let index = columns[column].cells.indexOf(cell);
-        columns[column].cells.splice(index, 1);
-
+      this.unregisterCell = function (scope, cell) {
         let row = rowMap.get(scope);
         let i = row.indexOf(cell);
         row.splice(i, 1);
@@ -272,10 +261,8 @@ angular.module('ui.scroll.grid', [])
       link: ($scope, element, $attr, controllers, linker) => {
         if (controllers[0]) {
           let gridController = controllers[0].gridController;
-          let index = gridController.registerCell($scope, element);
-          if (index >= 0) {
-            element.attr('ui-scroll-td', index);
-            $scope.$on('$destroy', () => gridController.unregisterCell($scope, index, element));
+          if (gridController.registerCell($scope, element)) {
+            $scope.$on('$destroy', () => gridController.unregisterCell($scope, element));
           }
         }
       }

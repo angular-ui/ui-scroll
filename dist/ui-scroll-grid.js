@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-26T17:04:13.254Z
+ * Version: 1.4.1 -- 2016-05-26T17:11:13.078Z
  * License: MIT
  */
  
@@ -140,8 +140,6 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     var columns = [];
     var rowMap = new Map();
-    var current = void 0;
-    var index = void 0;
 
     $timeout(function () {
       scrollViewport.adapter.gridAdapter = new GridAdapter(_this3);
@@ -155,29 +153,19 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     };
 
     this.registerCell = function (scope, cell) {
-      if (current !== scope) {
-        index = 0;
-        current = scope;
-      }
-      if (index < columns.length) {
-        columns[index].cells.push(cell);
+      var row = rowMap.get(scope);
 
-        var row = rowMap.get(scope);
-        if (!row) {
-          row = [];
-          rowMap.set(scope, row);
-        }
-        row[index] = cell;
-
-        return index++;
+      if (!row) {
+        row = [];
+        rowMap.set(scope, row);
       }
-      return -1;
+
+      if (row.length >= columns.length) return false;
+      row.push(cell);
+      return true;
     };
 
-    this.unregisterCell = function (scope, column, cell) {
-      var index = columns[column].cells.indexOf(cell);
-      columns[column].cells.splice(index, 1);
-
+    this.unregisterCell = function (scope, cell) {
       var row = rowMap.get(scope);
       var i = row.indexOf(cell);
       row.splice(i, 1);
@@ -305,11 +293,9 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       if (controllers[0]) {
         (function () {
           var gridController = controllers[0].gridController;
-          var index = gridController.registerCell($scope, element);
-          if (index >= 0) {
-            element.attr('ui-scroll-td', index);
+          if (gridController.registerCell($scope, element)) {
             $scope.$on('$destroy', function () {
-              return gridController.unregisterCell($scope, index, element);
+              return gridController.unregisterCell($scope, element);
             });
           }
         })();
