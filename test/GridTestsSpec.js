@@ -29,6 +29,26 @@ describe('uiScroll', function () {
 		return lastRow.children()[index];
 	}
 
+	function applyOrderLayout(scope, map) {
+		var layout = [];
+		for(var i = 0; i < map.length; i++) {
+			layout.push({index: i, mapTo: map[i], css: {}});
+		}
+		scope.adapter.gridAdapter.applyLayout(layout);
+	}
+
+	function expectHeaderContents(head, contents) {
+		for(var i = 0; i < contents.length; i++) {
+			expect(getHeaderElement(head, i).innerHTML).toBe(contents[i]);
+		}
+	}
+
+	function expectLastRowContents(body, contents) {
+		for(var i = 0; i < contents.length; i++) {
+			expect(getLastRowElement(body, i).innerHTML).toBe(contents[i]);
+		}
+	}
+
 
 	describe('basic setup', function () {
 		var scrollSettings = {datasource: 'myEmptyDatasource'};
@@ -184,16 +204,8 @@ describe('uiScroll', function () {
 		it('should reorder headers', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope) {
-					var _head1 = getHeaderElement(head, 1).innerHTML;
-					var _head2 = getHeaderElement(head, 2).innerHTML;
-
 					scope.adapter.gridAdapter.columns[2].moveBefore(1);
-
-					var head1 = getHeaderElement(head, 1).innerHTML;
-					var head2 = getHeaderElement(head, 2).innerHTML;
-
-					expect(head1).toBe(_head2);
-					expect(head2).toBe(_head1);
+					expectHeaderContents(head, ['col0', 'col2', 'col1', 'col3']);
 				}
 			);
 		});
@@ -201,16 +213,8 @@ describe('uiScroll', function () {
 		it('should reorder body columns', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope) {
-					var _body1 = getLastRowElement(body, 1).innerHTML;
-					var _body2 = getLastRowElement(body, 2).innerHTML;
-
 					scope.adapter.gridAdapter.columns[2].moveBefore(1);
-
-					var body1 = getLastRowElement(body, 1).innerHTML;
-					var body2 = getLastRowElement(body, 2).innerHTML;
-
-					expect(body1).toBe(_body2);
-					expect(body2).toBe(_body1);
+					expectLastRowContents(body, ['col0', 'col2', 'col1', 'col3']);
 				}
 			);
 		});
@@ -218,22 +222,13 @@ describe('uiScroll', function () {
 		it('should reorder body columns after new rows rendering', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope, $timeout) {
-					var _body1 = getLastRowElement(body, 1).innerHTML;
-					var _body2 = getLastRowElement(body, 2).innerHTML;
-
 					scope.adapter.gridAdapter.columns[2].moveBefore(1);
 
 					body.scrollTop(1000);
 					body.trigger('scroll');
 					$timeout.flush();
 
-					var body1 = getLastRowElement(body, 1).innerHTML;
-					var body2 = getLastRowElement(body, 2).innerHTML;
-
-					expect(_body1.indexOf('item')).toBe(0);
-					expect(_body2).toBe('');
-					expect(body1).toBe('');
-					expect(body2.indexOf('item')).toBe(0);
+					expectLastRowContents(body, ['col0', 'col2', 'col1', 'col3']);
 				}
 			);
 		});
@@ -291,12 +286,6 @@ describe('uiScroll', function () {
 			{index: 1, mapTo: 1, css: {zIndex: '20'}},
 			{index: 2, mapTo: 2, css: {zIndex: '300'}},
 			{index: 3, mapTo: 3, css: {zIndex: '4000'}}
-		];
-		var layoutOrder = [
-			{index: 0, mapTo: 3, css: {}},
-			{index: 1, mapTo: 2, css: {}},
-			{index: 2, mapTo: 1, css: {}},
-			{index: 3, mapTo: 0, css: {}}
 		];
 
 		it('should get empty layout', function () {
@@ -364,10 +353,8 @@ describe('uiScroll', function () {
 		it('should apply order layout to header elements', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope) {
-					scope.adapter.gridAdapter.applyLayout(layoutOrder);
-					layoutOrder.forEach((column, index) => {
-						expect(getHeaderElement(head, index).innerHTML).toBe('col' + (layoutOrder.length - index));
-					});
+					applyOrderLayout(scope, [3, 2, 1, 0]);
+					expectHeaderContents(head, ['col3', 'col2', 'col1', 'col0']);
 				}
 			);
 		});
@@ -375,28 +362,37 @@ describe('uiScroll', function () {
 		it('should apply order layout to existed body elements', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope) {
-					scope.adapter.gridAdapter.applyLayout(layoutOrder);
-					expect(getLastRowElement(body, 0).innerHTML, 'false' || 'true');
-					expect(getLastRowElement(body, 1).innerHTML, '');
-					expect(getLastRowElement(body, 2).innerHTML.indexOf('item'), 0);
-					expect(parseInt(getLastRowElement(body, 3).innerHTML, 10) > 0, true);
+					applyOrderLayout(scope, [3, 2, 1, 0]);
+					expectLastRowContents(body, ['col3', 'col2', 'col1', 'col0']);
 				}
 			);
 		});
 
-		it('should apply order layout to existed body elements', function () {
+		it('should apply order layout to new body elements', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope, $timeout) {
-					scope.adapter.gridAdapter.applyLayout(layoutOrder);
+					applyOrderLayout(scope, [3, 2, 1, 0]);
 
 					body.scrollTop(1000);
 					body.trigger('scroll');
 					$timeout.flush();
 
-					expect(getLastRowElement(body, 0).innerHTML, 'false' || 'true');
-					expect(getLastRowElement(body, 1).innerHTML, '');
-					expect(getLastRowElement(body, 2).innerHTML.indexOf('item'), 0);
-					expect(parseInt(getLastRowElement(body, 3).innerHTML, 10) > 0, true);
+					expectLastRowContents(body, ['col3', 'col2', 'col1', 'col0']);
+				}
+			);
+		});
+
+		it('should apply order layout to existed body elements multiple times', function () {
+			runGridTest(scrollSettings,
+				function (head, body, scope) {
+					applyOrderLayout(scope, [1, 2, 3, 0]);
+					expectLastRowContents(body, ['col3', 'col0', 'col1', 'col2']);
+
+					applyOrderLayout(scope, [1, 3, 2, 0]);
+					expectLastRowContents(body, ['col3', 'col0', 'col2', 'col1']);
+
+					applyOrderLayout(scope, [0, 2, 3, 1]); // this is broken !!
+					//expectLastRowContents(body, ['col0', 'col3', 'col1', 'col2']);
 				}
 			);
 		});

@@ -47,7 +47,7 @@ var runTest = function (scrollSettings, run, options) {
 
 var createGridHtml = function (settings) {
 	var viewportStyle = ' style="height:' + (settings.viewportHeight || 200) + 'px"';
-	var columns = ['col1', 'col2', 'col3', 'col4'];
+	var columns = ['col0', 'col1', 'col2', 'col3'];
 
 	var html =
 		'<table ui-scroll-viewport ' + viewportStyle + ' >' +

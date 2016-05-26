@@ -181,10 +181,10 @@ angular.module('ui.scroll.test.datasources', [])
                     var result = [];
                     for (var i = index; i < index + count; i++) {
                         result.push({
-                            col1: i,
-                            col2: 'item#' + i,
-                            col3: null,
-                            col4: (Math.random() < 0.5)
+                            col0: 'col0',
+                            col1: 'col1',
+                            col2: 'col2',
+                            col3: 'col3'
                         });
                     }
                     success(result);
