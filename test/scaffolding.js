@@ -1,11 +1,3 @@
-(function injectGridStyles() {
-	document.styleSheets[0].insertRule(".grid { width: 230px; }", 0);
-	document.styleSheets[0].insertRule(".col1 { width: 40px; }", 0);
-	document.styleSheets[0].insertRule(".col2 { width: 60px; }", 0);
-	document.styleSheets[0].insertRule(".col3 { width: 40px; }", 0);
-	document.styleSheets[0].insertRule(".col4 { width: 50px; }", 0);
-})();
-
 var createHtml = function (settings) {
 	var viewportStyle = ' style="height:' + (settings.viewportHeight || 200) + 'px"';
 	var itemStyle = settings.itemHeight ? ' style="height:' + settings.itemHeight + 'px"' : '';
