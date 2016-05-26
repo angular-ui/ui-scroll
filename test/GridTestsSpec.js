@@ -361,7 +361,7 @@ describe('uiScroll', function () {
 			);
 		});
 
-		/*it('should apply order layout to header elements', function () {
+		it('should apply order layout to header elements', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope) {
 					scope.adapter.gridAdapter.applyLayout(layoutOrder);
@@ -370,7 +370,7 @@ describe('uiScroll', function () {
 					});
 				}
 			);
-		});*/
+		});
 
 		it('should apply order layout to existed body elements', function () {
 			runGridTest(scrollSettings,

@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-25T17:20:36.922Z
+ * Version: 1.4.1 -- 2016-05-26T15:37:59.662Z
  * License: MIT
  */
  
@@ -144,27 +144,6 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       };
     });
 
-    function transform(row) {
-      var parent = row[0].parent();
-      var last = row[row.length - 1].next();
-      var visible = [];
-
-      row.forEach(function (cell, index) {
-        columns[index].applyCss(cell);
-        visible[columns[index].mapTo] = row[index];
-      });
-
-      var current = visible.shift();
-      current.detach();
-      if (last.length) last.before(current);else parent.append(current);
-
-      visible.forEach(function (cell) {
-        cell.detach();
-        current.after(cell);
-        current = cell;
-      });
-    }
-
     this.registerColumn = function (header) {
       columns.push(new ColumnController(columns, header));
     };
@@ -230,6 +209,9 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       layouts.forEach(function (layout, index) {
         columns[index].applyLayout(layout);
       });
+      transform(columns.map(function (column) {
+        return column.header;
+      }));
       rowMap.forEach(function (row) {
         transform(row);
       });
@@ -272,6 +254,29 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       if (column) return new ColumnAdapter(this, column);
       return undefined;
     };
+
+    // function definitions
+
+    function transform(row) {
+      var parent = row[0].parent();
+      var last = row[row.length - 1].next();
+      var visible = [];
+
+      row.forEach(function (cell, index) {
+        columns[index].applyCss(cell);
+        visible[columns[index].mapTo] = row[index];
+      });
+
+      var current = visible.shift();
+      current.detach();
+      if (last.length) last.before(current);else parent.append(current);
+
+      visible.forEach(function (cell) {
+        cell.detach();
+        current.after(cell);
+        current = cell;
+      });
+    }
   }
 
   return {

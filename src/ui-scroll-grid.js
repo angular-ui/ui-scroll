@@ -118,30 +118,6 @@ angular.module('ui.scroll.grid', [])
         scrollViewport.adapter.transform = (scope, item) => transform(rowMap.get(scope), item);
       });
 
-      function transform (row) {
-        let parent = row[0].parent();
-        let last = row[row.length-1].next();
-        let visible = [];
-
-        row.forEach((cell, index) => {
-          columns[index].applyCss(cell);
-          visible[columns[index].mapTo] = row[index];
-        });
-
-        let current = visible.shift();
-        current.detach();
-        if (last.length)
-          last.before(current);
-        else
-          parent.append(current);
-
-        visible.forEach((cell) => {
-          cell.detach();
-          current.after(cell);
-          current = cell;
-        });
-      }
-
       this.registerColumn = function (header) {
         columns.push(new ColumnController(columns, header));
       };
@@ -200,6 +176,7 @@ angular.module('ui.scroll.grid', [])
           throw new Error('Failed to apply layout - number of layouts should match number of columns');
         }
         layouts.forEach((layout, index) => { columns[index].applyLayout(layout); });
+        transform(columns.map((column) => {return column.header;}));
         rowMap.forEach((row) => { transform(row); });
       };
 
@@ -242,6 +219,33 @@ angular.module('ui.scroll.grid', [])
           return new ColumnAdapter(this, column);
         return undefined;
       };
+
+      // function definitions
+
+      function transform (row) {
+        let parent = row[0].parent();
+        let last = row[row.length-1].next();
+        let visible = [];
+
+        row.forEach((cell, index) => {
+          columns[index].applyCss(cell);
+          visible[columns[index].mapTo] = row[index];
+        });
+
+        let current = visible.shift();
+        current.detach();
+        if (last.length)
+          last.before(current);
+        else
+          parent.append(current);
+
+        visible.forEach((cell) => {
+          cell.detach();
+          current.after(cell);
+          current = cell;
+        });
+      }
+
     }
 
     return {
