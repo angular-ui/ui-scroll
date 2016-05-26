@@ -1,3 +1,11 @@
+(function injectGridStyles() {
+	document.styleSheets[0].insertRule(".grid { width: 230px; }", 0);
+	document.styleSheets[0].insertRule(".col1 { width: 40px; }", 0);
+	document.styleSheets[0].insertRule(".col2 { width: 60px; }", 0);
+	document.styleSheets[0].insertRule(".col3 { width: 40px; }", 0);
+	document.styleSheets[0].insertRule(".col4 { width: 50px; }", 0);
+})();
+
 var createHtml = function (settings) {
 	var viewportStyle = ' style="height:' + (settings.viewportHeight || 200) + 'px"';
 	var itemStyle = settings.itemHeight ? ' style="height:' + settings.itemHeight + 'px"' : '';
@@ -47,26 +55,21 @@ var runTest = function (scrollSettings, run, options) {
 
 var createGridHtml = function (settings) {
 	var viewportStyle = ' style="height:' + (settings.viewportHeight || 200) + 'px"';
-	var columns = [
-		{name: 'col1', width: '40px'},
-		{name: 'col2', width: '60px'},
-		{name: 'col3', width: '40px'},
-		{name: 'col4', width: '50px'}
-	];
+	var columns = ['col1', 'col2', 'col3', 'col4'];
 
 	var html =
 		'<table ui-scroll-viewport ' + viewportStyle + ' >' +
 			'<thead style="display:block">' +
 				'<tr>';
 	columns.forEach(col => { html +=
-					'<th ui-scroll-th style="width: ' + col.width + '">' + col.name + '</th>'
+					'<th ui-scroll-th class="' + col + '">' + col + '</th>'
 	}); html +=
 				'</tr>' +
 			'</thead>' +
-			'<tbody>' +
+			'<tbody class="grid">' +
 				'<tr ui-scroll="item in ' + settings.datasource + '" adapter="adapter">';
 	columns.forEach(col => { html +=
-					'<td ui-scroll-td style="width: ' + col.width + '">{{item.' + col.name + '}}</td>'
+					'<td ui-scroll-td class="' + col + '">{{item.' + col + '}}</td>'
 	}); html +=
 				'</tr>' +
 			'</tbody>' +
@@ -84,7 +87,8 @@ var runGridTest = function (scrollSettings, run, options) {
 		//debugger
 
 		angular.element(document).find('body').append(scroller);
-		var tBodyViewport = angular.element(scroller.children()[1]);
+		var head = angular.element(scroller.children()[0]);
+		var body = angular.element(scroller.children()[1]);
 
 		$compile(scroller)(scope);
 
@@ -92,7 +96,7 @@ var runGridTest = function (scrollSettings, run, options) {
 		$timeout.flush();
 
 		try {
-			run(tBodyViewport, scope, $timeout);
+			run(head, body, scope, $timeout);
 		} finally {
 			scroller.remove();
 
