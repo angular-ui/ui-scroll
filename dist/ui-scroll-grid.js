@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-26T17:11:13.078Z
+ * Version: 1.4.1 -- 2016-05-26T23:58:09.875Z
  * License: MIT
  */
  
@@ -257,22 +257,16 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     function transform(row) {
       var parent = row[0].parent();
-      var last = row[row.length - 1].next();
       var visible = [];
 
       row.forEach(function (cell, index) {
         columns[index].applyCss(cell);
         visible[columns[index].mapTo] = row[index];
+        row[index].detach();
       });
 
-      var current = visible.shift();
-      current.detach();
-      if (last.length) last.before(current);else parent.append(current);
-
       visible.forEach(function (cell) {
-        cell.detach();
-        current.after(cell);
-        current = cell;
+        return parent.append(cell);
       });
     }
   }
