@@ -22,7 +22,7 @@ angular.module('ui.scroll.grid', [])
         }
         if (arguments.length == 2) {
           column.header.css(attr, value);
-          column.cells.forEach((cell) => cell.css(attr, value));
+          controller.forEachRow((row) => row[column.id].css(attr, value));
           column.css[attr] = value;
         }
       };
@@ -38,7 +38,7 @@ angular.module('ui.scroll.grid', [])
       Object.defineProperty(this, 'columnId', {get: () => column.id})
     }
 
-    function ColumnController(columns, header) {
+    function ColumnController(controller, columns, header) {
 
       this.header = header;
       this.cells = [];
@@ -57,19 +57,22 @@ angular.module('ui.scroll.grid', [])
       this.moveBefore = function(target) {
         if (target) {
           moveBefore(header, target.header);
-          this.cells.forEach((cell, i) => moveBefore(cell, target.cells[i]))
+          controller.forEachRow((row) => moveBefore(row[this.id], row[target.id]));
         } else {
           moveLast(header);
-          this.cells.forEach((cell) => moveLast(cell));
+          controller.forEachRow((row) => moveLast(row[this.id]));
         }
       };
 
       this.columnFromPoint = function (x,y) {
         if (insidePoint(header, x,y))
           return this;
-        for (let i=0; i<this.cells.length; i++)
-          if (insidePoint(this.cells[i], x,y))
-            return this;
+        let result;
+        controller.forEachRow((row) => { 
+          if (insidePoint(row[this.id], x,y))
+            result = this;
+        });
+        return result;
       }; 
 
       this.applyCss = function(target) {
@@ -110,71 +113,40 @@ angular.module('ui.scroll.grid', [])
     function GridController(scope, scrollViewport) {
       let columns = [];
       let rowMap = new Map();
-      let current;
-      let index;
 
       $timeout(() => {
         scrollViewport.adapter.gridAdapter = new GridAdapter(this);
         scrollViewport.adapter.transform = (scope, item) => transform(rowMap.get(scope), item);
       });
 
-      function transform (row) {
-        let parent = row[0].parent();
-        let last = row[row.length-1].next();
-        let visible = [];
-
-        row.forEach((cell, index) => {
-          columns[index].applyCss(cell);
-          visible[columns[index].mapTo] = row[index];
-        });
-
-        let current = visible.shift();
-        current.detach();
-        if (last.length)
-          last.before(current);
-        else
-          parent.append(current);
-
-        visible.forEach((cell) => {
-          cell.detach();
-          current.after(cell);
-          current = cell;
-        });
-      }
-
       this.registerColumn = function (header) {
-        columns.push(new ColumnController(columns, header));
+        columns.push(new ColumnController(this, columns, header));
       };
 
       this.registerCell = function (scope, cell) {
-        if (current !== scope) {
-          index = 0;
-          current = scope;
+        let row = rowMap.get(scope);
+
+        if (!row) {
+          row = [];
+          rowMap.set(scope, row);
         }
-        if (index < columns.length) {
-          columns[index].cells.push(cell);
-          
-          let row = rowMap.get(scope);
-          if (!row) {
-            row = [];
-            rowMap.set(scope, row);
-          }
-          row[index] = cell;
-          
-          return index++;
-        }
-        return -1;
+
+        if (row.length >= columns.length)
+          return false;
+        row.push(cell);
+        return true;
       };
 
-      this.unregisterCell = function (scope, column, cell) {
-        let index = columns[column].cells.indexOf(cell);
-        columns[column].cells.splice(index, 1);
-
+      this.unregisterCell = function (scope, cell) {
         let row = rowMap.get(scope);
         let i = row.indexOf(cell);
         row.splice(i, 1);
         if (!row.length)
           rowMap.delete(scope);
+      };
+
+      this.forEachRow = function (callback) {
+        rowMap.forEach(callback);
       };
 
       this.getColumns = function () {
@@ -200,6 +172,7 @@ angular.module('ui.scroll.grid', [])
           throw new Error('Failed to apply layout - number of layouts should match number of columns');
         }
         layouts.forEach((layout, index) => { columns[index].applyLayout(layout); });
+        transform(columns.map((column) => {return column.header;}));
         rowMap.forEach((row) => { transform(row); });
       };
 
@@ -242,6 +215,22 @@ angular.module('ui.scroll.grid', [])
           return new ColumnAdapter(this, column);
         return undefined;
       };
+
+      // function definitions
+
+      function transform (row) {
+        let parent = row[0].parent();
+        let visible = [];
+
+        row.forEach((cell, index) => {
+          columns[index].applyCss(cell);
+          visible[columns[index].mapTo] = row[index];
+          row[index].detach();
+        });
+
+        visible.forEach(cell => parent.append(cell));
+      }
+
     }
 
     return {
@@ -261,10 +250,8 @@ angular.module('ui.scroll.grid', [])
       link: ($scope, element, $attr, controllers, linker) => {
         if (controllers[0]) {
           let gridController = controllers[0].gridController;
-          let index = gridController.registerCell($scope, element);
-          if (index >= 0) {
-            element.attr('ui-scroll-td', index);
-            $scope.$on('$destroy', () => gridController.unregisterCell($scope, index, element));
+          if (gridController.registerCell($scope, element)) {
+            $scope.$on('$destroy', () => gridController.unregisterCell($scope, element));
           }
         }
       }

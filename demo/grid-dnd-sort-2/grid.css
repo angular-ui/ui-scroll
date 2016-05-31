@@ -1,0 +1,28 @@
+.grid {
+    height: 300px;
+}
+
+.col1 {
+    width: 80px;
+    font-style: italic;
+}
+
+.col2 {
+    width: 200px;
+}
+
+.col3 {
+    width: 80px;
+}
+
+.grid th {
+    cursor: pointer;
+}
+
+.angular-dnd-placeholder {
+    background: #ddd;
+}
+
+.active {
+    border: 1px dashed red;
+}

@@ -169,6 +169,12 @@
   font-size: 14px;
   font-weight: normal;
 }
+.viewport2 {
+  height: 300px;
+  list-style: none;
+  padding: 0;
+  width: 300px;
+}
 .viewport {
   margin-top: 15px;
   height: 300px;
