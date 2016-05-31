@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-26T17:11:13.078Z
+ * Version: 1.4.1 -- 2016-05-31T21:50:01.591Z
  * License: MIT
  */
  
@@ -423,11 +423,11 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var _this = this;
 
     var viewportScope = viewport.scope() || $rootScope;
-    var setTopVisible = $attr.topVisible ? $parse($attr.topVisible).assign : angular.noop;
-    var setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : angular.noop;
-    var setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
-    var setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
     var disabled = false;
+
+    injectValue($attr.adapter, this);
+
+    // Adapter API definition   
 
     Object.defineProperty(this, 'disabled', {
       get: function get() {
@@ -439,28 +439,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     });
 
     this.isLoading = false;
-
-    function applyUpdate(wrapper, newItems) {
-      if (!angular.isArray(newItems)) {
-        return;
-      }
-
-      var keepIt = void 0;
-      var pos = buffer.indexOf(wrapper) + 1;
-
-      newItems.reverse().forEach(function (newItem) {
-        if (newItem === wrapper.item) {
-          keepIt = true;
-          pos--;
-        } else {
-          buffer.insert(pos, newItem);
-        }
-      });
-
-      if (!keepIt) {
-        wrapper.op = 'remove';
-      }
-    }
 
     this.applyUpdates = function (arg1, arg2) {
       if (angular.isFunction(arg1)) {
@@ -498,7 +476,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     this.loading = function (value) {
       _this.isLoading = value;
-      setIsLoading(viewportScope, value);
+      injectValue($attr.isLoading, value);
     };
 
     this.calculateProperties = function () {
@@ -523,14 +501,58 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
             _this.topVisible = item.item;
             _this.topVisibleElement = item.element;
             _this.topVisibleScope = item.scope;
-            setTopVisible(viewportScope, item.item);
-            setTopVisibleElement(viewportScope, item.element);
-            setTopVisibleScope(viewportScope, item.scope);
+            injectValue($attr.topVisible, item.item);
+            injectValue($attr.topVisibleElement, item.element);
+            injectValue($attr.topVisibleScope, item.scope);
           }
           break;
         }
       }
     };
+
+    // private function definitions
+
+    function injectValue(expression, value) {
+      if (expression) {
+        var scope = viewportScope;
+        var s = viewportScope;
+        var i = expression.indexOf('.');
+        if (i > 0) {
+          var ctrlName = expression.slice(0, i);
+          while (s !== $rootScope) {
+            if (s.hasOwnProperty(ctrlName) && angular.isFunction(s[ctrlName])) {
+              scope = s;
+              expression = expression.slice(i + 1);
+              break;
+            }
+            s = s.$parent;
+          }
+        }
+        $parse(expression).assign(scope, value);
+      }
+    }
+
+    function applyUpdate(wrapper, newItems) {
+      if (!angular.isArray(newItems)) {
+        return;
+      }
+
+      var keepIt = void 0;
+      var pos = buffer.indexOf(wrapper) + 1;
+
+      newItems.reverse().forEach(function (newItem) {
+        if (newItem === wrapper.item) {
+          keepIt = true;
+          pos--;
+        } else {
+          buffer.insert(pos, newItem);
+        }
+      });
+
+      if (!keepIt) {
+        wrapper.op = 'remove';
+      }
+    }
   }
 
   function link($scope, element, $attr, controllers, linker) {
@@ -614,7 +636,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     };
 
     adapter.reload = reload;
-    if ($attr.adapter) $parse($attr.adapter).assign($scope, adapter);
 
     /**
      * Build padding elements
@@ -644,7 +665,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       reload();
     });
 
-    /* Function definitions */
+    /* Private function definitions */
 
     function isInvalid(rid) {
       return rid && rid !== ridActual || $scope.$$destroyed;

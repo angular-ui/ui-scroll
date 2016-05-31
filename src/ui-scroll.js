@@ -421,14 +421,11 @@ angular.module('ui.scroll', [])
 
       function Adapter($attr, viewport, buffer, adjustBuffer) {
         const viewportScope = viewport.scope() || $rootScope;
-        const setTopVisible = $attr.topVisible ? $parse($attr.topVisible).assign : angular.noop;
-        const setTopVisibleElement = $attr.topVisibleElement ? $parse($attr.topVisibleElement).assign : angular.noop;
-        const setTopVisibleScope = $attr.topVisibleScope ? $parse($attr.topVisibleScope).assign : angular.noop;
-        const setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
         let disabled = false;
 
-        if ($attr.adapter)
-          $parse($attr.adapter).assign(viewportScope, this);        
+        injectValue($attr.adapter, this);
+
+        // Adapter API definition    
 
         Object.defineProperty(this, 'disabled', {
           get: () => disabled,
@@ -436,28 +433,6 @@ angular.module('ui.scroll', [])
         });
 
         this.isLoading = false;
-
-        function applyUpdate(wrapper, newItems) {
-          if (!angular.isArray(newItems)) {
-            return;
-          }
-
-          let keepIt;
-          let pos = (buffer.indexOf(wrapper)) + 1;
-
-          newItems.reverse().forEach((newItem) => {
-            if (newItem === wrapper.item) {
-              keepIt = true;
-              pos--;
-            } else {
-              buffer.insert(pos, newItem);
-            }
-          });
-
-          if (!keepIt) {
-            wrapper.op = 'remove';
-          }
-        }
 
         this.applyUpdates = (arg1, arg2) => {
           if (angular.isFunction(arg1)) {
@@ -494,7 +469,7 @@ angular.module('ui.scroll', [])
 
         this.loading = (value) => {
           this.isLoading = value;
-          setIsLoading(viewportScope, value);
+          injectValue($attr.isLoading, value);
         };
 
         this.calculateProperties = () => {
@@ -515,14 +490,59 @@ angular.module('ui.scroll', [])
                 this.topVisible = item.item;
                 this.topVisibleElement = item.element;
                 this.topVisibleScope = item.scope;
-                setTopVisible(viewportScope, item.item);
-                setTopVisibleElement(viewportScope, item.element);
-                setTopVisibleScope(viewportScope, item.scope);
+                injectValue($attr.topVisible, item.item);
+                injectValue($attr.topVisibleElement, item.element);
+                injectValue($attr.topVisibleScope, item.scope);
               }
               break;
             }
           }
         };
+
+        // private function definitions
+
+        function injectValue(expression, value) {
+          if (expression) {
+            let scope = viewportScope;
+            let s = viewportScope;
+            let i = expression.indexOf('.');
+            if (i>0) {
+              let ctrlName = expression.slice(0, i);
+              while (s !== $rootScope) {
+                if (s.hasOwnProperty(ctrlName) && angular.isFunction(s[ctrlName])) {
+                  scope = s;
+                  expression = expression.slice(i+1);
+                  break;
+                }
+                s = s.$parent;
+              }
+            }
+            $parse(expression).assign(scope, value);
+          }
+        }
+
+        function applyUpdate(wrapper, newItems) {
+          if (!angular.isArray(newItems)) {
+            return;
+          }
+
+          let keepIt;
+          let pos = (buffer.indexOf(wrapper)) + 1;
+
+          newItems.reverse().forEach((newItem) => {
+            if (newItem === wrapper.item) {
+              keepIt = true;
+              pos--;
+            } else {
+              buffer.insert(pos, newItem);
+            }
+          });
+
+          if (!keepIt) {
+            wrapper.op = 'remove';
+          }
+        }
+
       }
 
       function link($scope, element, $attr, controllers, linker) {
@@ -631,7 +651,7 @@ angular.module('ui.scroll', [])
           reload();
         });
 
-        /* Function definitions */
+        /* Private function definitions */
 
         function isInvalid(rid) {
           return (rid && rid !== ridActual) || $scope.$$destroyed;
