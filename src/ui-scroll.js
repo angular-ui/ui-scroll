@@ -427,6 +427,9 @@ angular.module('ui.scroll', [])
         const setIsLoading = $attr.isLoading ? $parse($attr.isLoading).assign : angular.noop;
         let disabled = false;
 
+        if ($attr.adapter)
+          $parse($attr.adapter).assign(viewportScope, this);        
+
         Object.defineProperty(this, 'disabled', {
           get: () => disabled,
           set: (value) => (!(disabled = value)) ? adjustBuffer() : null
@@ -599,8 +602,6 @@ angular.module('ui.scroll', [])
             };
 
         adapter.reload = reload;
-        if ($attr.adapter)
-          $parse($attr.adapter).assign($scope, adapter);        
 
         /**
          * Build padding elements
