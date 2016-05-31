@@ -200,6 +200,59 @@ marked with uiScrollViewport directive, the browser window object will be used a
 </ANY>
 ```
 
+uiScrollTh and uiScrollTd directives
+-------------------
+###Description
+
+The uiScrollTh and uiScrollTd directives provide a way to build flexible dynamic grids. Handling of grid rows is done by the uiScroll directive itself. In addition to this uiScrollTh and uiScrollTd directive provide tools to programmatically change grid layout, inclduing applying styles to columns, changing column size and order, as well as saving the modifications to the layout and applying previosly saved layouts. 
+At this point the above functionality is supported only for table based scrollable grids.
+
+###Usage
+
+Here is the basic html template for scrollable grid using the uiScrollTh and uiScrollTd directives. Keep in mind that the height of the scroll viewport (in this case the `<TABLE>` tag) should be constrained. Also make sure that the initial column widths are applied uniformly to both headers (`<TH>`) and cells (`<TD>`)  
+```html
+<TABLE ui-scroll-viewport class="grid">
+    <THEAD style="display:block">
+       <TR>
+         <TH ui-scroll-th class="col1">header 1...</TH>
+         <TH ui-scroll-th class="col2">header 2...</TH>
+         ...
+       </TR>
+    </THEAD>
+    <TBODY ui-scroll="item in datasource" adapter="adapter">
+       <TR>
+         <TD ui-scroll-td class="col1">...</TD>
+         <TD ui-scroll-td class="col2">...</TD>
+         ...
+       </TR>
+    </TBODY>
+</TABLE>
+```
+
+### Dependencies
+
+The grid directives have the same dependency requirements as the uiScroll directive itself. To use the directives make sure the `ui.scroll.grid` module is on the list of the module dependencies. Also you have to load the dist/ui-scroll-grid.js file in your page. 
+
+### Controlling scrollable grid with the GirdAdapter
+
+GridAdapter object (along with ColumnAdapter objects) provides methods and properties to be used to change the scrollable grid layout. A reference to this object is injected as a property named `gridAdapter`in the scroller adapter. 
+
+`GridAdapter` object implements the following properties:
+
+* Property `columns` - returns an array of ColumnAdapter objects to be used to control the scrollable grid layout. The columns are listed in the same order as they appear in the browser.
+
+`GridAdapter` object implements the following methods:
+
+* Method `getLayout()` - returns an object describing current scrollable grid layout.
+* Method `applyLayout(layout)` - restores scrollabel grid layout to the state as defined by the object passed as the parameter
+* Method `columnFromPoint(x,y)` - if the coordinates belong to a scrollable grid column returns the appropriate ColumnAdapter object. Otherwise returns `undefined`.
+
+`ColumnAdapter` object implements the following methods:
+
+* Method `css(name, value)` - sets the css property `name` to `value` for the column header as well as for the column cells.
+* Method `moveBefore(column)` - moves the column in front of the column refrenced by the parameter. If the parameter is null the column will become the rightmost column.
+
+
 ###Examples
 
 Examples ([look here for sources](https://github.com/angular-ui/ui-scroll/tree/master/demo/examples)) consist of several pages (.html files) showing various ways to use the ui-scroll directive. Each page relays on its own datasource service (called `datasource`) defined in the javascript file with the same name and .js extension.
