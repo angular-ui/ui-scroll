@@ -75,6 +75,11 @@ The value is relative to the visible height of the area, the default is 0.5 and 
 * **start-index - value**, optional - index of the first item to be requested from the datasource. The default is 1.
 * **adapter - name**, optional - if provided a reference to the adapter object for the scroller instance will be placed in the member with the said name on the scope associated with the viewport. If the viewport is the window, the value will be placed on the $rootScope. If you have multiple scrollers within the same viewport, make sure that every one of them has its unique adapter name.
 
+* **adapter - expression**, optional - if provided a reference to the adapter object for the scroller instance will be injected in the specified scope. If you have multiple scrollers within the same viewport, make sure that every one of them has its unique adapter name.
+
+The expression can be any angular assignable expression. The scroller will try to treat the first part of the expression (the part to the left of the first `.`) as the name of the controller. If there is an (indirect) parent scope associated s of the scroller 
+The scope to inject the reference is the scope associated with the element marked with the [uiScrollViewport](#uiscrollviewport-directive) directive. If the viewport is the window, the value will be injected in the $rootScope. 
+
 Some of the properties offered by the adapter can also be accessed directly from the directive by using matching attributes. In the same way as for the adapter attribute, syntax for such attributes allows for providing a name to be used to access the corresponding value. A reference to the value will be placed on the scope associated with the viewport. If the viewport is the window, the value will be placed on the $rootScope.  Below is a list of such attributes:
 
 * **is-loading - name**, optional - a boolean value indicating whether there are any pending load requests will be placed in the member with the said name. See also `isLoading` adapter property.
