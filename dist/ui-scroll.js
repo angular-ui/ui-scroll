@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-05-31T21:50:01.591Z
+ * Version: 1.4.1 -- 2016-06-02T19:39:46.238Z
  * License: MIT
  */
  
@@ -514,21 +514,42 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     function injectValue(expression, value) {
       if (expression) {
+        var match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?$/);
+        if (!match) throw new Error('Expected injection expression in form of \'target\' or \'target on controller\' but got \'' + expression + '\'');
+        var target = match[1];
+        var controllerName = match[2];
         var scope = viewportScope;
-        var s = viewportScope;
-        var i = expression.indexOf('.');
-        if (i > 0) {
-          var ctrlName = expression.slice(0, i);
-          while (s !== $rootScope) {
-            if (s.hasOwnProperty(ctrlName) && angular.isFunction(s[ctrlName])) {
-              scope = s;
-              expression = expression.slice(i + 1);
+        if (controllerName) {
+          var candidate = viewport;
+          scope = undefined;
+          while (candidate.length) {
+            var controller = candidate.attr('ng-controller');
+            if (controller === controllerName) {
+              scope = candidate.scope();
               break;
             }
-            s = s.$parent;
+            candidate = candidate.parent();
           }
+          if (!scope) throw new Error('Failed to locate target controller \'' + controllerName + '\' to inject \'' + target + '\'');
         }
-        $parse(expression).assign(scope, value);
+        $parse(target).assign(scope, value);
+        /*
+                    let scope = viewportScope;
+                    let s = viewportScope;
+                    let i = expression.indexOf('.');
+                    if (i>0) {
+                      let ctrlName = expression.slice(0, i);
+                      while (s !== $rootScope) {
+                        if (s.hasOwnProperty(ctrlName) && angular.isFunction(s[ctrlName])) {
+                          scope = s;
+                          expression = expression.slice(i+1);
+                          break;
+                        }
+                        s = s.$parent;
+                      }
+                    }
+                    $parse(expression).assign(scope, value);
+                    */
       }
     }
 
