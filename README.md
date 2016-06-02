@@ -73,8 +73,6 @@ dl as a repeated tag is not supported.
 * **padding - value**, optional - extra height added to the visible area for the purpose of determining when the items should be created/destroyed.
 The value is relative to the visible height of the area, the default is 0.5 and the minimal value is 0.3
 * **start-index - value**, optional - index of the first item to be requested from the datasource. The default is 1.
-* **adapter - name**, optional - if provided a reference to the adapter object for the scroller instance will be placed in the member with the said name on the scope associated with the viewport. If the viewport is the window, the value will be placed on the $rootScope. If you have multiple scrollers within the same viewport, make sure that every one of them has its unique adapter name.
-
 * **adapter - expression**, optional - if provided a reference to the adapter object for the scroller instance will be injected in the appropriate scope. If you have multiple scrollers within the same viewport, make sure that every one of them has its unique adapter name.
 
 Some of the properties offered by the adapter can also be accessed directly from the directive by using matching attributes. In the same way as for the adapter attribute, syntax for such attributes allows for providing a name to be used to access the corresponding value. A reference to the value will be placed on the scope associated with the viewport. If the viewport is the window, the value will be placed on the $rootScope.  Below is a list of such attributes:
