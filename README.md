@@ -189,7 +189,7 @@ In the fashion similar to ngRepeat the following animations are supported:
 * .enter - when a new item is added to the list
 * .leave - when an item is removed from the list
 
-Animations are only supported for the updates made via applyUpdates method. Updates caused by scrolling are not going through animation transitions. Usual [rules](https://docs.angularjs.org/api/ngAnimate) of working with Angular animations apply. Look [here](http://rawgit.com/angular-ui/ui-scroll/master/demo/examples/animation.html) for an example of animations in the scroller
+Animations are only supported for the updates made via applyUpdates method. Updates caused by scrolling are not going through animation transitions. Usual [rules](https://docs.angularjs.org/api/ngAnimate) of working with Angular animations apply. Look [here](http://rawgit.com/angular-ui/ui-scroll/master/demo/animation/animation.html) for an example of animations in the scroller
 
 uiScrollViewport directive
 -------------------
@@ -320,31 +320,3 @@ To run the examples use this [link](http://rawgithub.com/angular-ui/ui-scroll/ma
 * Deep 'name' properties access via dot-notation in template.
 * Fixed the problem occurring if the scroller is $destroyed while there are requests pending: [#64](https://github.com/Hill30/NGScroller/issues/64).
 
-####v1.0.3
-* Fixed memory leak on scroller destroy: [#63](https://github.com/Hill30/NGScroller/issues/63).
-* Removed examples from bower download list.
-
-####v1.0.2
-* Registration of ui-scroll in bower.
-
-####v1.0.1
-* Deep datasource access via dot-notation in template.
-* [Angular 1.3.x breaking change](https://github.com/angular/angular.js/issues/8876) fix with backward compatibility.
-
-####v1.0.0
-
-* Renamed ng-scroll to ui-scroll.
-* Reduced server requests by eof and bof recalculation.
-* Support for inline-block/floated elements.
-* Reduced flickering via new blocks rendering optimization.
-* Prevented unwanted scroll bubbling.
-* Fixed race-condition and others minor bugs.
-* Added more usage examples (such as cache within datasource implementation).
-
-####v0.1.*
-
-Introduced `is-loading` and `top-visible-*` attributes. Streamlined and added a few more usage examples.
-
-####v0.0.*
-
-Initial commit including uiScroll, uiScrollViewPort directives and usage examples.
