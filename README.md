@@ -22,7 +22,7 @@ Look [here](https://github.com/Hill30/NGScroller) for older versions.
 The uiScroll directive is similar to the ngRepeat. Like the ngRepeat, uiScroll directive instantiates a template once per item from a collection.
 Each template instance gets its own scope, where the given loop variable is set to the current collection item. The collection content is provided by the datasource. The datasource name is specified in the scroll_expression. Starting with v 1.2.0 uiScroll supports animation.
 
-One of the most important use cases for the directive is using it to build scrollable grids. There is no magic in doing it - all what's involved is putting together the HTML to be repeated and there are numerous ways to do it. It is a bit trickier if you want to give your user ability to adjust the grid (column widts, column order, etc.) as well as save/restore the adjustments. [uiScrollTd and uiScrollTh](#uiscrollth-and-uiscrolltd-directives) companion directives were created to simplify this task.
+One of the most important use cases for the directive is using it to build scrollable grids. There is no magic in doing it - all what's involved is putting together the HTML to be repeated and there are numerous ways to do it. It is a bit trickier if you want to give your user ability to adjust the grid (column widts, column order, etc.) as well as save/restore the adjustments. [uiScrollTd](#uiscrollth-and-uiscrolltd-directives) and [uiScrollTh](#uiscrollth-and-uiscrolltd-directives) companion directives were created to simplify this task.
 
 ### Dependencies
 
