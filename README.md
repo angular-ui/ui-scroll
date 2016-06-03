@@ -20,16 +20,9 @@ Look [here](https://github.com/Hill30/NGScroller) for older versions.
 ###Description
 
 The uiScroll directive is similar to the ngRepeat. Like the ngRepeat, uiScroll directive instantiates a template once per item from a collection.
-Each template instance gets its own scope, where the given loop variable is set to the current collection item. The collection content is provided by
-the datasource. The datasource name is specified in the scroll_expression. Starting with v 1.2.0 uiScroll supports animation.
+Each template instance gets its own scope, where the given loop variable is set to the current collection item. The collection content is provided by the datasource. The datasource name is specified in the scroll_expression. Starting with v 1.2.0 uiScroll supports animation.
 
-The viewport is an element representing the space where the items from the collection are to be shown. Unless specified explicitly with the
-uiScrollViewport directive (see below), browser window will be used as viewport.
-
-**Important: viewport height must be constrained.** The directive will stop asking the datasource for more elements only when it has enough
- to fill out the viewport. If the height of the viewport is not constrained (style="height:auto")  it will pull the entire content of the datasource
- and may throw an Error depending on the number of items in the datasource. Even if it does not, using the directive this way does not provide any
- advantages over using ng-repeat, because item template will be always instantiated for every item in the datasource.
+One of the most important use cases for the directive is using it to build scrollable grids. There is no magic in doing it - all what's involved is putting together the HTML to be repeated and there are numerous ways to do it. It is a bit trickier if you want to give your user ability to adjust the grid (column widts, column order, etc.) as well as save/restore the adjustments. [uiScrollTd and uiScrollTh](#uiscrollth-and-uiscrolltd-directives) companion directives were created to simplify this task.
 
 ### Dependencies
 
@@ -59,8 +52,15 @@ If you plan to use ui-scroll over jQuery feel free to skip ui-scroll-jqlite.
 Listing `ANY` for the tag, the directive can be applied to, stretches the truth - a little bit. The directive works well with majority of
 the 'usual' tags - divs, spans, a, inputs, etc. For all of them the viewport should be a div (unless it is the window). Some other tags
 require special treatment. If the repeated tag is a li, it is best to use ul or ol as a viewport. For a tr as a repeated tag the
-viewport has to be the tbody.
+viewport has to be the table or tbody.
 dl as a repeated tag is not supported.
+
+The viewport is an element representing the space where the items from the collection are to be shown. Unless specified explicitly with the [uiScrollViewport](#uiscrollviewport-directive) directive, browser window will be used as the viewport.
+
+**Important: viewport height must be constrained.** The directive will stop asking the datasource for more elements only when it has enough
+ to fill out the viewport. If the height of the viewport is not constrained (style="height:auto")  it will pull the entire content of the datasource
+ and may throw an Error depending on the number of items in the datasource. Even if it does not, using the directive this way does not provide any
+ advantages over using ng-repeat, because item template will be always instantiated for every item in the datasource.
 
 ###Directive info
 * This directive creates a new scope
