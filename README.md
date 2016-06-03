@@ -223,8 +223,8 @@ Here is the basic html template for scrollable grid using the uiScrollTh and uiS
          ...
        </TR>
     </THEAD>
-    <TBODY ui-scroll="item in datasource" adapter="adapter">
-       <TR>
+    <TBODY>
+       <TR ui-scroll="item in datasource" adapter="adapter">
          <TD ui-scroll-td class="col1">...</TD>
          <TD ui-scroll-td class="col2">...</TD>
          ...
