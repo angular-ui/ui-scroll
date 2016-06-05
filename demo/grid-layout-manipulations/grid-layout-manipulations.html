@@ -23,6 +23,15 @@
 		<p>
 			Here we have a demo on grid layout manipulations.
 			The layout can be updated out of the components core, saved and applied.
+			To apply some layout you may call applyLayout method on gridAdapter:
+		<div class="code">
+				<pre>
+$scope.adapter.gridAdapter.applyLayout(layout)</pre>
+			The "layout" variable must have an appropriate format which exactly matches the format of getLayout() method call result.
+		</div>
+				<pre>
+layout = $scope.adapter.gridAdapter.getLayout()</pre>
+			Note that saving via cookie does not work when you run this demo locally.
 		</p>
 	</div>
 

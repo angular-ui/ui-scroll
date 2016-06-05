@@ -17,12 +17,17 @@
 
 	<a class="back" href="../index.html">browse other examples</a>
 
-	<h1 class="page-header page-header-exapmle">Grid drag and drop sort</h1>
+	<h1 class="page-header page-header-exapmle">Grid drag and drop sort, moveBefore</h1>
 
 	<div class="description">
-		In this demo <a href="https://github.com/Tuch/angular-dnd">angular-dnd</a> component is being used to provide
-		columns drag and drop functionality.
-
+		<div class="code">
+		Here two methods are being demonstrated. columnFromPoint() which allows you to get the appropriate ColumnAdapter object by coordinates:
+				<pre>
+target = $scope.adapter.gridAdapter.columnFromPoint(evt.clientX, evt.clientY)</pre>
+		Another method is moveBefore() which provides an ability to move one column in front of another:
+				<pre>
+column.moveBefore(target)</pre>
+		</div>
 	</div>
 
 	<table class="grid" ui-scroll-viewport>
