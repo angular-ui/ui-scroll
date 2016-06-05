@@ -268,8 +268,10 @@ To run the examples use this [link](http://rawgithub.com/angular-ui/ui-scroll/ma
 
 ###History
 
-###next release
-* Added disable attribute to ignore user's scroll events.
+###v1.5.0
+* Implemented uiScrollTh and uiScrollTd directives; uiScroll major refactoring.
+* Added "disabled" property to the adapter object to ignore user's scroll events.
+* Implemented "on controller" syntax to specify the scope where an adapter object has to be injected.
 
 ###v1.4.1
 * Developed a new complex approach of paddings elements height calculation (see [details](https://github.com/angular-ui/ui-scroll/pull/77)).
