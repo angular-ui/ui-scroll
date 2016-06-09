@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.4.1 -- 2016-06-02T19:39:46.238Z
+ * Version: 1.5.0 -- 2016-06-09T21:24:24.010Z
  * License: MIT
  */
  
@@ -420,12 +420,15 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   }
 
   function Adapter($attr, viewport, buffer, adjustBuffer) {
-    var _this = this;
-
     var viewportScope = viewport.scope() || $rootScope;
     var disabled = false;
+    var self = this;
 
-    injectValue($attr.adapter, this);
+    createValueInjector('adapter')(self);
+    var topVisibleInjector = createValueInjector('topVisible');
+    var topVisibleElementInjector = createValueInjector('topVisibleElement');
+    var topVisibleScopeInjector = createValueInjector('topVisibleScope');
+    var isLoadingInjector = createValueInjector('isLoading');
 
     // Adapter API definition   
 
@@ -475,8 +478,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     };
 
     this.loading = function (value) {
-      _this.isLoading = value;
-      injectValue($attr.isLoading, value);
+      isLoadingInjector(value);
     };
 
     this.calculateProperties = function () {
@@ -498,12 +500,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           topHeight += itemHeight;
         } else {
           if (isNewRow) {
-            _this.topVisible = item.item;
-            _this.topVisibleElement = item.element;
-            _this.topVisibleScope = item.scope;
-            injectValue($attr.topVisible, item.item);
-            injectValue($attr.topVisibleElement, item.element);
-            injectValue($attr.topVisibleScope, item.scope);
+            topVisibleInjector(item.item);
+            topVisibleElementInjector(item.element);
+            topVisibleScopeInjector(item.scope);
           }
           break;
         }
@@ -512,13 +511,15 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     // private function definitions
 
-    function injectValue(expression, value) {
+    function createValueInjector(attribute) {
+      var expression = $attr[attribute];
+      var scope = viewportScope;
+      var assign = undefined;
       if (expression) {
         var match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?$/);
         if (!match) throw new Error('Expected injection expression in form of \'target\' or \'target on controller\' but got \'' + expression + '\'');
         var target = match[1];
         var controllerName = match[2];
-        var scope = viewportScope;
         if (controllerName) {
           var candidate = viewport;
           scope = undefined;
@@ -532,25 +533,13 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           }
           if (!scope) throw new Error('Failed to locate target controller \'' + controllerName + '\' to inject \'' + target + '\'');
         }
-        $parse(target).assign(scope, value);
-        /*
-                    let scope = viewportScope;
-                    let s = viewportScope;
-                    let i = expression.indexOf('.');
-                    if (i>0) {
-                      let ctrlName = expression.slice(0, i);
-                      while (s !== $rootScope) {
-                        if (s.hasOwnProperty(ctrlName) && angular.isFunction(s[ctrlName])) {
-                          scope = s;
-                          expression = expression.slice(i+1);
-                          break;
-                        }
-                        s = s.$parent;
-                      }
-                    }
-                    $parse(expression).assign(scope, value);
-                    */
+        assign = $parse(target).assign;
       }
+      return function (value) {
+        if (self !== value) // just to avoid injecting adapter reference in the adapter itself. Kludgy, I know.
+          self[attribute] = value;
+        if (assign) assign(scope, value);
+      };
     }
 
     function applyUpdate(wrapper, newItems) {
