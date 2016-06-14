@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.0 -- 2016-06-14T18:59:53.843Z
+ * Version: 1.5.0 -- 2016-06-14T19:38:18.607Z
  * License: MIT
  */
  
@@ -567,7 +567,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
   function link($scope, element, $attr, controllers, linker) {
 
-    var match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\$\w\.]+)\s*$/);
+    var match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([(\w|\$)\.]+)\s*$/);
 
     if (!match) throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
 
