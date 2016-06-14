@@ -505,7 +505,7 @@ angular.module('ui.scroll', [])
         function createValueInjector(attribute) {
           let expression = $attr[attribute];
           let scope = viewportScope;
-          let assign = undefined;
+          let assign = null;
           if (expression) {
             let match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?$/);
             if (!match)

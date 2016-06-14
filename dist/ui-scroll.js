@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.0 -- 2016-06-09T21:24:24.010Z
+ * Version: 1.5.0 -- 2016-06-14T18:59:53.843Z
  * License: MIT
  */
  
@@ -514,7 +514,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     function createValueInjector(attribute) {
       var expression = $attr[attribute];
       var scope = viewportScope;
-      var assign = undefined;
+      var assign = null;
       if (expression) {
         var match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?$/);
         if (!match) throw new Error('Expected injection expression in form of \'target\' or \'target on controller\' but got \'' + expression + '\'');
@@ -567,7 +567,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
   function link($scope, element, $attr, controllers, linker) {
 
-    var match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/);
+    var match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([(\w|\$)\.]+)\s*$/);
 
     if (!match) throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
 
