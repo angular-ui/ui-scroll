@@ -556,7 +556,7 @@ angular.module('ui.scroll', [])
 
       function link($scope, element, $attr, controllers, linker) {
 
-        const match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([\w\.]+)\s*$/);
+        const match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([(\w|\$)\.]+)\s*$/);
 
         if (!(match))
           throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
