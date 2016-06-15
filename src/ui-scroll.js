@@ -123,6 +123,7 @@ angular.module('ui.scroll', [])
               ++buffer.next;
               buffer.insert('append', item);
             });
+            buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
           },
 
           prepend(items) {
@@ -130,6 +131,7 @@ angular.module('ui.scroll', [])
               --buffer.first;
               buffer.insert('prepend', item);
             });
+            buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
           },
 
           /**
@@ -173,14 +175,6 @@ angular.module('ui.scroll', [])
             buffer.splice(buffer.indexOf(arg1), 1);
 
             return removeElementAnimated(arg1);
-          },
-
-          setUpper() {
-            buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
-          },
-
-          setLower() {
-            buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
           },
 
           effectiveHeight(elements) {
@@ -505,7 +499,7 @@ angular.module('ui.scroll', [])
         function createValueInjector(attribute) {
           let expression = $attr[attribute];
           let scope = viewportScope;
-          let assign = undefined;
+          let assign;
           if (expression) {
             let match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?$/);
             if (!match)
@@ -885,7 +879,6 @@ angular.module('ui.scroll', [])
                 if (result.length > 0) {
                   viewport.clipTop();
                   buffer.append(result);
-                  buffer.setUpper();
                 }
 
                 adjustBufferAfterFetch(rid);
@@ -910,7 +903,6 @@ angular.module('ui.scroll', [])
                     viewport.clipBottom();
                   }
                   buffer.prepend(result);
-                  buffer.setLower();
                 }
 
                 adjustBufferAfterFetch(rid);
