@@ -381,6 +381,18 @@ angular.module('ui.scroll', [])
             bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
           },
 
+          adjustPaddingUnbound(updates) {
+            if (updates.prepended && updates.prepended.length)
+              topPadding.height(topPadding.height() + updates.estimatedPaddingIncrement);
+            else
+              viewport.adjustPadding();
+          },
+
+          adjustPaddingBound(updates) {
+            if (updates.prepended && updates.prepended.length)
+              topPadding.height(topPadding.height() - updates.estimatedPaddingIncrement);
+          },
+
           adjustScrollTopAfterMinIndexSet(topPaddingHeightOld) {
             // additional scrollTop adjustment in case of datasource.minIndex external set
             if(buffer.minIndexUser && buffer.minIndex > buffer.minIndexUser) {
@@ -841,10 +853,13 @@ angular.module('ui.scroll', [])
         function adjustBufferAfterFetch(rid) {
           let updates = updateDOM();
 
-          viewport.adjustPadding();
+          viewport.adjustPaddingUnbound(updates);
 
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
+
+            viewport.adjustPaddingBound(updates);
+
             if (isInvalid(rid)) {
               return;
             }
