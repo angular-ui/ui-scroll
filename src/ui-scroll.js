@@ -371,8 +371,8 @@ angular.module('ui.scroll', [])
             let averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
 
             // average heights calculation, items that have never been reached
-            let adjustTopPadding = buffer.minIndexUser && buffer.minIndex > buffer.minIndexUser;
-            let adjustBottomPadding = buffer.maxIndexUser && buffer.maxIndex < buffer.maxIndexUser;
+            let adjustTopPadding = buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser;
+            let adjustBottomPadding = buffer.maxIndexUser !== null && buffer.maxIndex < buffer.maxIndexUser;
             let topPaddingHeightAdd = adjustTopPadding ? (buffer.minIndex - buffer.minIndexUser) * averageItemHeight : 0;
             let bottomPaddingHeightAdd = adjustBottomPadding ? (buffer.maxIndexUser - buffer.maxIndex) * averageItemHeight : 0;
 
@@ -395,7 +395,7 @@ angular.module('ui.scroll', [])
 
           adjustScrollTopAfterMinIndexSet(topPaddingHeightOld) {
             // additional scrollTop adjustment in case of datasource.minIndex external set
-            if(buffer.minIndexUser && buffer.minIndex > buffer.minIndexUser) {
+            if (buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser) {
               let diff = topPadding.height() - topPaddingHeightOld;
               viewport.scrollTop(viewport.scrollTop() + diff);
             }
