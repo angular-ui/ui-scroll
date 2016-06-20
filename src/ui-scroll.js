@@ -23,7 +23,7 @@ angular.module('ui.scroll', [])
           self.container = element;
           self.viewport = element;
 
-          angular.forEach(element.children(), 
+          angular.forEach(element.children(),
             (child => {
               if (child.tagName.toLowerCase() === 'tbody') {
                 self.viewport = angular.element(child);
@@ -436,7 +436,7 @@ angular.module('ui.scroll', [])
         let topVisibleScopeInjector = createValueInjector('topVisibleScope');
         let isLoadingInjector = createValueInjector('isLoading');
 
-        // Adapter API definition    
+        // Adapter API definition
 
         Object.defineProperty(this, 'disabled', {
           get: () => disabled,
@@ -653,8 +653,8 @@ angular.module('ui.scroll', [])
          */
         linker((clone, scope) => {
           viewport.createPaddingElements(clone[0]);
-          // we do not include the clone in the DOM. It means that the nested directives will not 
-          // be able to reach the parent directives, but in this case it is intentional because we 
+          // we do not include the clone in the DOM. It means that the nested directives will not
+          // be able to reach the parent directives, but in this case it is intentional because we
           // created the clone to access the template tag name
           scope.$destroy();
           clone.remove();
@@ -696,7 +696,7 @@ angular.module('ui.scroll', [])
             startIndex = arguments[0];
 
           buffer.reset(startIndex);
-          adjustBuffer();
+          return adjustBuffer();
         }
 
         function isElementVisible(wrapper) {
@@ -765,7 +765,7 @@ angular.module('ui.scroll', [])
                 toBeRemoved.push(wrapper);
             }
           });
-          
+
           toBeRemoved.forEach((wrapper) => promises = promises.concat(buffer.remove(wrapper)));
 
           if (toBePrepended.length)
@@ -815,17 +815,17 @@ angular.module('ui.scroll', [])
                 // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
             if (pending.push(true) === 1) {
               fetch(rid);
-              adapter.loading(true);              
+              adapter.loading(true);
             }
           } else if (viewport.shouldLoadTop() && (keepFetching || pending[0])) {
               // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
               // BTW there will always be at least 1 element in the pending array because bottom is fetched first
             if (pending.push(false) === 1) {
               fetch(rid);
-              adapter.loading(true);              
+              adapter.loading(true);
             }
           }
-        }          
+        }
 
         function adjustBuffer(rid) {
           if(!rid) { // dismiss pending requests
@@ -836,7 +836,7 @@ angular.module('ui.scroll', [])
           let updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
-          $timeout(() => {
+          return $timeout(() => {
             if (isInvalid(rid)) {
               return;
             }
@@ -863,7 +863,7 @@ angular.module('ui.scroll', [])
             if (isInvalid(rid)) {
               return;
             }
-            
+
             enqueueFetch(rid, updatePaddings(rid, updates));
             pending.shift();
 
