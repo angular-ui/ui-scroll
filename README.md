@@ -268,6 +268,10 @@ To run the examples use this [link](http://rawgithub.com/angular-ui/ui-scroll/ma
 
 ###History
 
+###v1.5.1
+* Refactored adjustments during elements append/prepend.
+* Bof/eof information is accessible out of the scroller.
+
 ###v1.5.0
 * Implemented uiScrollTh and uiScrollTd directives; uiScroll major refactoring.
 * Added "disabled" property to the adapter object to ignore user's scroll events.
