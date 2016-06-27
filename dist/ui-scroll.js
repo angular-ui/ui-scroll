@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.0 -- 2016-06-19T00:30:40.294Z
+ * Version: 1.5.0 -- 2016-06-27T00:06:28.439Z
  * License: MIT
  */
  
@@ -386,12 +386,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         topPadding.height(topPaddingHeight + topPaddingHeightAdd);
         bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
       },
-      adjustPaddingUnbound: function adjustPaddingUnbound(updates) {
-        if (updates.prepended && updates.prepended.length) topPadding.height(topPadding.height() + updates.estimatedPaddingIncrement);else viewport.adjustPadding();
-      },
-      adjustPaddingBound: function adjustPaddingBound(updates) {
-        if (updates.prepended && updates.prepended.length) topPadding.height(topPadding.height() - updates.estimatedPaddingIncrement);
-      },
       adjustScrollTopAfterMinIndexSet: function adjustScrollTopAfterMinIndexSet(topPaddingHeightOld) {
         // additional scrollTop adjustment in case of datasource.minIndex external set
         if (buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser) {
@@ -399,7 +393,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           viewport.scrollTop(viewport.scrollTop() + diff);
         }
       },
-      adjustScrollTopAfterPrepend: function adjustScrollTopAfterPrepend(height) {
+      adjustScrollTopAfterPrepend: function adjustScrollTopAfterPrepend(updates) {
+        if (!updates.prepended.length) return;
+        var height = buffer.effectiveHeight(updates.prepended);
         var paddingHeight = topPadding.height() - height;
         if (paddingHeight >= 0) {
           topPadding.height(paddingHeight);
@@ -432,7 +428,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     var topVisibleScopeInjector = createValueInjector('topVisibleScope');
     var isLoadingInjector = createValueInjector('isLoading');
 
-    // Adapter API definition   
+    // Adapter API definition
 
     Object.defineProperty(this, 'disabled', {
       get: function get() {
@@ -720,14 +716,13 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function insertWrapperContent(wrapper, insertAfter) {
-
       createElement(wrapper, insertAfter, viewport.insertElement);
-
-      if (isElementVisible(wrapper)) return true;
-      wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function () {
-        return visibilityWatcher(wrapper);
-      });
-      return false;
+      if (!isElementVisible(wrapper)) {
+        wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function () {
+          return visibilityWatcher(wrapper);
+        });
+      }
+      wrapper.element.addClass('ng-hide'); // hide inserted elements before data binding
     }
 
     function createElement(wrapper, insertAfter, insertElement) {
@@ -783,12 +778,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         return item.scope.$index = buffer.first + i;
       });
 
-      var estimatedPaddingIncrement = buffer.effectiveHeight(toBePrepended);
-
-      viewport.adjustScrollTopAfterPrepend(estimatedPaddingIncrement);
-
       return {
-        estimatedPaddingIncrement: estimatedPaddingIncrement,
         prepended: toBePrepended,
         removed: toBeRemoved,
         inserted: inserted,
@@ -797,11 +787,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function updatePaddings(rid, updates) {
-
-      var adjustedPaddingHeight = buffer.effectiveHeight(updates.prepended) - updates.estimatedPaddingIncrement;
-
-      viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
-
       // schedule another adjustBuffer after animation completion
       if (updates.animated.length) {
         $q.all(updates.animated).then(function () {
@@ -811,24 +796,26 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       } else {
         viewport.adjustPadding();
       }
-
-      // return true if inserted elements have height > 0
-      return adjustedPaddingHeight + updates.estimatedPaddingIncrement > 0 || buffer.effectiveHeight(updates.inserted) > 0;
     }
 
-    function enqueueFetch(rid, keepFetching) {
-      if (viewport.shouldLoadBottom() && keepFetching) {
-        // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
-        if (pending.push(true) === 1) {
-          fetch(rid);
-          adapter.loading(true);
+    function enqueueFetch(rid, updates) {
+      if (viewport.shouldLoadBottom()) {
+        if (!updates || buffer.effectiveHeight(updates.inserted) > 0) {
+          // this means that at least one item appended in the last batch has height > 0
+          if (pending.push(true) === 1) {
+            fetch(rid);
+            adapter.loading(true);
+          }
         }
-      } else if (viewport.shouldLoadTop() && (keepFetching || pending[0])) {
-        // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
-        // BTW there will always be at least 1 element in the pending array because bottom is fetched first
-        if (pending.push(false) === 1) {
-          fetch(rid);
-          adapter.loading(true);
+      } else if (viewport.shouldLoadTop()) {
+        if (!updates || buffer.effectiveHeight(updates.prepended) > 0 || pending[0]) {
+          // this means that at least one item appended in the last batch has height > 0
+          // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
+          // BTW there will always be at least 1 element in the pending array because bottom is fetched first
+          if (pending.push(false) === 1) {
+            fetch(rid);
+            adapter.loading(true);
+          }
         }
       }
     }
@@ -844,12 +831,21 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       // We need the item bindings to be processed before we can do adjustment
       $timeout(function () {
+
+        // show elements after data binging has been done
+        updates.inserted.forEach(function (w) {
+          return w.element.removeClass('ng-hide');
+        });
+        updates.prepended.forEach(function (w) {
+          return w.element.removeClass('ng-hide');
+        });
+
         if (isInvalid(rid)) {
           return;
         }
 
         updatePaddings(rid, updates);
-        enqueueFetch(rid, true);
+        enqueueFetch(rid);
 
         if (!pending.length) {
           adapter.calculateProperties();
@@ -860,18 +856,25 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     function adjustBufferAfterFetch(rid) {
       var updates = updateDOM();
 
-      viewport.adjustPaddingUnbound(updates);
-
       // We need the item bindings to be processed before we can do adjustment
       $timeout(function () {
 
-        viewport.adjustPaddingBound(updates);
+        // show elements after data binging has been done
+        updates.inserted.forEach(function (w) {
+          return w.element.removeClass('ng-hide');
+        });
+        updates.prepended.forEach(function (w) {
+          return w.element.removeClass('ng-hide');
+        });
+
+        viewport.adjustScrollTopAfterPrepend(updates);
 
         if (isInvalid(rid)) {
           return;
         }
 
-        enqueueFetch(rid, updatePaddings(rid, updates));
+        updatePaddings(rid, updates);
+        enqueueFetch(rid, updates);
         pending.shift();
 
         if (pending.length) fetch(rid);else {
@@ -936,7 +939,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     function resizeAndScrollHandler() {
       if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
 
-        enqueueFetch(ridActual, true);
+        enqueueFetch(ridActual);
 
         if (pending.length) {
           unbindEvents();

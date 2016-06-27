@@ -23,7 +23,7 @@ angular.module('ui.scroll', [])
           self.container = element;
           self.viewport = element;
 
-          angular.forEach(element.children(), 
+          angular.forEach(element.children(),
             (child => {
               if (child.tagName.toLowerCase() === 'tbody') {
                 self.viewport = angular.element(child);
@@ -381,18 +381,6 @@ angular.module('ui.scroll', [])
             bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
           },
 
-          adjustPaddingUnbound(updates) {
-            if (updates.prepended && updates.prepended.length)
-              topPadding.height(topPadding.height() + updates.estimatedPaddingIncrement);
-            else
-              viewport.adjustPadding();
-          },
-
-          adjustPaddingBound(updates) {
-            if (updates.prepended && updates.prepended.length)
-              topPadding.height(topPadding.height() - updates.estimatedPaddingIncrement);
-          },
-
           adjustScrollTopAfterMinIndexSet(topPaddingHeightOld) {
             // additional scrollTop adjustment in case of datasource.minIndex external set
             if (buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser) {
@@ -401,11 +389,15 @@ angular.module('ui.scroll', [])
             }
           },
 
-          adjustScrollTopAfterPrepend(height) {
+          adjustScrollTopAfterPrepend(updates) {
+            if(!updates.prepended.length)
+              return;
+            const height = buffer.effectiveHeight(updates.prepended);
             const paddingHeight = topPadding.height() - height;
             if (paddingHeight >= 0) {
               topPadding.height(paddingHeight);
-            } else {
+            }
+            else {
               topPadding.height(0);
               viewport.scrollTop(viewport.scrollTop() - paddingHeight);
             }
@@ -436,7 +428,7 @@ angular.module('ui.scroll', [])
         let topVisibleScopeInjector = createValueInjector('topVisibleScope');
         let isLoadingInjector = createValueInjector('isLoading');
 
-        // Adapter API definition    
+        // Adapter API definition
 
         Object.defineProperty(this, 'disabled', {
           get: () => disabled,
@@ -653,8 +645,8 @@ angular.module('ui.scroll', [])
          */
         linker((clone, scope) => {
           viewport.createPaddingElements(clone[0]);
-          // we do not include the clone in the DOM. It means that the nested directives will not 
-          // be able to reach the parent directives, but in this case it is intentional because we 
+          // we do not include the clone in the DOM. It means that the nested directives will not
+          // be able to reach the parent directives, but in this case it is intentional because we
           // created the clone to access the template tag name
           scope.$destroy();
           clone.remove();
@@ -716,13 +708,11 @@ angular.module('ui.scroll', [])
         }
 
         function insertWrapperContent(wrapper, insertAfter) {
-
           createElement(wrapper, insertAfter, viewport.insertElement);
-
-          if (isElementVisible(wrapper))
-            return true;
-          wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(() => visibilityWatcher(wrapper));
-          return false;
+          if (!isElementVisible(wrapper)) {
+            wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(() => visibilityWatcher(wrapper));
+          }
+          wrapper.element.addClass('ng-hide'); // hide inserted elements before data binding
         }
 
         function createElement(wrapper, insertAfter, insertElement) {
@@ -765,7 +755,7 @@ angular.module('ui.scroll', [])
                 toBeRemoved.push(wrapper);
             }
           });
-          
+
           toBeRemoved.forEach((wrapper) => promises = promises.concat(buffer.remove(wrapper)));
 
           if (toBePrepended.length)
@@ -776,12 +766,7 @@ angular.module('ui.scroll', [])
 
           buffer.forEach((item, i) => item.scope.$index = buffer.first + i);
 
-          let estimatedPaddingIncrement = buffer.effectiveHeight(toBePrepended);
-
-          viewport.adjustScrollTopAfterPrepend(estimatedPaddingIncrement);
-
           return {
-            estimatedPaddingIncrement: estimatedPaddingIncrement,
             prepended: toBePrepended,
             removed: toBeRemoved,
             inserted: inserted,
@@ -791,11 +776,6 @@ angular.module('ui.scroll', [])
         }
 
         function updatePaddings(rid, updates) {
-
-          let adjustedPaddingHeight = buffer.effectiveHeight(updates.prepended) - updates.estimatedPaddingIncrement;
-
-          viewport.adjustScrollTopAfterPrepend(adjustedPaddingHeight);
-
           // schedule another adjustBuffer after animation completion
           if (updates.animated.length) {
             $q.all(updates.animated).then(() => {
@@ -805,27 +785,29 @@ angular.module('ui.scroll', [])
           } else {
             viewport.adjustPadding();
           }
-
-          // return true if inserted elements have height > 0
-          return adjustedPaddingHeight + updates.estimatedPaddingIncrement > 0 || buffer.effectiveHeight(updates.inserted) > 0;
         }
 
-        function enqueueFetch(rid, keepFetching) {
-          if (viewport.shouldLoadBottom() && keepFetching) {
-                // keepFetching = true means that at least one item app/prepended in the last batch had height > 0
-            if (pending.push(true) === 1) {
-              fetch(rid);
-              adapter.loading(true);              
+        function enqueueFetch(rid, updates) {
+          if (viewport.shouldLoadBottom()) {
+            if(!updates || buffer.effectiveHeight(updates.inserted) > 0) {
+              // this means that at least one item appended in the last batch has height > 0
+              if (pending.push(true) === 1) {
+                fetch(rid);
+                adapter.loading(true);
+              }
             }
-          } else if (viewport.shouldLoadTop() && (keepFetching || pending[0])) {
+          } else if (viewport.shouldLoadTop()) {
+            if ((!updates || buffer.effectiveHeight(updates.prepended) > 0) || pending[0]) {
+              // this means that at least one item appended in the last batch has height > 0
               // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
               // BTW there will always be at least 1 element in the pending array because bottom is fetched first
-            if (pending.push(false) === 1) {
-              fetch(rid);
-              adapter.loading(true);              
+              if (pending.push(false) === 1) {
+                fetch(rid);
+                adapter.loading(true);
+              }
             }
           }
-        }          
+        }
 
         function adjustBuffer(rid) {
           if(!rid) { // dismiss pending requests
@@ -837,12 +819,17 @@ angular.module('ui.scroll', [])
 
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
+
+            // show elements after data binging has been done
+            updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
+            updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
+
             if (isInvalid(rid)) {
               return;
             }
 
             updatePaddings(rid, updates);
-            enqueueFetch(rid, true);
+            enqueueFetch(rid);
 
             if (!pending.length) {
               adapter.calculateProperties();
@@ -853,18 +840,21 @@ angular.module('ui.scroll', [])
         function adjustBufferAfterFetch(rid) {
           let updates = updateDOM();
 
-          viewport.adjustPaddingUnbound(updates);
-
           // We need the item bindings to be processed before we can do adjustment
           $timeout(() => {
 
-            viewport.adjustPaddingBound(updates);
+            // show elements after data binging has been done
+            updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
+            updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
+
+            viewport.adjustScrollTopAfterPrepend(updates);
 
             if (isInvalid(rid)) {
               return;
             }
-            
-            enqueueFetch(rid, updatePaddings(rid, updates));
+
+            updatePaddings(rid, updates);
+            enqueueFetch(rid, updates);
             pending.shift();
 
             if (pending.length)
@@ -929,7 +919,7 @@ angular.module('ui.scroll', [])
         function resizeAndScrollHandler() {
           if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
 
-            enqueueFetch(ridActual, true);
+            enqueueFetch(ridActual);
 
             if (pending.length) {
               unbindEvents();
