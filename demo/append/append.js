@@ -51,22 +51,12 @@ app.factory('Server', [
 
 				$timeout(function () {
 					var item, result = {
-						items: [],
-						bof: false,
-						eof: false
+						items: []
 					};
 					if (start <= end) {
 						for (var i = start; i <= end; i++) {
 							if (item = self.getItem(i)) {
 								result.items.push(item);
-							}
-							else { // if no item then begin or end of file is reached
-								if (start <= self.first - self.prependedData.length) {
-									result.bof = true;
-								}
-								if (end > self.max + self.appendedData.length) {
-									result.eof = true;
-								}
 							}
 						}
 					}
@@ -104,43 +94,28 @@ app.factory('Server', [
 app.controller('mainController', [
 	'$scope', 'Server', function ($scope, Server) {
 
-		var bof = false, eof = false;
-
-		function mySuccess(result, success) {
-			bof = eof = false;
-			if (result.bof) {
-				bof = true;
-				console.log('begin of file is reached');
-			}
-			if (result.eof) {
-				eof = true;
-				console.log('end of file is reached');
-			}
-			if (result.items.length) {
-				console.log('resolved ' + result.items.length + ' items');
-			}
-			success(result.items);
-		}
-
 		$scope.datasource = {
 			get: function (index, count, success) {
 				console.log('request by index = ' + index + ', count = ' + count);
 				Server.request(index, count).then(function (result) {
-					mySuccess(result, success);
+					if (result.items.length) {
+						console.log('resolved ' + result.items.length + ' items');
+					}
+					success(result.items);
 				});
 			}
 		};
 
 		$scope.prepend = function () {
 			var newItem = Server.prependItem(' (new)*');
-			if (bof) {
+			if ($scope.adapter.isBOF()) {
 				$scope.adapter.prepend([newItem]);
 			}
 		};
 
 		$scope.append = function () {
 			var newItem = Server.appendItem(' (new)*');
-			if (eof) {
+			if ($scope.adapter.isEOF()) {
 				$scope.adapter.append([newItem]);
 			}
 		};
