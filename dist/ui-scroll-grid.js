@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.0 -- 2016-06-09T21:24:24.010Z
+ * Version: 1.5.1 -- 2016-06-27T18:18:39.277Z
  * License: MIT
  */
  
@@ -96,7 +96,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       var _this2 = this;
 
       if (insidePoint(header, x, y)) return this;
-      var result = void 0;
+      var result = undefined;
       controller.forEachRow(function (row) {
         if (insidePoint(row[_this2.id], x, y)) result = _this2;
       });
@@ -223,7 +223,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       if (index < 0 || index > columns.length) return; // throw an error?
 
       var mapTo = selected.mapTo,
-          next = void 0;
+          next = undefined;
       index -= mapTo < index ? 1 : 0;
 
       columns.forEach(function (c) {

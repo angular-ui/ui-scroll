@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.0 -- 2016-06-27T00:06:28.439Z
+ * Version: 1.5.1 -- 2016-06-27T18:18:39.277Z
  * License: MIT
  */
  
@@ -440,6 +440,12 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     });
 
     this.isLoading = false;
+    this.isBOF = function () {
+      return buffer.bof;
+    };
+    this.isEOF = function () {
+      return buffer.eof;
+    };
 
     this.applyUpdates = function (arg1, arg2) {
       if (angular.isFunction(arg1)) {
