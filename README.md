@@ -132,6 +132,20 @@ Adapter object implements the following properties:
 
 Adapater object implements the following methods
 
+* Method `isBOF`
+
+        isBOF()
+
+   #### Description
+    returns `true` if the first item of the dataset is already in the buffer. No further requests for preceding items will be issued, returns `false` otherwise.
+
+* Method `isEOF`
+
+        isEOF()
+
+   #### Description
+    returns `true` if the last item of the dataset is already in the buffer. No further requests for tailing items will be issued, returns `false` otherwise,
+
 * Method `reload` 
 
         reload()
