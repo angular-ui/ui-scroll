@@ -45,7 +45,7 @@ If you plan to use ui-scroll over jQuery feel free to skip ui-scroll-jqlite.
 ###Usage
 
 ```html
-<ANY ui-scroll="{scroll_expression}" buffer-size="value" padding="value" start-index="value" adapter="name">
+<ANY ui-scroll="{scroll_expression}" buffer-size="value" padding="value" start-index="value" adapter="expression">
       ...
 </ANY>
 ```
