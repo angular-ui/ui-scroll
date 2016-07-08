@@ -215,10 +215,11 @@ angular.module('ui.scroll', [])
 
           angular.extend(cache, {
             add(item) {
-              let existedItem = cache.find(i => i.index === item.scope.$index);
-              if (existedItem) {
-                existedItem.height = item.element.outerHeight();
-                return;
+              for(let i = cache.length - 1; i >= 0; i--) {
+                if(cache[i].index === item.scope.$index) {
+                  cache[i].height = item.element.outerHeight();
+                  return;
+                }
               }
               cache.push({
                 index: item.scope.$index,

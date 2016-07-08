@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.1 -- 2016-06-27T18:18:39.277Z
+ * Version: 1.5.1 -- 2016-07-08T21:21:05.311Z
  * License: MIT
  */
  
@@ -227,12 +227,11 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
       angular.extend(cache, {
         add: function add(item) {
-          var existedItem = cache.find(function (i) {
-            return i.index === item.scope.$index;
-          });
-          if (existedItem) {
-            existedItem.height = item.element.outerHeight();
-            return;
+          for (var i = cache.length - 1; i >= 0; i--) {
+            if (cache[i].index === item.scope.$index) {
+              cache[i].height = item.element.outerHeight();
+              return;
+            }
           }
           cache.push({
             index: item.scope.$index,
