@@ -1,4 +1,4 @@
-var createHtml = function (settings) {
+function createHtml (settings) {
 	var viewportStyle = ' style="height:' + (settings.viewportHeight || 200) + 'px"';
 	var itemStyle = settings.itemHeight ? ' style="height:' + settings.itemHeight + 'px"' : '';
 	var bufferSize = settings.bufferSize ? ' buffer-size="' + settings.bufferSize + '"' : '';
@@ -14,38 +14,9 @@ var createHtml = function (settings) {
 		template +
 		'</div>' +
 		'</div>';
-};
+}
 
-var runTest = function (scrollSettings, run, options) {
-	inject(function ($rootScope, $compile, $window, $timeout) {
-		var scroller = angular.element(createHtml(scrollSettings));
-		var scope = $rootScope.$new();
-
-		//if (angular.element(document).find('body').find('div').children().length)
-		//debugger
-
-		angular.element(document).find('body').append(scroller);
-
-		$compile(scroller)(scope);
-
-		scope.$apply();
-		$timeout.flush();
-
-		try {
-			run(scroller, scope, $timeout);
-		}
-		finally {
-			scroller.remove();
-
-			if (options && typeof options.cleanupTest === 'function') {
-				options.cleanupTest(scroller, scope, $timeout);
-			}
-		}
-
-	});
-};
-
-var createGridHtml = function (settings) {
+function createGridHtml (settings) {
 	var viewportStyle = ' style="height:' + (settings.viewportHeight || 200) + 'px"';
 	var columns = ['col0', 'col1', 'col2', 'col3'];
 
@@ -67,16 +38,46 @@ var createGridHtml = function (settings) {
 			'</tbody>' +
 		'</table>';
 	return html;
+}
 
-};
+function finalize (scroller, options, scope, $timeout) {
+	scroller.remove();
 
-var runGridTest = function (scrollSettings, run, options) {
+	if (options && typeof options.cleanupTest === 'function') {
+		options.cleanupTest(scroller, scope, $timeout);
+	}
+}
+
+function runTest (scrollSettings, run, options) {
+	inject(function ($rootScope, $compile, $window, $timeout) {
+		var scroller = angular.element(createHtml(scrollSettings));
+		var scope = $rootScope.$new();
+
+		angular.element(document).find('body').append(scroller);
+
+		if(options && options.scope) {
+			angular.extend(scope, options.scope);
+		}
+
+		$compile(scroller)(scope);
+
+		scope.$apply();
+		$timeout.flush();
+
+		try {
+			run(scroller, scope, $timeout);
+		}
+		finally {
+			finalize(scroller, options, scope, $timeout);
+		}
+
+	});
+}
+
+function runGridTest (scrollSettings, run, options) {
 	inject(function ($rootScope, $compile, $window, $timeout) {
 		var scroller = angular.element(createGridHtml(scrollSettings));
 		var scope = $rootScope.$new();
-
-		//if (angular.element(document).find('body').find('div').children().length)
-		//debugger
 
 		angular.element(document).find('body').append(scroller);
 		var head = angular.element(scroller.children()[0]);
@@ -90,14 +91,9 @@ var runGridTest = function (scrollSettings, run, options) {
 		try {
 			run(head, body, scope, $timeout);
 		} finally {
-			scroller.remove();
-
-			if (options && typeof options.cleanupTest === 'function') {
-				options.cleanupTest(scroller, scope, $timeout);
-			}
+			finalize(scroller, options, scope, $timeout);
 		}
 
 		}
 	);
-};
-
+}

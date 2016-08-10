@@ -807,4 +807,36 @@ describe('uiScroll', function () {
 
 	});
 
+  describe('attributes scope binding', function () {
+    var calls = null;
+    var bufferSize = 5;
+
+    it('bufferSize scope binding should work (1)', function () {
+      inject(function (myInfiniteDatasource) {
+        var spy = spyOn(myInfiniteDatasource, 'get').and.callThrough();
+        runTest({datasource: 'myInfiniteDatasource', bufferSize: bufferSize},
+          function () {
+            calls = spy.calls.all().length;
+            expect(calls > 0).toBe(true);
+          }
+        );
+      });
+    });
+
+    it('bufferSize scope binding should work (2)', function () {
+      inject(function (myInfiniteDatasource) {
+        var spy = spyOn(myInfiniteDatasource, 'get').and.callThrough();
+        runTest({datasource: 'myInfiniteDatasource', bufferSize: 'start'},
+          function () {
+            expect(spy.calls.all().length).toBe(calls);
+          }, {
+            scope: {
+              'start': bufferSize
+            }
+          }
+        );
+      });
+    });
+  });
+
 });
