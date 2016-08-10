@@ -197,9 +197,7 @@ angular.module('ui.scroll', [])
         return buffer;
       }
 
-      function Viewport(buffer, element, viewportController, attrs) {
-        const PADDING_MIN = 0.3;
-        const PADDING_DEFAULT = 0.5;
+      function Viewport(buffer, element, viewportController, padding) {
         let topPadding;
         let bottomPadding;
         const viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
@@ -257,7 +255,7 @@ angular.module('ui.scroll', [])
         }
 
         function bufferPadding() {
-          return viewport.outerHeight() * Math.max(PADDING_MIN, +attrs.padding || PADDING_DEFAULT); // some extra space to initiate preload
+          return viewport.outerHeight() * padding; // some extra space to initiate preload
         }
 
         angular.extend(viewport, {
@@ -568,18 +566,28 @@ angular.module('ui.scroll', [])
         if (!(match))
           throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
 
+        function parseNumericAttr(value, defaultValue) {
+          let result = $parse(value)($scope);
+          return isNaN(result) ? defaultValue : result;
+        }
+
+        const BUFFER_MIN = 3;
+        const BUFFER_DEFAULT = 10;
+        const PADDING_MIN = 0.3;
+        const PADDING_DEFAULT = 0.5;
+
         let datasource = null;
         const itemName = match[1];
         const datasourceName = match[2];
-        const bufferSize = Math.max(3, +$attr.bufferSize || 10);
         const viewportController = controllers[0];
-        let startIndex = parseInt($attr.startIndex, 10);
-        startIndex = isNaN(startIndex) ? 1 : startIndex;
+        const bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
+        const padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT));
+        let startIndex = parseNumericAttr($attr.startIndex, 1);
         let ridActual = 0;// current data revision id
         let pending = [];
 
         let buffer = new Buffer(bufferSize);
-        let viewport = new Viewport(buffer, element, viewportController, $attr);
+        let viewport = new Viewport(buffer, element, viewportController, padding);
         let adapter = new Adapter($attr, viewport, buffer, adjustBuffer);
         if (viewportController)
           viewportController.adapter = adapter;

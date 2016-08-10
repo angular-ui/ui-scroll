@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.1 -- 2016-07-08T21:21:05.311Z
+ * Version: 1.5.1 -- 2016-08-10T12:02:43.502Z
  * License: MIT
  */
  
@@ -209,9 +209,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     return buffer;
   }
 
-  function Viewport(buffer, element, viewportController, attrs) {
-    var PADDING_MIN = 0.3;
-    var PADDING_DEFAULT = 0.5;
+  function Viewport(buffer, element, viewportController, padding) {
     var topPadding = undefined;
     var bottomPadding = undefined;
     var viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
@@ -269,7 +267,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     }
 
     function bufferPadding() {
-      return viewport.outerHeight() * Math.max(PADDING_MIN, +attrs.padding || PADDING_DEFAULT); // some extra space to initiate preload
+      return viewport.outerHeight() * padding; // some extra space to initiate preload
     }
 
     angular.extend(viewport, {
@@ -574,18 +572,28 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     if (!match) throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
 
+    function parseNumericAttr(value, defaultValue) {
+      var result = $parse(value)($scope);
+      return isNaN(result) ? defaultValue : result;
+    }
+
+    var BUFFER_MIN = 3;
+    var BUFFER_DEFAULT = 10;
+    var PADDING_MIN = 0.3;
+    var PADDING_DEFAULT = 0.5;
+
     var datasource = null;
     var itemName = match[1];
     var datasourceName = match[2];
-    var bufferSize = Math.max(3, +$attr.bufferSize || 10);
     var viewportController = controllers[0];
-    var startIndex = parseInt($attr.startIndex, 10);
-    startIndex = isNaN(startIndex) ? 1 : startIndex;
+    var bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
+    var padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT));
+    var startIndex = parseNumericAttr($attr.startIndex, 1);
     var ridActual = 0; // current data revision id
     var pending = [];
 
     var buffer = new Buffer(bufferSize);
-    var viewport = new Viewport(buffer, element, viewportController, $attr);
+    var viewport = new Viewport(buffer, element, viewportController, padding);
     var adapter = new Adapter($attr, viewport, buffer, adjustBuffer);
     if (viewportController) viewportController.adapter = adapter;
 
