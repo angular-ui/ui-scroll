@@ -74,7 +74,7 @@ The viewport is an element representing the space where the items from the colle
 * **start-index - expression**, optional - index of the first item to be requested from the datasource. The default is 1.
 * **adapter - assignable expression**, optional - if provided a reference to the adapter object for the scroller instance will be injected in the appropriate scope. If you have multiple scrollers within the same viewport, make sure that every one of them has its unique adapter name.
 
-Some of the properties offered by the adapter can also be accessed directly from the directive by using matching attributes. In the same way as for the adapter attribute, syntax for such attributes allows for providing an reference expression to be used to access the corresponding value. Below is a list of such attributes:
+Some of the properties offered by the adapter can also be accessed directly from the directive by using matching attributes. In the same way as for the adapter attribute, syntax for such attributes allows for providing a reference expression to be used to access the corresponding value. Below is a list of such attributes:
 
 * **is-loading - assignable expression**, optional - a boolean value indicating whether there are any pending load requests will be injected in the appropriate scope. See also `isLoading` adapter property.
 * **top-visible - assignable expression**, optional - a reference to the item currently in the topmost visible position will be injected in the appropriate scope. See also `topVisible` adapter property.
