@@ -67,24 +67,25 @@ The viewport is an element representing the space where the items from the colle
 * This directive executes at priority level 1000
 
 ###Parameters
-* **uiScroll – {scroll_expression}** – The expression indicating how to enumerate a collection. Only one format is currently supported:
-    * **variable in datasource** – where variable is the user defined loop variable and datasource is the name of the data source service to enumerate.
-* **buffer-size - value**, optional - number of items requested from the datasource in a single request. The default is 10 and the minimal value is 3
-* **padding - value**, optional - extra height added to the visible area for the purpose of determining when the items should be created/destroyed.
-The value is relative to the visible height of the area, the default is 0.5 and the minimal value is 0.3
-* **start-index - value**, optional - index of the first item to be requested from the datasource. The default is 1.
-* **adapter - expression**, optional - if provided a reference to the adapter object for the scroller instance will be injected in the appropriate scope. If you have multiple scrollers within the same viewport, make sure that every one of them has its unique adapter name.
+* **uiScroll – scroll expression** – The expression indicating how to enumerate a collection. Only one format is currently supported:
+    * **variable in datasource** – where variable is the user defined loop variable and datasource is the name of the data source to enumerate.
+* **buffer-size - expression**, optional - number of items requested from the datasource in a single request. The default is 10 and the minimal value is 3
+* **padding - expression**, optional - extra height added to the visible area for the purpose of determining when the items should be created/destroyed. The value is relative to the visible height of the area, the default is 0.5 and the minimal value is 0.3
+* **start-index - expression**, optional - index of the first item to be requested from the datasource. The default is 1.
+* **adapter - assignable expression**, optional - if provided a reference to the adapter object for the scroller instance will be injected in the appropriate scope. If you have multiple scrollers within the same viewport, make sure that every one of them has its unique adapter name.
 
-Some of the properties offered by the adapter can also be accessed directly from the directive by using matching attributes. In the same way as for the adapter attribute, syntax for such attributes allows for providing an expression to be used to access the corresponding value. Below is a list of such attributes:
+Some of the properties offered by the adapter can also be accessed directly from the directive by using matching attributes. In the same way as for the adapter attribute, syntax for such attributes allows for providing a reference expression to be used to access the corresponding value. Below is a list of such attributes:
 
-* **is-loading - expression**, optional - a boolean value indicating whether there are any pending load requests will be injected in the appropriate scope. See also `isLoading` adapter property.
-* **top-visible - expression**, optional - a reference to the item currently in the topmost visible position will be injected in the appropriate scope. See also `topVisible` adapter property.
-* **top-visible-element - expression**, optional - a reference to the DOM element currently in the topmost visible position will be injected in the appropriate scope. See also `topVisibleElement` adapter property.
-* **top-visible-scope - expression**, optional - a reference to the scope created for the item currently in the topmost visible position will be injected in the appropriate scope. See also `topVisibleScope` adapter property.
+* **is-loading - assignable expression**, optional - a boolean value indicating whether there are any pending load requests will be injected in the appropriate scope. See also `isLoading` adapter property.
+* **top-visible - assignable expression**, optional - a reference to the item currently in the topmost visible position will be injected in the appropriate scope. See also `topVisible` adapter property.
+* **top-visible-element - assignable expression**, optional - a reference to the DOM element currently in the topmost visible position will be injected in the appropriate scope. See also `topVisibleElement` adapter property.
+* **top-visible-scope - assignable expression**, optional - a reference to the scope created for the item currently in the topmost visible position will be injected in the appropriate scope. See also `topVisibleScope` adapter property.
 
-The `expression` can be any angular assignable expression. The scroller will inject the requested value into the target scope by applying the target expression. The scope associated with the viewport (the element marked with the [uiScrollViewport](#uiscrollviewport-directive) directive) will be used as the target scope. If the viewport is not defined (window viewport), the $rootScope will be used as the target scope.
+The `expression` can be any angular expression (assignable expression where so specified). All expressions are evaluated once at the time when the scroller is initalized. Changes in the expresion value after scroller intialization will have no impact on the scroller behavior.
 
-The second format `expression on controller` can be used to explicitly specify the scope associated with the specified controller as the target scope for the injection. In this format `expression` is any angular assignable expression, and `controller` is the name of controller constructor function as specified in the `ng-controller` directive. The scroller will traverse its parents to locate the target scope associated with the specified controller.
+The assignable expressions will be used by scroller to inject the requested value into the target scope. The scope associated with the viewport (the element marked with the [uiScrollViewport](#uiscrollviewport-directive) directive) will be used as the target scope. If the viewport is not defined (window viewport), the $rootScope will be used as the target scope.
+
+The second format `expression on controller` can be used to explicitly target the scope associated with the specified controller as the target scope for the injection. In this format `expression` is any angular assignable expression, and `controller` is the name of controller constructor function as specified in the `ng-controller` directive. The scroller will traverse its parents to locate the target scope associated with the specified controller.
 
 ###Data Source
 Data source is an object to be used by the uiScroll directive to access the data.
@@ -337,4 +338,3 @@ To run the examples use this [link](http://rawgithub.com/angular-ui/ui-scroll/ma
 * Introduced API to dynamically update scroller content.
 * Deep 'name' properties access via dot-notation in template.
 * Fixed the problem occurring if the scroller is $destroyed while there are requests pending: [#64](https://github.com/Hill30/NGScroller/issues/64).
-
