@@ -506,7 +506,7 @@ angular.module('ui.scroll', [])
           let scope = viewportScope;
           let assign;
           if (expression) {
-            let match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?$/);
+            let match = expression.match(/(\w(?:\w|\d)*)(?:\s+on\s+(\w(?:\w|\d)*))?/);
             if (!match)
               throw new Error('Expected injection expression in form of \'target\' or \'target on controller\' but got \'' + expression + '\'');
             let target = match[1];
@@ -515,8 +515,8 @@ angular.module('ui.scroll', [])
               let candidate = viewport;
               scope = undefined;
               while (candidate.length) {
-                let controller = candidate.attr('ng-controller');
-                if (controller === controllerName) {
+                let candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
+                if (candidateName && candidateName[1] === controllerName) {
                   scope = candidate.scope();
                   break;
                 }
