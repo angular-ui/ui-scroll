@@ -506,7 +506,9 @@ angular.module('ui.scroll', [])
           let scope = viewportScope;
           let assign;
           if (expression) {
-            let match = expression.match(/(\w(?:\w|\d)*)(?:\s+on\s+(\w(?:\w|\d)*))?/);
+            // it is ok to have relaxed validation for the first part of the 'on' expression. 
+            // additional validation will be done by the $parse service below
+            let match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?/);
             if (!match)
               throw new Error('Expected injection expression in form of \'target\' or \'target on controller\' but got \'' + expression + '\'');
             let target = match[1];
