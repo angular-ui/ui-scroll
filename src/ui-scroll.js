@@ -416,7 +416,7 @@ angular.module('ui.scroll', [])
         return viewport;
       }
 
-      function Adapter($attr, viewport, buffer, adjustBuffer) {
+      function Adapter($attr, viewport, buffer, adjustBuffer, element) {
         const viewportScope = viewport.scope() || $rootScope;
         let disabled = false;
         let self = this;
@@ -512,21 +512,36 @@ angular.module('ui.scroll', [])
             if (!match)
               throw new Error('Expected injection expression in form of \'target\' or \'target on controller\' but got \'' + expression + '\'');
             let target = match[1];
-            let controllerName = match[2];
-            if (controllerName) {
-              let candidate = viewport;
-              scope = undefined;
+            let onControllerName = match[2];
+
+            let parseControllers = (controllerName, as = false) => {
+              let candidate = element;
               while (candidate.length) {
                 let candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
-                if (candidateName && candidateName[1] === controllerName) {
+                if (candidateName && candidateName[as ? 2 : 1] === controllerName) {
                   scope = candidate.scope();
                   break;
                 }
                 candidate = candidate.parent();
               }
-              if (!scope)
-                throw new Error('Failed to locate target controller \'' + controllerName + '\' to inject \'' + target + '\'');
+            };
+
+            if (onControllerName) { // 'on' syntax parsing
+              scope = null;
+              parseControllers(onControllerName);
+              if (!scope) {
+                throw new Error('Failed to locate target controller \'' + onControllerName + '\' to inject \'' + target + '\'');
+              }
             }
+            else { // try to parse with 'Controller As' syntax
+              let controllerAsName;
+              let dotIndex = target.indexOf('.');
+              if(dotIndex > 0) {
+                controllerAsName = target.substr(0, dotIndex);
+                parseControllers(controllerAsName, true);
+              }
+            }
+
             assign = $parse(target).assign;
           }
           return (value) => {
@@ -564,9 +579,9 @@ angular.module('ui.scroll', [])
       function link($scope, element, $attr, controllers, linker) {
 
         const match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([(\w|\$)\.]+)\s*$/);
-
-        if (!(match))
+        if (!match) {
           throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
+        }
 
         function parseNumericAttr(value, defaultValue) {
           let result = $parse(value)($scope);
@@ -590,7 +605,7 @@ angular.module('ui.scroll', [])
 
         let buffer = new Buffer(bufferSize);
         let viewport = new Viewport(buffer, element, viewportController, padding);
-        let adapter = new Adapter($attr, viewport, buffer, adjustBuffer);
+        let adapter = new Adapter($attr, viewport, buffer, adjustBuffer, element);
         if (viewportController)
           viewportController.adapter = adapter;
 

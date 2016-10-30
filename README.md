@@ -83,9 +83,11 @@ Some of the properties offered by the adapter can also be accessed directly from
 
 The `expression` can be any angular expression (assignable expression where so specified). All expressions are evaluated once at the time when the scroller is initalized. Changes in the expresion value after scroller intialization will have no impact on the scroller behavior.
 
-The assignable expressions will be used by scroller to inject the requested value into the target scope. The scope associated with the viewport (the element marked with the [uiScrollViewport](#uiscrollviewport-directive) directive) will be used as the target scope. If the viewport is not defined (window viewport), the $rootScope will be used as the target scope.
+The assignable expressions will be used by scroller to inject the requested value into the target scope. The scope associated with the viewport (the element marked with the [uiScrollViewport](#uiscrollviewport-directive) directive) will be used as the target scope. If the viewport is not defined (window viewport), the $rootScope will be used as the target scope. Note that the nearest additional scope-wrapper (like ng-if directive set right on the viewport) makes this mechanism unusable. There are two options which help in this case:
 
-The second format `expression on controller` can be used to explicitly target the scope associated with the specified controller as the target scope for the injection. In this format `expression` is any angular assignable expression, and `controller` is the name of controller constructor function as specified in the `ng-controller` directive. The scroller will traverse its parents to locate the target scope associated with the specified controller.
+1. The second format `expression on controller` can be used to explicitly target the scope associated with the specified controller as the target scope for the injection. In this format `expression` is any angular assignable expression, and `controller` is the name of controller constructor function as specified in the `ng-controller` directive. The scroller will traverse its parents to locate the target scope associated with the specified controller.
+
+2. Also `Controller As` syntax could be used as an alternative way to specify target controller in assignable expressions.
 
 ###Data Source
 Data source is an object to be used by the uiScroll directive to access the data.
