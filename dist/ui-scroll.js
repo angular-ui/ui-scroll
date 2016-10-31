@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.1 -- 2016-08-10T12:02:43.502Z
+ * Version: 1.5.1 -- 2016-10-30T12:41:33.695Z
  * License: MIT
  */
  
@@ -414,7 +414,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
     return viewport;
   }
 
-  function Adapter($attr, viewport, buffer, adjustBuffer) {
+  function Adapter($attr, viewport, buffer, adjustBuffer, element) {
     var viewportScope = viewport.scope() || $rootScope;
     var disabled = false;
     var self = this;
@@ -517,23 +517,44 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
       var scope = viewportScope;
       var assign = undefined;
       if (expression) {
-        var match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?$/);
+        // it is ok to have relaxed validation for the first part of the 'on' expression.
+        // additional validation will be done by the $parse service below
+        var match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?/);
         if (!match) throw new Error('Expected injection expression in form of \'target\' or \'target on controller\' but got \'' + expression + '\'');
         var target = match[1];
-        var controllerName = match[2];
-        if (controllerName) {
-          var candidate = viewport;
-          scope = undefined;
+        var onControllerName = match[2];
+
+        var parseControllers = function parseControllers(controllerName) {
+          var as = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
+
+          var candidate = element;
           while (candidate.length) {
-            var controller = candidate.attr('ng-controller');
-            if (controller === controllerName) {
+            var candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
+            if (candidateName && candidateName[as ? 2 : 1] === controllerName) {
               scope = candidate.scope();
               break;
             }
             candidate = candidate.parent();
           }
-          if (!scope) throw new Error('Failed to locate target controller \'' + controllerName + '\' to inject \'' + target + '\'');
+        };
+
+        if (onControllerName) {
+          // 'on' syntax parsing
+          scope = null;
+          parseControllers(onControllerName);
+          if (!scope) {
+            throw new Error('Failed to locate target controller \'' + onControllerName + '\' to inject \'' + target + '\'');
+          }
+        } else {
+          // try to parse with 'Controller As' syntax
+          var controllerAsName = undefined;
+          var dotIndex = target.indexOf('.');
+          if (dotIndex > 0) {
+            controllerAsName = target.substr(0, dotIndex);
+            parseControllers(controllerAsName, true);
+          }
         }
+
         assign = $parse(target).assign;
       }
       return function (value) {
@@ -569,8 +590,9 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   function link($scope, element, $attr, controllers, linker) {
 
     var match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([(\w|\$)\.]+)\s*$/);
-
-    if (!match) throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
+    if (!match) {
+      throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
+    }
 
     function parseNumericAttr(value, defaultValue) {
       var result = $parse(value)($scope);
@@ -594,7 +616,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
 
     var buffer = new Buffer(bufferSize);
     var viewport = new Viewport(buffer, element, viewportController, padding);
-    var adapter = new Adapter($attr, viewport, buffer, adjustBuffer);
+    var adapter = new Adapter($attr, viewport, buffer, adjustBuffer, element);
     if (viewportController) viewportController.adapter = adapter;
 
     var isDatasourceValid = function isDatasourceValid() {
