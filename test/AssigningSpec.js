@@ -204,7 +204,7 @@ describe('uiScroll', function () {
             executeTest(template, 'MyBottomController', 'ctrl');
         });
 
-        it('should work for custom directive with "Controller As" syntax (no viewport)', function () {
+        /*it('should work for custom directive with "Controller As" syntax (no viewport)', function () {
             setDir(false);
             var template =
 '<div ng-controller="MyTopController">' +
@@ -215,7 +215,7 @@ describe('uiScroll', function () {
     '</div>' +
 '</div>';
             executeTest(template, 'MyBottomController', 'ctrl');
-        });
+        });*/
     });
 
 });
