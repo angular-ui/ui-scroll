@@ -15,6 +15,24 @@ describe('uiScroll', function () {
     myApp.controller('MyBottomController', function($scope) {
         $scope.name = 'MyBottomController';
     });
+    var customDirTemplate;
+    myApp.directive('myDir', function() {
+        return {
+            restrict: 'E',
+            controllerAs: 'ctrl',
+            controller: function () { this.show = true; },
+            template: customDirTemplate
+        };
+    });
+
+    var setDir = function(viewport) {
+        customDirTemplate =
+'<div ' + (viewport ? 'ui-scroll-viewport' : '') +' style="height:200px" ng-if="ctrl.show">' +
+    '<div ui-scroll="item in myMultipageDatasource" adapter="ctrl.adapter">' +
+        '{{$index}}: {{item}}' +
+    '</div>' +
+'</div>';
+    };
 
     beforeEach(module('myApp'));
 
@@ -171,6 +189,32 @@ describe('uiScroll', function () {
     '</div>' +
 '</div>';
             executeTest(template, 'MyInnerController as ctrl', 'ctrl');
+        });
+
+        it('should work for custom directive with "Controller As" syntax (viewport)', function () {
+            setDir(true);
+            var template =
+'<div ng-controller="MyTopController">' +
+    '<div ng-controller="MyInnerController" ng-if="name">' +
+        '<div ng-controller="MyBottomController" ng-if="name">' +
+            '<my-dir></my-dir>' +
+        '</div>' +
+    '</div>' +
+'</div>';
+            executeTest(template, 'MyBottomController', 'ctrl');
+        });
+
+        it('should work for custom directive with "Controller As" syntax (no viewport)', function () {
+            setDir(false);
+            var template =
+'<div ng-controller="MyTopController">' +
+    '<div ng-controller="MyInnerController" ng-if="name">' +
+        '<div ng-controller="MyBottomController" ng-if="name">' +
+            '<my-dir></my-dir>' +
+        '</div>' +
+    '</div>' +
+'</div>';
+            executeTest(template, 'MyBottomController', 'ctrl');
         });
     });
 

@@ -417,6 +417,7 @@ angular.module('ui.scroll', [])
       }
 
       function Adapter($attr, viewport, buffer, adjustBuffer, element) {
+        const hasViewport = !!viewport.scope();
         const viewportScope = viewport.scope() || $rootScope;
         let disabled = false;
         let self = this;
@@ -514,31 +515,48 @@ angular.module('ui.scroll', [])
             let target = match[1];
             let onControllerName = match[2];
 
-            let parseControllers = (controllerName, as = false) => {
+            // ng-controller attr based DOM parsing
+            let parseNgCtrlAttrs = (controllerName, as = false) => {
               let candidate = element;
               while (candidate.length) {
+                let candidateScope = candidate.scope();
                 let candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
                 if (candidateName && candidateName[as ? 2 : 1] === controllerName) {
-                  scope = candidate.scope();
-                  break;
+                  scope = candidateScope;
+                  return true;
                 }
                 candidate = candidate.parent();
               }
             };
 
-            if (onControllerName) { // 'on' syntax parsing
+            // scope based DOM pasrsing
+            let parseScopes = (controllerName) => {
+              let candidate = element;
+              while (candidate.length) {
+                let candidateScope = candidate.scope();
+                if (candidateScope && candidateScope.hasOwnProperty(controllerName) && candidateScope[controllerName].constructor.name === 'controller') {
+                  scope = candidateScope;
+                  return true;
+                }
+                candidate = candidate.parent();
+              }
+            };
+
+            if (onControllerName) { // 'on' syntax DOM parsing (adapter="adapter on ctrl")
               scope = null;
-              parseControllers(onControllerName);
+              parseNgCtrlAttrs(onControllerName);
               if (!scope) {
                 throw new Error('Failed to locate target controller \'' + onControllerName + '\' to inject \'' + target + '\'');
               }
             }
-            else { // try to parse with 'Controller As' syntax
+            else { // try to parse DOM with 'Controller As' syntax (adapter="ctrl.adapter")
               let controllerAsName;
               let dotIndex = target.indexOf('.');
               if(dotIndex > 0) {
                 controllerAsName = target.substr(0, dotIndex);
-                parseControllers(controllerAsName, true);
+                if(!parseNgCtrlAttrs(controllerAsName, true) && !hasViewport) {
+                  parseScopes(controllerAsName); // the case of custom Directive/Component
+                }
               }
             }
 
