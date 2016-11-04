@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.1 -- 2016-10-30T12:41:33.695Z
+ * Version: 1.5.1 -- 2016-11-04T01:55:55.663Z
  * License: MIT
  */
  
@@ -415,6 +415,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   }
 
   function Adapter($attr, viewport, buffer, adjustBuffer, element) {
+    var hasViewport = !!viewport.scope();
     var viewportScope = viewport.scope() || $rootScope;
     var disabled = false;
     var self = this;
@@ -524,34 +525,51 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         var target = match[1];
         var onControllerName = match[2];
 
-        var parseControllers = function parseControllers(controllerName) {
+        // ng-controller attr based DOM parsing
+        var parseNgCtrlAttrs = function parseNgCtrlAttrs(controllerName) {
           var as = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
 
           var candidate = element;
           while (candidate.length) {
+            var candidateScope = candidate.scope();
             var candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
             if (candidateName && candidateName[as ? 2 : 1] === controllerName) {
-              scope = candidate.scope();
-              break;
+              scope = candidateScope;
+              return true;
+            }
+            candidate = candidate.parent();
+          }
+        };
+
+        // scope based DOM pasrsing
+        var parseScopes = function parseScopes(controllerName) {
+          var candidate = element;
+          while (candidate.length) {
+            var candidateScope = candidate.scope();
+            if (candidateScope && candidateScope.hasOwnProperty(controllerName) && candidateScope[controllerName].constructor.name === 'controller') {
+              scope = candidateScope;
+              return true;
             }
             candidate = candidate.parent();
           }
         };
 
         if (onControllerName) {
-          // 'on' syntax parsing
+          // 'on' syntax DOM parsing (adapter='adapter on ctrl')
           scope = null;
-          parseControllers(onControllerName);
+          parseNgCtrlAttrs(onControllerName);
           if (!scope) {
             throw new Error('Failed to locate target controller \'' + onControllerName + '\' to inject \'' + target + '\'');
           }
         } else {
-          // try to parse with 'Controller As' syntax
+          // try to parse DOM with 'Controller As' syntax (adapter='ctrl.adapter')
           var controllerAsName = undefined;
           var dotIndex = target.indexOf('.');
           if (dotIndex > 0) {
             controllerAsName = target.substr(0, dotIndex);
-            parseControllers(controllerAsName, true);
+            if (!parseNgCtrlAttrs(controllerAsName, true) && !hasViewport) {
+              parseScopes(controllerAsName); // the case of custom Directive/Component
+            }
           }
         }
 

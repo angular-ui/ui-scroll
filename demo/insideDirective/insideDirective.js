@@ -1,4 +1,7 @@
 angular.module('application', ['ui.scroll', 'ui.scroll.jqlite'])
+	.controller('mainController', ['$scope', function($scope) {
+		$scope.show = true;
+	}])
 	.directive('myDir', function() {
 		return {
 			restrict: 'E',

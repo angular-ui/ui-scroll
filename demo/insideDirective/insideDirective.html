@@ -21,7 +21,11 @@
 			This sample demonstrates encapsulation of the ui-scroll directive inside another custom directive wich has it's own controller and wich uses "Controller As" syntax in it's template.
 		</div>
 
-		<my-dir></my-dir>
+		<div ng-controller="mainController">
+			<div ng-if="true">
+				<my-dir></my-dir>
+			</div>
+		</div>
 
 	</div>
 
