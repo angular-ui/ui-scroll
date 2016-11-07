@@ -417,7 +417,6 @@ angular.module('ui.scroll', [])
       }
 
       function Adapter($attr, viewport, buffer, adjustBuffer, element) {
-        const hasViewport = !!viewport.scope();
         const viewportScope = viewport.scope() || $rootScope;
         let disabled = false;
         let self = this;
@@ -507,7 +506,7 @@ angular.module('ui.scroll', [])
           let scope = viewportScope;
           let assign;
           if (expression) {
-            // it is ok to have relaxed validation for the first part of the 'on' expression. 
+            // it is ok to have relaxed validation for the first part of the 'on' expression.
             // additional validation will be done by the $parse service below
             let match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?/);
             if (!match)
@@ -515,26 +514,18 @@ angular.module('ui.scroll', [])
             let target = match[1];
             let onControllerName = match[2];
 
-            // ng-controller attr based DOM parsing
-            let parseNgCtrlAttrs = (controllerName, as = false) => {
+            let parseController = (controllerName, on) => {
               let candidate = element;
               while (candidate.length) {
                 let candidateScope = candidate.scope();
+                // ng-controller's "Controller As" parsing
                 let candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
-                if (candidateName && candidateName[as ? 2 : 1] === controllerName) {
+                if (candidateName && candidateName[on ? 1 : 2] === controllerName) {
                   scope = candidateScope;
                   return true;
                 }
-                candidate = candidate.parent();
-              }
-            };
-
-            // scope based DOM pasrsing
-            let parseScopes = (controllerName) => {
-              let candidate = element;
-              while (candidate.length) {
-                let candidateScope = candidate.scope();
-                if (candidateScope && candidateScope.hasOwnProperty(controllerName) && candidateScope[controllerName].constructor.name === 'controller') {
+                // directive's/component's "Controller As" parsing
+                if (!on && candidateScope && candidateScope.hasOwnProperty(controllerName) && candidateScope[controllerName].constructor.name === 'controller') {
                   scope = candidateScope;
                   return true;
                 }
@@ -544,7 +535,7 @@ angular.module('ui.scroll', [])
 
             if (onControllerName) { // 'on' syntax DOM parsing (adapter="adapter on ctrl")
               scope = null;
-              parseNgCtrlAttrs(onControllerName);
+              parseController(onControllerName, true);
               if (!scope) {
                 throw new Error('Failed to locate target controller \'' + onControllerName + '\' to inject \'' + target + '\'');
               }
@@ -554,9 +545,7 @@ angular.module('ui.scroll', [])
               let dotIndex = target.indexOf('.');
               if(dotIndex > 0) {
                 controllerAsName = target.substr(0, dotIndex);
-                if(!parseNgCtrlAttrs(controllerAsName, true) && !hasViewport) {
-                  parseScopes(controllerAsName); // the case of custom Directive/Component
-                }
+                parseController(controllerAsName, false);
               }
             }
 

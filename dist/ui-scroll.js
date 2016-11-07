@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.1 -- 2016-11-04T01:55:55.663Z
+ * Version: 1.5.1 -- 2016-11-07T22:33:16.326Z
  * License: MIT
  */
  
@@ -415,7 +415,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   }
 
   function Adapter($attr, viewport, buffer, adjustBuffer, element) {
-    var hasViewport = !!viewport.scope();
     var viewportScope = viewport.scope() || $rootScope;
     var disabled = false;
     var self = this;
@@ -525,28 +524,18 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         var target = match[1];
         var onControllerName = match[2];
 
-        // ng-controller attr based DOM parsing
-        var parseNgCtrlAttrs = function parseNgCtrlAttrs(controllerName) {
-          var as = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
-
+        var parseController = function parseController(controllerName, on) {
           var candidate = element;
           while (candidate.length) {
             var candidateScope = candidate.scope();
+            // ng-controller's 'Controller As' parsing
             var candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
-            if (candidateName && candidateName[as ? 2 : 1] === controllerName) {
+            if (candidateName && candidateName[on ? 1 : 2] === controllerName) {
               scope = candidateScope;
               return true;
             }
-            candidate = candidate.parent();
-          }
-        };
-
-        // scope based DOM pasrsing
-        var parseScopes = function parseScopes(controllerName) {
-          var candidate = element;
-          while (candidate.length) {
-            var candidateScope = candidate.scope();
-            if (candidateScope && candidateScope.hasOwnProperty(controllerName) && candidateScope[controllerName].constructor.name === 'controller') {
+            // directive's/component's 'Controller As' parsing
+            if (!on && candidateScope && candidateScope.hasOwnProperty(controllerName) && candidateScope[controllerName].constructor.name === 'controller') {
               scope = candidateScope;
               return true;
             }
@@ -557,7 +546,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
         if (onControllerName) {
           // 'on' syntax DOM parsing (adapter='adapter on ctrl')
           scope = null;
-          parseNgCtrlAttrs(onControllerName);
+          parseController(onControllerName, true);
           if (!scope) {
             throw new Error('Failed to locate target controller \'' + onControllerName + '\' to inject \'' + target + '\'');
           }
@@ -567,9 +556,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
           var dotIndex = target.indexOf('.');
           if (dotIndex > 0) {
             controllerAsName = target.substr(0, dotIndex);
-            if (!parseNgCtrlAttrs(controllerAsName, true) && !hasViewport) {
-              parseScopes(controllerAsName); // the case of custom Directive/Component
-            }
+            parseController(controllerAsName, false);
           }
         }
 
