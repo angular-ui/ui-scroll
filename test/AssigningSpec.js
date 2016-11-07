@@ -15,26 +15,24 @@ describe('uiScroll', function () {
     myApp.controller('MyBottomController', function($scope) {
         $scope.name = 'MyBottomController';
     });
-    var customDirTemplate;
-    myApp.directive('myDir', function() {
-        return {
-            restrict: 'E',
-            controllerAs: 'ctrl',
-            controller: function () { this.show = true; },
-            template: customDirTemplate
-        };
-    });
-
-    var setDir = function(viewport) {
-        customDirTemplate =
-'<div ' + (viewport ? 'ui-scroll-viewport' : '') +' style="height:200px" ng-if="ctrl.show">' +
-    '<div ui-scroll="item in myMultipageDatasource" adapter="ctrl.adapter">' +
-        '{{$index}}: {{item}}' +
-    '</div>' +
-'</div>';
-    };
 
     beforeEach(module('myApp'));
+
+    var setDirective = function(options) {
+        return function() {
+            var directive = {
+                restrict: 'E',
+                controller: function() {
+                    this.show = true;
+                }
+            };
+            if (options.ctrlAs) {
+                directive.controllerAs = options.ctrlAs;
+            }
+            directive.template = options.template;
+            return directive;
+        };
+    };
 
     var executeTest = function(template, ctrlSelector, scopeContainer) {
         inject(function($rootScope, $compile, $timeout) {
@@ -72,7 +70,7 @@ describe('uiScroll', function () {
     describe('Adapter assigning', function () {
 
         it('should work in simplest case (viewport)', function () {
-            var template = 
+            var template =
 '<div ng-controller="MyTopController">' +
     '<div ng-controller="MyInnerController">' +
         '<div ng-controller="MyBottomController">' +
@@ -88,7 +86,7 @@ describe('uiScroll', function () {
         });
 
         it('should work in simplest case (no viewport)', function () {
-            var template = 
+            var template =
 '<div ng-controller="MyTopController">' +
     '<div ng-controller="MyInnerController" ng-if="name">' +
         '<div ng-controller="MyBottomController" ng-if="name">' +
@@ -102,7 +100,7 @@ describe('uiScroll', function () {
         });
 
         it('should work with additional container (viewport)', function () {
-            var template = 
+            var template =
 '<div ng-controller="MyTopController">' +
     '<div ng-controller="MyInnerController">' +
         '<div ng-controller="MyBottomController">' +
@@ -118,7 +116,7 @@ describe('uiScroll', function () {
         });
 
         it('should work with additional container (no viewport)', function () {
-            var template = 
+            var template =
 '<div ng-controller="MyTopController">' +
     '<div ng-controller="MyInnerController" ng-if="name">' +
         '<div ng-controller="MyBottomController" ng-if="name">' +
@@ -132,7 +130,7 @@ describe('uiScroll', function () {
         });
 
         it('should work for "on" syntax (viewport)', function () {
-            var template = 
+            var template =
 '<div ng-controller="MyTopController">' +
     '<div ng-controller="MyInnerController" ng-if="name">' +
         '<div ng-controller="MyBottomController" ng-if="name">' +
@@ -148,7 +146,7 @@ describe('uiScroll', function () {
         });
 
         it('should work for "on" syntax (no viewport)', function () {
-            var template = 
+            var template =
 '<div ng-controller="MyTopController">' +
     '<div ng-controller="MyInnerController" ng-if="name">' +
         '<div ng-controller="MyBottomController" ng-if="name">' +
@@ -162,7 +160,7 @@ describe('uiScroll', function () {
         });
 
         it('should work for "Controller As" syntax (viewport)', function () {
-            var template = 
+            var template =
 '<div ng-controller="MyTopController">' +
     '<div ng-controller="MyInnerController as ctrl" ng-if="name">' +
         '<div ng-controller="MyBottomController" ng-if="name">' +
@@ -178,7 +176,7 @@ describe('uiScroll', function () {
         });
 
         it('should work for "Controller As" syntax (no viewport)', function () {
-            var template = 
+            var template =
 '<div ng-controller="MyTopController">' +
     '<div ng-controller="MyInnerController as ctrl" ng-if="name">' +
         '<div ng-controller="MyBottomController" ng-if="name">' +
@@ -192,30 +190,67 @@ describe('uiScroll', function () {
         });
 
         it('should work for custom directive with "Controller As" syntax (viewport)', function () {
-            setDir(true);
+            myApp.directive('myDir1', setDirective({
+              ctrlAs: 'ctrl',
+              template:
+'<div ui-scroll-viewport style="height:200px" ng-if="ctrl.show">' +
+    '<div ui-scroll="item in myMultipageDatasource" adapter="ctrl.adapter">' +
+        '{{$index}}: {{item}}' +
+    '</div>' +
+'</div>'
+            }));
             var template =
 '<div ng-controller="MyTopController">' +
     '<div ng-controller="MyInnerController" ng-if="name">' +
         '<div ng-controller="MyBottomController" ng-if="name">' +
-            '<my-dir></my-dir>' +
+            '<my-dir1></my-dir1>' +
         '</div>' +
     '</div>' +
 '</div>';
             executeTest(template, 'MyBottomController', 'ctrl');
         });
 
-        /*it('should work for custom directive with "Controller As" syntax (no viewport)', function () {
-            setDir(false);
+        it('should work for custom directive with "Controller As" syntax (no viewport)', function () {
+            myApp.directive('myDir2', setDirective({
+              ctrlAs: 'ctrl',
+              template:
+'<div style="height:200px" ng-if="ctrl.show">' +
+    '<div ui-scroll="item in myMultipageDatasource" adapter="ctrl.adapter">' +
+        '{{$index}}: {{item}}' +
+    '</div>' +
+'</div>'
+            }));
             var template =
 '<div ng-controller="MyTopController">' +
     '<div ng-controller="MyInnerController" ng-if="name">' +
         '<div ng-controller="MyBottomController" ng-if="name">' +
-            '<my-dir></my-dir>' +
+            '<my-dir2></my-dir2>' +
         '</div>' +
     '</div>' +
 '</div>';
             executeTest(template, 'MyBottomController', 'ctrl');
-        });*/
+        });
+
+        it('should work for custom directive with the adapter defined on some external controller', function () {
+            myApp.directive('myDir3', setDirective({
+              ctrlAs: 'ctrl2',
+              template:
+'<div style="height:200px" ng-if="ctrl2.show">' +
+    '<div ui-scroll="item in myMultipageDatasource" adapter="ctrl.adapter">' +
+        '{{$index}}: {{item}}' +
+    '</div>' +
+'</div>'
+            }));
+            var template =
+'<div ng-controller="MyTopController">' +
+    '<div ng-controller="MyInnerController as ctrl" ng-if="name">' +
+        '<div ng-controller="MyBottomController" ng-if="name">' +
+            '<my-dir3></my-dir3>' +
+        '</div>' +
+    '</div>' +
+'</div>';
+            executeTest(template, 'MyInnerController as ctrl', 'ctrl');
+        });
     });
 
 });
