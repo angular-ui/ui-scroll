@@ -11,9 +11,11 @@ describe('uiScroll', function () {
     });
     myApp.controller('MyInnerController', function($scope) {
         $scope.name = 'MyInnerController';
+        $scope.container = {};
     });
     myApp.controller('MyBottomController', function($scope) {
         $scope.name = 'MyBottomController';
+        $scope.container = {};
     });
 
     beforeEach(module('myApp'));
@@ -22,8 +24,11 @@ describe('uiScroll', function () {
         return function() {
             var directive = {
                 restrict: 'E',
-                controller: function() {
+                scope: true,
+                controller: function($scope) {
                     this.show = true;
+                    this.container = {};
+                    $scope.container = {};
                 }
             };
             if (options.ctrlAs) {
@@ -34,7 +39,7 @@ describe('uiScroll', function () {
         };
     };
 
-    var executeTest = function(template, ctrlSelector, scopeContainer) {
+    var executeTest = function(template, scopeSelector, scopeContainer) {
         inject(function($rootScope, $compile, $timeout) {
             // build and render
             var templateElement = angular.element(template);
@@ -46,9 +51,14 @@ describe('uiScroll', function () {
 
             // find adapter element and scope container
             var adapterContainer;
-            if(ctrlSelector) {
+            if(scopeSelector) {
                 var adapterElement;
-                adapterElement = templateElement.find('[ng-controller="' + ctrlSelector + '"]');
+                if(typeof scopeSelector === 'string') {
+                  adapterElement = templateElement.find('[ng-controller="' + scopeSelector + '"]');
+                }
+                else { //number
+                    adapterElement = templateElement.find('my-dir' + scopeSelector);
+                }
                 adapterContainer = adapterElement.scope();
             }
             else {
@@ -207,7 +217,7 @@ describe('uiScroll', function () {
         '</div>' +
     '</div>' +
 '</div>';
-            executeTest(template, 'MyBottomController', 'ctrl');
+            executeTest(template, 1, 'ctrl');
         });
 
         it('should work for custom directive with "Controller As" syntax (no viewport)', function () {
@@ -228,7 +238,7 @@ describe('uiScroll', function () {
         '</div>' +
     '</div>' +
 '</div>';
-            executeTest(template, 'MyBottomController', 'ctrl');
+            executeTest(template, 2, 'ctrl');
         });
 
         it('should work for custom directive with the adapter defined on some external controller', function () {
@@ -250,6 +260,27 @@ describe('uiScroll', function () {
     '</div>' +
 '</div>';
             executeTest(template, 'MyInnerController as ctrl', 'ctrl');
+        });
+
+        it('should work with "Controller As" and ingnore intermediate containers which are not controllers', function () {
+            myApp.directive('myDir4', setDirective({
+              ctrlAs: 'ctrl2',
+              template:
+'<div style="height:200px" ng-if="ctrl2.show">' +
+    '<div ui-scroll="item in myMultipageDatasource" adapter="container.adapter">' +
+        '{{$index}}: {{item}}' +
+    '</div>' +
+'</div>'
+            }));
+            var template =
+'<div ng-controller="MyTopController">' +
+    '<div ng-controller="MyInnerController as container" ng-if="name">' +
+        '<div ng-controller="MyBottomController" ng-if="name">' +
+            '<my-dir4></my-dir4>' +
+        '</div>' +
+    '</div>' +
+'</div>';   // here Directive and MyBottomController have a container object
+            executeTest(template, 'MyInnerController as container', 'container');
         });
     });
 
