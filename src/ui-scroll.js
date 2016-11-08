@@ -525,7 +525,7 @@ angular.module('ui.scroll', [])
                   return true;
                 }
                 // directive's/component's "Controller As" parsing
-                if (!on && candidateScope && candidateScope.hasOwnProperty(controllerName) && candidateScope[controllerName].constructor.name === 'controller') {
+                if (!on && candidateScope && candidateScope.hasOwnProperty(controllerName) && Object.getPrototypeOf(candidateScope[controllerName]).constructor.hasOwnProperty('$inject')) {
                   scope = candidateScope;
                   return true;
                 }

@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.1 -- 2016-11-07T22:33:16.326Z
+ * Version: 1.5.1 -- 2016-11-08T02:42:37.872Z
  * License: MIT
  */
  
@@ -535,7 +535,7 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
               return true;
             }
             // directive's/component's 'Controller As' parsing
-            if (!on && candidateScope && candidateScope.hasOwnProperty(controllerName) && candidateScope[controllerName].constructor.name === 'controller') {
+            if (!on && candidateScope && candidateScope.hasOwnProperty(controllerName) && Object.getPrototypeOf(candidateScope[controllerName]).constructor.hasOwnProperty('$inject')) {
               scope = candidateScope;
               return true;
             }
