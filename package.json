@@ -1,7 +1,7 @@
 {
   "name": "angular-ui-scroll",
   "description": "two way infinite scroll",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "src": "./src/",
   "public": "./public/",
   "main": "./dist/ui-scroll.js",

@@ -8,7 +8,7 @@ This becomes a real problem if the html representing a row has event handlers an
 complexity can easily introduce 20 watchers per row. Which for a list of 100 rows gives you total of 2000 watchers and a sluggish app.
 
 uiScroll directive
-------------------- 
+-------------------
 
 [![Build Status](https://travis-ci.org/angular-ui/ui-scroll.svg?branch=master)](https://travis-ci.org/angular-ui/ui-scroll) [![npm version](https://badge.fury.io/js/angular-ui-scroll.svg)](http://badge.fury.io/js/angular-ui-scroll) [![Bower version](https://badge.fury.io/bo/angular-ui-scroll.svg)](http://badge.fury.io/bo/angular-ui-scroll) [![Join the chat at https://gitter.im/angular-ui/ui-scroll](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/angular-ui/ui-scroll?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -119,8 +119,8 @@ exactly `count` elements unless it hit eof/bof
 
     #### Description
     As the scroller recieves the items requested by the `get` method, the value of minimum and maximum values of the item index are placed in the `minIndex` and `maxIndex` properties respectively. The values of the properties are cumulative - the value of the `minIndex` will never increase, and the value of the `maxIndex` will never decrease - except the values are reset in response to a call to the adapter `reload` method. The values of the properties are used to maintain the appearance of the scroller scrollBar.
-    
-    Values of the properties can be assigned programmatically. If the range of the index values is known in advance, assigneing them programmatically would improve the usability of the scrollBar. 
+
+    Values of the properties can be assigned programmatically. If the range of the index values is known in advance, assigneing them programmatically would improve the usability of the scrollBar.
 
 ###Adapter
 The adapter object is an internal object created for every instance of the scroller. Properties and methods of the adapter can be used to manipulate and assess the scroller the adapter was created for. Adapter based API replaces old (undocumented) event based API introduced earlier for this purpose. The event based API is now deprecated and no longer supported.
@@ -149,7 +149,7 @@ Adapater object implements the following methods
    #### Description
     returns `true` if the last item of the dataset is already in the buffer. No further requests for tailing items will be issued, returns `false` otherwise,
 
-* Method `reload` 
+* Method `reload`
 
         reload()
      or
@@ -158,10 +158,10 @@ Adapater object implements the following methods
 
    #### Description
     Calling this method reinitializes and reloads the scroller content. `startIndex` is an integer indicating what item index the scroller will use to start the load process. The value of the argument replaces the value provided with the start-index attribute.  Calling `reload()` is equivalent to calling `reload` method with current value of the `start-index` attribute .
-    
-    **important: `startIndex` should fall within underlying datset boundaries** The scroller will request two batches of items one starting from the `startIndex` and another one preceding the first one (starting from `startIndex - bufferSize`). If both requests come back empty, the scroller will consider the dataset to be empty and will place no further data requests. 
-    
-* Method `applyUpdates` 
+
+    **important: `startIndex` should fall within underlying datset boundaries** The scroller will request two batches of items one starting from the `startIndex` and another one preceding the first one (starting from `startIndex - bufferSize`). If both requests come back empty, the scroller will consider the dataset to be empty and will place no further data requests.
+
+* Method `applyUpdates`
 
             applyUpdates(index, newItems)
     #### Description
@@ -181,18 +181,18 @@ Adapater object implements the following methods
 
             append(newItems)
     #### Description
-    Adds new items after the last item in the buffer. 
+    Adds new items after the last item in the buffer.
 #### Parameters
     * **newItems** provides an array of items to be appended.
 
 * Method `prepend`
- 
+
             prepend(newItems)
     #### Description
     Adds new items before the first item in the buffer.
 #### Parameters
     * **newItems** provides an array of items to be prepended.
- 
+
 ####Manipulating the scroller content with adapter methods
 
 Adapter methods `applyUpdates`, `append` and `prepend` provide a way to update the scroller content without full reload of the content from the datasource. The updates are performed by changing the items in the scroller internal buffer after they are loaded from the datasource. Items in the buffer can be deleted or replaced with one or more items.
@@ -225,7 +225,7 @@ uiScrollTh and uiScrollTd directives
 -------------------
 ###Description
 
-The uiScrollTh and uiScrollTd directives provide a way to build flexible dynamic grids. Handling of grid rows is done by the uiScroll directive itself. In addition to this uiScrollTh and uiScrollTd directive provide tools to programmatically change grid layout, inclduing applying styles to columns, changing column size and order, as well as saving the modifications to the layout and applying previosly saved layouts. 
+The uiScrollTh and uiScrollTd directives provide a way to build flexible dynamic grids. Handling of grid rows is done by the uiScroll directive itself. In addition to this uiScrollTh and uiScrollTd directive provide tools to programmatically change grid layout, inclduing applying styles to columns, changing column size and order, as well as saving the modifications to the layout and applying previosly saved layouts.
 At this point the above functionality is supported only for table based scrollable grids.
 
 ###Usage
@@ -252,11 +252,11 @@ Here is the basic html template for scrollable grid using the uiScrollTh and uiS
 
 ### Dependencies
 
-The grid directives have the same dependency requirements as the uiScroll directive itself. To use the directives make sure the `ui.scroll.grid` module is on the list of the module dependencies. Also you have to load the dist/ui-scroll-grid.js file in your page. 
+The grid directives have the same dependency requirements as the uiScroll directive itself. To use the directives make sure the `ui.scroll.grid` module is on the list of the module dependencies. Also you have to load the dist/ui-scroll-grid.js file in your page.
 
 ### Controlling scrollable grid with the GridAdapter
 
-GridAdapter object (along with ColumnAdapter objects) provides methods and properties to be used to change the scrollable grid layout. A reference to this object is injected as a property named `gridAdapter`in the scroller adapter. 
+GridAdapter object (along with ColumnAdapter objects) provides methods and properties to be used to change the scrollable grid layout. A reference to this object is injected as a property named `gridAdapter`in the scroller adapter.
 
 `GridAdapter` object implements the following properties:
 
@@ -276,7 +276,7 @@ GridAdapter object (along with ColumnAdapter objects) provides methods and prope
 
 ###Examples
 
-Examples ([look here for sources](https://github.com/angular-ui/ui-scroll/tree/master/demo/examples)) consist of several pages (.html files) showing various ways to use the ui-scroll directive. Each page relays on its own datasource service (called `datasource`) defined in the javascript file with the same name and .js extension.
+Examples ([look here for sources](https://github.com/angular-ui/ui-scroll/tree/master/demo)) consist of several pages (.html files) showing various ways to use the ui-scroll directive. Each page relays on its own datasource service (called `datasource`) defined in the javascript file with the same name and .js extension.
 
 I intentionally broke every rule of proper html/css structure (i.e. embedded styles). This is done to keep the html as bare bones as possible and leave
 it to you to do it properly - whatever properly means in your book.
@@ -284,6 +284,10 @@ it to you to do it properly - whatever properly means in your book.
 To run the examples use this [link](http://rawgithub.com/angular-ui/ui-scroll/master/demo/index.html)
 
 ###History
+
+###v1.5.2
+* Refactored assignable expressions and attributes scope bindings.
+* Added new demos and tests. fixed IE compatibility.
 
 ###v1.5.1
 * Refactored adjustments during elements append/prepend.
