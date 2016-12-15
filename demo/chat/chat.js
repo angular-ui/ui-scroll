@@ -1,4 +1,4 @@
-var app = angular.module('application', ['ui.scroll', 'ui.scroll.jqlite']);
+var app = angular.module('application', ['ui.scroll']);
 
 app.factory('Server', [
 	'$timeout', '$q', function ($timeout, $q) {
