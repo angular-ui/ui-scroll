@@ -1,4 +1,4 @@
-angular.module('application', ['ui.scroll', 'ui.scroll.jqlite']).factory('datasource', [
+angular.module('application', ['ui.scroll']).factory('datasource', [
   '$log', '$timeout', function(console, $timeout) {
     var get, max, min;
     min = -50;
