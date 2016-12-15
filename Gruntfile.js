@@ -98,8 +98,7 @@ module.exports = function (grunt) {
       dynamic_mappings: {
         files: {
           'dist/ui-scroll.js': ['./temp/**/ui-scroll.js'],
-          'dist/ui-scroll-grid.js': ['./temp/**/ui-scroll-grid.js'],
-          'dist/ui-scroll-jqlite.js': ['./temp/**/ui-scroll-jqlite.js']
+          'dist/ui-scroll-grid.js': ['./temp/**/ui-scroll-grid.js']
         }
       }
     },
@@ -110,8 +109,7 @@ module.exports = function (grunt) {
       common: {
         files: {
           './dist/ui-scroll.min.js': ['./dist/ui-scroll.js'],
-          './dist/ui-scroll-grid.min.js': ['./dist/ui-scroll-grid.js'],
-          './dist/ui-scroll-jqlite.min.js': ['./dist/ui-scroll-jqlite.js']
+          './dist/ui-scroll-grid.min.js': ['./dist/ui-scroll-grid.js']
         }
       }
     },
@@ -119,8 +117,7 @@ module.exports = function (grunt) {
       dist: {
         files: {
           src: [
-            './dist/ui-scroll.js',
-            './dist/ui-scroll-jqlite.js'
+            './dist/ui-scroll.js'
           ]
         },
         options: {
@@ -130,8 +127,7 @@ module.exports = function (grunt) {
       src: {
         files: {
           src: [
-            './src/ui-scroll.js',
-            './src/ui-scroll-jqlite.js'
+            './src/ui-scroll.js'
           ]
         },
         options: grunt.util._.extend({}, grunt.file.readJSON('.jshintrc'), grunt.file.readJSON('./src/.jshintrc'))
