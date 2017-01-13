@@ -1,12 +1,13 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.2 -- 2017-01-13T00:53:53.341Z
+ * Version: 1.5.2 -- 2017-01-13T01:48:13.045Z
  * License: MIT
  */
  
 
  (function () {
+(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=='function'&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error('Cannot find module \''+o+'\'');throw f.code='MODULE_NOT_FOUND',f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=='function'&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 'use strict';
 
 angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout', function (console, $timeout) {
@@ -48,11 +49,11 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     };
 
     this.moveBefore = function (index) {
-      controller.moveBefore(column, index);
+      return controller.moveBefore(column, index);
     };
 
     this.exchangeWith = function (index) {
-      controller.exchangeWith(column, index);
+      return controller.exchangeWith(column, index);
     };
 
     Object.defineProperty(this, 'columnId', { get: function get() {
@@ -63,7 +64,6 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
   function ColumnController(controller, columns, header) {
 
     this.header = header;
-    this.cells = [];
     this.css = {};
     this.mapTo = columns.length;
     this.id = columns.length;
@@ -95,10 +95,12 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     this.columnFromPoint = function (x, y) {
       var _this2 = this;
 
-      if (insidePoint(header, x, y)) return this;
-      var result = undefined;
+      if (insidePoint(header, x, y)) {
+        return this;
+      }
+      var result = null;
       controller.forEachRow(function (row) {
-        if (insidePoint(row[_this2.id], x, y)) result = _this2;
+        return result = insidePoint(row[_this2.id], x, y) ? _this2 : result;
       });
       return result;
     };
@@ -121,7 +123,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       target.before(element);
     }
 
-    function moveLast(element, target) {
+    function moveLast(element) {
       var parent = element.parent();
       element.detach();
       parent.append(element);
@@ -130,12 +132,14 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     function applyCss(target, css) {
       target.removeAttr('style');
       for (var attr in css) {
-        if (css.hasOwnProperty(attr)) target.css(attr, css[attr]);
+        if (css.hasOwnProperty(attr)) {
+          target.css(attr, css[attr]);
+        }
       }
-    };
+    }
   }
 
-  function GridController(scope, scrollViewport) {
+  function GridController(scrollViewport) {
     var _this3 = this;
 
     var columns = [];
@@ -154,13 +158,13 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     this.registerCell = function (scope, cell) {
       var row = rowMap.get(scope);
-
       if (!row) {
         row = [];
         rowMap.set(scope, row);
       }
-
-      if (row.length >= columns.length) return false;
+      if (row.length >= columns.length) {
+        return false;
+      }
       row.push(cell);
       return true;
     };
@@ -169,7 +173,9 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       var row = rowMap.get(scope);
       var i = row.indexOf(cell);
       row.splice(i, 1);
-      if (!row.length) rowMap.delete(scope);
+      if (!row.length) {
+        rowMap['delete'](scope);
+      }
     };
 
     this.forEachRow = function (callback) {
@@ -205,25 +211,28 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
         throw new Error('Failed to apply layout - number of layouts should match number of columns');
       }
       layouts.forEach(function (layout, index) {
-        columns[index].applyLayout(layout);
+        return columns[index].applyLayout(layout);
       });
       transform(columns.map(function (column) {
         return column.header;
       }));
       rowMap.forEach(function (row) {
-        transform(row);
+        return transform(row);
       });
     };
 
     this.moveBefore = function (selected, target) {
       var index = target;
 
-      if (target % 1 !== 0) index = target ? columns[target.columnId].mapTo : columns.length;
-
-      if (index < 0 || index > columns.length) return; // throw an error?
+      if (target % 1 !== 0) {
+        index = target ? columns[target.columnId].mapTo : columns.length;
+      }
+      if (index < 0 || index > columns.length) {
+        return; // throw an error?
+      }
 
       var mapTo = selected.mapTo,
-          next = undefined;
+          next = null;
       index -= mapTo < index ? 1 : 0;
 
       columns.forEach(function (c) {
@@ -237,7 +246,9 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     };
 
     this.exchangeWith = function (selected, index) {
-      if (index < 0 || index >= columns.length) return;
+      if (index < 0 || index >= columns.length) {
+        return;
+      }
       columns.find(function (c) {
         return c.mapTo === index;
       }).mapTo = selected.mapTo;
@@ -245,12 +256,10 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     };
 
     this.columnFromPoint = function (x, y) {
-      for (var i = 0; i < columns.length; i++) {
-        var column = columns[i].columnFromPoint(x, y);
-        if (column) break;
-      }
-      if (column) return new ColumnAdapter(this, column);
-      return undefined;
+      var column = columns.find(function (col) {
+        return col.columnFromPoint(x, y);
+      });
+      return column ? new ColumnAdapter(this, column) : undefined;
     };
 
     // function definitions
@@ -274,16 +283,16 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
   return {
     require: ['^^uiScrollViewport'],
     restrict: 'A',
-    link: function link($scope, element, $attr, controllers, linker) {
-      controllers[0].gridController = controllers[0].gridController || new GridController($scope, controllers[0]);
+    link: function link($scope, element, $attr, controllers) {
+      controllers[0].gridController = controllers[0].gridController || new GridController(controllers[0]);
       controllers[0].gridController.registerColumn(element);
     }
   };
-}]).directive('uiScrollTd', ['$log', function (console) {
+}]).directive('uiScrollTd', ['$log', function () {
   return {
     require: ['?^^uiScrollViewport'],
     restrict: 'A',
-    link: function link($scope, element, $attr, controllers, linker) {
+    link: function link($scope, element, $attr, controllers) {
       if (controllers[0]) {
         (function () {
           var gridController = controllers[0].gridController;
@@ -297,4 +306,6 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     }
   };
 }]);
+
+},{}]},{},[1]);
 }());

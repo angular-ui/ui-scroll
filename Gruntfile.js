@@ -68,8 +68,9 @@ module.exports = function (grunt) {
           ]
         },
         files: {
+          "./temp/ui-scroll-jqlite.js": ["./src/ui-scroll-jqlite.js"],
           "./temp/ui-scroll.js": ["./src/ui-scroll.js"],
-          "./temp/ui-scroll-jqlite.js": ["./src/ui-scroll-jqlite.js"]
+          "./temp/ui-scroll-grid.js": ["./src/ui-scroll-grid.js"]
         }
       }
     },
