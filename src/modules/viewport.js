@@ -1,188 +1,176 @@
 import Padding from './padding'
 
-export default function Viewport(elementRoutines, buffer, element, controllers, attrs) {
-	const PADDING_MIN = 0.3;
-	const PADDING_DEFAULT = 0.5;
-	let topPadding = null;
-	let bottomPadding = null;
-	const viewport = controllers[0] && controllers[0].viewport ? controllers[0].viewport : angular.element(window);
+export default function Viewport(elementRoutines, buffer, element, viewportController, padding) {
+  let topPadding = null;
+  let bottomPadding = null;
+  const viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
+  const container = viewportController && viewportController.container ? viewportController.container : undefined;
 
-	viewport.css({
-		'overflow-y': 'auto',
-		'display': 'block'
-	});
+  viewport.css({
+    'overflow-y': 'auto',
+    'display': 'block'
+  });
 
-	function bufferPadding() {
-		return viewport.outerHeight() * Math.max(PADDING_MIN, +attrs.padding || PADDING_DEFAULT); // some extra space to initiate preload
-	}
+  function bufferPadding() {
+    return viewport.outerHeight() * padding; // some extra space to initiate preload
+  }
 
-	angular.extend(viewport, {
-		createPaddingElements(template) {
-			topPadding = new Padding(template);
-			bottomPadding = new Padding(template);
-			element.before(topPadding);
-			element.after(bottomPadding);
-		},
+  angular.extend(viewport, {
+    createPaddingElements(template) {
+      topPadding = new Padding(template);
+      bottomPadding = new Padding(template);
+      element.before(topPadding);
+      element.after(bottomPadding);
+    },
 
-		bottomDataPos() {
-			let scrollHeight = viewport[0].scrollHeight;
-			scrollHeight = scrollHeight != null ? scrollHeight : viewport[0].document.documentElement.scrollHeight;
-			return scrollHeight - bottomPadding.height();
-		},
+    applyContainerStyle() {
+      if (container && container !== viewport) {
+        viewport.css('height', window.getComputedStyle(container[0]).height);
+      }
+    },
 
-		topDataPos() {
-			return topPadding.height();
-		},
+    bottomDataPos() {
+      let scrollHeight = viewport[0].scrollHeight;
+      scrollHeight = scrollHeight != null ? scrollHeight : viewport[0].document.documentElement.scrollHeight;
+      return scrollHeight - bottomPadding.height();
+    },
 
-		bottomVisiblePos() {
-			return viewport.scrollTop() + viewport.outerHeight();
-		},
+    topDataPos() {
+      return topPadding.height();
+    },
 
-		topVisiblePos() {
-			return viewport.scrollTop();
-		},
+    bottomVisiblePos() {
+      return viewport.scrollTop() + viewport.outerHeight();
+    },
 
-		insertElement(e, sibling) {
-			return elementRoutines.insertElement(e, sibling || topPadding);
-		},
+    topVisiblePos() {
+      return viewport.scrollTop();
+    },
 
-		insertElementAnimated(e, sibling) {
-			return elementRoutines.insertElementAnimated(e, sibling || topPadding);
-		},
+    insertElement(e, sibling) {
+      return elementRoutines.insertElement(e, sibling || topPadding);
+    },
 
-		shouldLoadBottom() {
-			return !buffer.eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding();
-		},
+    insertElementAnimated(e, sibling) {
+      return elementRoutines.insertElementAnimated(e, sibling || topPadding);
+    },
 
-		clipBottom() {
-			// clip the invisible items off the bottom
-			let overage = 0;
-			let overageHeight = 0;
-			let itemHeight = 0;
-			let emptySpaceHeight = viewport.bottomDataPos() - viewport.bottomVisiblePos() - bufferPadding();
+    shouldLoadBottom() {
+      return !buffer.eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding();
+    },
 
-			for (let i = buffer.length - 1; i >= 0; i--) {
-				itemHeight = buffer[i].element.outerHeight(true);
-				if(overageHeight + itemHeight > emptySpaceHeight) {
-					break;
-				}
-				bottomPadding.cache.add(buffer[i]);
-				overageHeight += itemHeight;
-				overage++;
-			}
+    clipBottom() {
+      // clip the invisible items off the bottom
+      let overage = 0;
+      let overageHeight = 0;
+      let itemHeight = 0;
+      let emptySpaceHeight = viewport.bottomDataPos() - viewport.bottomVisiblePos() - bufferPadding();
 
-			if (overage > 0) {
-				buffer.eof = false;
-				buffer.remove(buffer.length - overage, buffer.length);
-				buffer.next -= overage;
-				viewport.adjustPadding();
-			}
-		},
+      for (let i = buffer.length - 1; i >= 0; i--) {
+        itemHeight = buffer[i].element.outerHeight(true);
+        if (overageHeight + itemHeight > emptySpaceHeight) {
+          break;
+        }
+        bottomPadding.cache.add(buffer[i]);
+        overageHeight += itemHeight;
+        overage++;
+      }
 
-		shouldLoadTop() {
-			return !buffer.bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding());
-		},
+      if (overage > 0) {
+        buffer.eof = false;
+        buffer.remove(buffer.length - overage, buffer.length);
+        buffer.next -= overage;
+        viewport.adjustPadding();
+      }
+    },
 
-		clipTop() {
-			// clip the invisible items off the top
-			let overage = 0;
-			let overageHeight = 0;
-			let itemHeight = 0;
-			let emptySpaceHeight = viewport.topVisiblePos() - viewport.topDataPos() - bufferPadding();
+    shouldLoadTop() {
+      return !buffer.bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding());
+    },
 
-			for (let i = 0; i < buffer.length; i++) {
-				itemHeight = buffer[i].element.outerHeight(true);
-				if(overageHeight + itemHeight > emptySpaceHeight) {
-					break;
-				}
-				topPadding.cache.add(buffer[i]);
-				overageHeight += itemHeight;
-				overage++;
-			}
+    clipTop() {
+      // clip the invisible items off the top
+      let overage = 0;
+      let overageHeight = 0;
+      let itemHeight = 0;
+      let emptySpaceHeight = viewport.topVisiblePos() - viewport.topDataPos() - bufferPadding();
 
-			if (overage > 0) {
-				// we need to adjust top padding element before items are removed from top
-				// to avoid strange behaviour of scroll bar during remove top items when we are at the very bottom
-				topPadding.height(topPadding.height() + overageHeight);
-				buffer.bof = false;
-				buffer.remove(0, overage);
-				buffer.first += overage;
-			}
-		},
+      for (let i = 0; i < buffer.length; i++) {
+        itemHeight = buffer[i].element.outerHeight(true);
+        if (overageHeight + itemHeight > emptySpaceHeight) {
+          break;
+        }
+        topPadding.cache.add(buffer[i]);
+        overageHeight += itemHeight;
+        overage++;
+      }
 
-		adjustPadding(adjustScrollTop) {
-			if (!buffer.length) {
-				return;
-			}
+      if (overage > 0) {
+        // we need to adjust top padding element before items are removed from top
+        // to avoid strange behaviour of scroll bar during remove top items when we are at the very bottom
+        topPadding.height(topPadding.height() + overageHeight);
+        buffer.bof = false;
+        buffer.remove(0, overage);
+        buffer.first += overage;
+      }
+    },
 
-			// precise heights calculation, items that were in buffer at some point
-			let topPaddingHeight = 0;
-			let bottomPaddingHeight = 0;
+    adjustPadding() {
+      if (!buffer.length) {
+        return;
+      }
 
-			if(topPadding.cache.length) {
-				for (let i = topPadding.cache.length - 1; i >= 0; i--) {
-					if (topPadding.cache[i].index < buffer.first) {
-						topPaddingHeight += topPadding.cache[i].height;
-					}
-				}
-			}
-			if(bottomPadding.cache.length) {
-				for (let i = bottomPadding.cache.length - 1; i >= 0; i--) {
-					if(bottomPadding.cache[i].index >= buffer.next) {
-						bottomPaddingHeight += bottomPadding.cache[i].height;
-					}
-				}
-			}
+      // precise heights calculation, items that were in buffer once
+      let topPaddingHeight = topPadding.cache.reduce((summ, item) => summ + (item.index < buffer.first ? item.height : 0), 0);
+      let bottomPaddingHeight = bottomPadding.cache.reduce((summ, item) => summ + (item.index >= buffer.next ? item.height : 0), 0);
 
-			// average heights calculation, items that have never been reached
-			let topPaddingHeightAdd = 0;
-			let bottomPaddingHeightAdd = 0;
-			let adjustTopPadding = buffer.minIndexUser && buffer.minIndex > buffer.minIndexUser;
-			let adjustBottomPadding = buffer.maxIndexUser && buffer.maxIndex < buffer.maxIndexUser;
+      // average item height based on buffer data
+      let visibleItemsHeight = buffer.reduce((summ, item) => summ + item.element.outerHeight(true), 0);
+      let averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
 
-			if(adjustTopPadding || adjustBottomPadding) {
-				let visibleItemsHeight = 0;
-				for (let i = buffer.length - 1; i >= 0; i--) {
-					visibleItemsHeight += buffer[i].element.outerHeight(true);
-				}
-				let averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
-				topPaddingHeightAdd = adjustTopPadding ? (buffer.minIndex - buffer.minIndexUser) * averageItemHeight : 0;
-				bottomPaddingHeightAdd = adjustBottomPadding ? (buffer.maxIndexUser - buffer.maxIndex) * averageItemHeight : 0;
-			}
+      // average heights calculation, items that have never been reached
+      let adjustTopPadding = buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser;
+      let adjustBottomPadding = buffer.maxIndexUser !== null && buffer.maxIndex < buffer.maxIndexUser;
+      let topPaddingHeightAdd = adjustTopPadding ? (buffer.minIndex - buffer.minIndexUser) * averageItemHeight : 0;
+      let bottomPaddingHeightAdd = adjustBottomPadding ? (buffer.maxIndexUser - buffer.maxIndex) * averageItemHeight : 0;
 
-			// paddings combine adjustement
-			let topPaddingHeightOld = topPadding.height();
-			topPadding.height(topPaddingHeight + topPaddingHeightAdd);
-			bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
+      // paddings combine adjustment
+      topPadding.height(topPaddingHeight + topPaddingHeightAdd);
+      bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
+    },
 
-			// additional scrollTop adjustement in case of datasource.minIndex external set
-			if (adjustScrollTop && adjustTopPadding && topPaddingHeightAdd) {
-				let diff = topPadding.height() - topPaddingHeightOld;
-				viewport.scrollTop(viewport.scrollTop() + diff);
-			}
-		},
+    adjustScrollTopAfterMinIndexSet(topPaddingHeightOld) {
+      // additional scrollTop adjustment in case of datasource.minIndex external set
+      if (buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser) {
+        let diff = topPadding.height() - topPaddingHeightOld;
+        viewport.scrollTop(viewport.scrollTop() + diff);
+      }
+    },
 
-		adjustScrollTopAfterPrepend(height) {
-			const paddingHeight = topPadding.height() - height;
+    adjustScrollTopAfterPrepend(updates) {
+      if (!updates.prepended.length)
+        return;
+      const height = buffer.effectiveHeight(updates.prepended);
+      const paddingHeight = topPadding.height() - height;
+      if (paddingHeight >= 0) {
+        topPadding.height(paddingHeight);
+      }
+      else {
+        topPadding.height(0);
+        viewport.scrollTop(viewport.scrollTop() - paddingHeight);
+      }
+    },
 
-			if (paddingHeight >= 0) {
-				topPadding.height(paddingHeight);
-			} else {
-				topPadding.height(0);
-				viewport.scrollTop(viewport.scrollTop() - paddingHeight);
-			}
-		},
+    resetTopPadding() {
+      topPadding.height(0);
+      topPadding.cache.clear();
+    },
 
-		resetTopPadding() {
-			topPadding.height(0);
-			topPadding.cache.clear();
-		},
+    resetBottomPadding() {
+      bottomPadding.height(0);
+      bottomPadding.cache.clear();
+    }
+  });
 
-		resetBottomPadding() {
-			bottomPadding.height(0);
-			bottomPadding.cache.clear();
-		}
-	});
-
-	return viewport;
+  return viewport;
 }
