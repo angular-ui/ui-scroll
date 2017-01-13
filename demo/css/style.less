@@ -233,6 +233,12 @@
 	}
 }
 
+.viewport2 {
+	height: 300px;
+	list-style: none;
+	padding: 0;
+	width: 300px;
+}
 
 .viewport {
 	margin-top: 15px;
@@ -405,9 +411,6 @@
 }
 
 
-
-
-
 .viewport-in-frame {
 
 	.item {
@@ -417,6 +420,32 @@
 }
 
 /*!viewport*/
+
+.chat {
+	height: 300px;
+	padding-left: 10px;
+
+	.item {
+		height: 50px;
+		list-style-type: none;
+		border: 0 dotted #ddd;
+		border-bottom-width: 1px;
+
+		.number {
+			font-weight: bolder;
+		}
+
+		.text {
+			margin-left: 10px;
+			font-style: italic;
+
+		}
+	}
+
+	.item:last-child {
+		border-bottom-width: 0;
+	}
+}
 
 
 

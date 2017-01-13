@@ -26,6 +26,16 @@
 
 	<div class="description">
 		Here we provide an ability of external min and max indexes setting to let the viewport know how many items do we have.
+		<div class="code">
+			<pre>&lt;li ui-scroll="item in datasource"&gt;{{item}<!---->}&lt;/li&gt;</pre>
+		</div>
+		Then you can play with minIndex and maxIndex properties which are being accessible on your datasource after the ui-scroll directive is linked:
+		<div class="code">
+			<pre>
+datasource.minIndex = -100;
+datasource.maxIndex = 100;</pre>
+		</div>
+		Such setting does not not lead to data fetching but the scroll bar params do match datasource size defined this way.
 	</div>
 
 	<div class="actions" ng-init="userMinIndex = -100; userMaxIndex = 100">

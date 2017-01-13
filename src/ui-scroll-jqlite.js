@@ -201,6 +201,9 @@ angular.module('ui.scroll.jqlite', ['ui.scroll'])
             outerHeight(option) {
               return getWidthHeight(this[0], 'height', option ? 'outerfull' : 'outer');
             },
+            outerWidth(option) {
+              return getWidthHeight(this[0], 'width', option ? 'outerfull' : 'outer');
+            },
 
             /*
              The offset setter method is not implemented

@@ -1,0 +1,40 @@
+.grid {
+    height: 300px;
+}
+
+.grid tbody {
+	 width: 300px;
+ }
+
+.col1 {
+    width: 80px;
+}
+
+td.col1 {
+    font-style: italic;
+}
+
+.col2 {
+    width: 200px;
+}
+
+.splitter{
+	cursor: e-resize;
+	float: right;
+	border: 2px solid black;
+	height: 20px;
+	position: relative;
+	right: 0;
+}
+
+td, th {
+	border: 0 dashed #999;
+	border-left-width: 1px;
+}
+th {
+	border-bottom-width: 1px;
+}
+
+.active {
+	border: 2px solid red;
+}

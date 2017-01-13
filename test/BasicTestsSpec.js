@@ -438,7 +438,7 @@ describe('uiScroll', function () {
 
                     viewport.scrollTop(0); //empty, no scroll occurred (-8)
                     viewport.trigger('scroll');
-                    flush();
+                    //flush();
 
                     expect(spy.calls.all().length).toBe(5);
                     expect(spy.calls.all()[0].args[0]).toBe(1);
@@ -476,9 +476,8 @@ describe('uiScroll', function () {
             });
 
             runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
+                function (viewport) {
                     var wheelEventElement = viewport[0];
-                    var flush = $timeout.flush;
 
                     angular.element(document.body).bind('mousewheel', incrementDocumentScrollCount); //spy for wheel-events bubbling
 
@@ -506,7 +505,7 @@ describe('uiScroll', function () {
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred because of we are at the top and bof is reached
                     expect(documentScrollBubblingCount).toBe(4);
 
-                    expect(flush).toThrow(); //there is no new data, bof is reached
+                    //expect(flush).toThrow(); //there is no new data, bof is reached
 
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred because of we are at the top and bof is reached
                     expect(documentScrollBubblingCount).toBe(5);
@@ -553,7 +552,7 @@ describe('uiScroll', function () {
             runTest(scrollSettings,
                 function (viewport, scope, $timeout) {
                     var bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
-                  
+
                     // scroll up + expectation
                     for(var i = 0; i < 6; i++) {
                         viewport.scrollTop(-5000);
@@ -701,5 +700,143 @@ describe('uiScroll', function () {
 		});
 
 	});
+
+	describe('disabled property', function () {
+
+		it('should prevent datasource.get call', function () {
+			var spy;
+			inject(function (myInfiniteDatasource) {
+				spy = spyOn(myInfiniteDatasource, 'get').and.callThrough();
+			});
+
+			runTest({datasource: 'myInfiniteDatasource', adapter: 'adapter'},
+				function (viewport, scope, $timeout) {
+
+					expect(spy.calls.all().length).toBe(3); // three initial requests
+
+					scope.adapter.disabled = true;
+					viewport.scrollTop(1000); // scroll to bottom
+					viewport.trigger('scroll');
+
+					expect($timeout.flush).toThrow(); // no new data fetch
+				}
+			);
+		});
+
+		it('should fetch new data after disabled = false', function () {
+			var spy;
+			inject(function (myInfiniteDatasource) {
+				spy = spyOn(myInfiniteDatasource, 'get').and.callThrough();
+			});
+
+			runTest({datasource: 'myInfiniteDatasource', adapter: 'adapter'},
+				function (viewport, scope, $timeout) {
+
+					scope.adapter.disabled = true;
+					viewport.scrollTop(1000); // scroll to bottom
+					viewport.trigger('scroll');
+
+					scope.adapter.disabled = false;
+					$timeout.flush(); // here new data must be fetched
+
+					expect(spy.calls.all().length).toBe(4); // 3 initial + 1 new requests
+				}
+			);
+		});
+
+	});
+
+	describe('user min and max indexes', function () {
+
+		var viewportHeight = 120;
+		var itemHeight = 20;
+		var bufferSize = 3;
+		var userMinIndex = -100;
+		var userMaxIndex = 100;
+
+		var scrollSettings = {
+			datasource: 'myInfiniteDatasource',
+			viewportHeight: viewportHeight,
+			itemHeight: itemHeight,
+			bufferSize: bufferSize
+		};
+
+		it('should calculate bottom padding element\'s height after user max index is set', function () {
+
+			var setMaxIndex;
+			inject(function (myInfiniteDatasource) {
+				setMaxIndex = function () {
+					myInfiniteDatasource.maxIndex = userMaxIndex;
+				};
+			});
+
+			runTest(scrollSettings,
+				function (viewport, scope, $timeout) {
+					var bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
+
+					setMaxIndex();
+					$timeout.flush();
+
+					var virtualItemsAmount = userMaxIndex - (viewportHeight / itemHeight) - bufferSize;
+					expect(bottomPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
+				}
+			);
+		});
+
+		it('should calculate top padding element\'s height after user min index is set', function () {
+
+			var setMinIndex;
+			inject(function (myInfiniteDatasource) {
+				setMinIndex = function () {
+					myInfiniteDatasource.minIndex = userMinIndex;
+				};
+			});
+
+			runTest(scrollSettings,
+				function (viewport, scope, $timeout) {
+					var topPaddingElement = angular.element(viewport.children()[0]);
+
+					setMinIndex();
+					$timeout.flush();
+
+					var virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
+					expect(topPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
+				}
+			);
+		});
+
+	});
+
+  describe('attributes scope binding', function () {
+    var calls = null;
+    var bufferSize = 5;
+
+    it('bufferSize scope binding should work (1)', function () {
+      inject(function (myInfiniteDatasource) {
+        var spy = spyOn(myInfiniteDatasource, 'get').and.callThrough();
+        runTest({datasource: 'myInfiniteDatasource', bufferSize: bufferSize},
+          function () {
+            calls = spy.calls.all().length;
+            expect(calls > 0).toBe(true);
+          }
+        );
+      });
+    });
+
+    it('bufferSize scope binding should work (2)', function () {
+      inject(function (myInfiniteDatasource) {
+        var spy = spyOn(myInfiniteDatasource, 'get').and.callThrough();
+        runTest({datasource: 'myInfiniteDatasource', bufferSize: 'start'},
+          function () {
+            expect(spy.calls.all().length).toBe(calls);
+          }, {
+            scope: {
+              'start': bufferSize
+            }
+          }
+        );
+      });
+    });
+  });
 
 });

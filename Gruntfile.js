@@ -45,7 +45,7 @@ module.exports = function (grunt) {
           colors: true,
           configFile: './test/karma.conf.js',
           keepalive: true,
-          port: 8081,
+          port: 8082,
           runnerPort: 9100
         }
       },
@@ -95,6 +95,7 @@ module.exports = function (grunt) {
       dynamic_mappings: {
         files: {
           'dist/ui-scroll.js': ['./temp/**/ui-scroll.js'],
+          'dist/ui-scroll-grid.js': ['./temp/**/ui-scroll-grid.js'],
           'dist/ui-scroll-jqlite.js': ['./temp/**/ui-scroll-jqlite.js']
         }
       }
@@ -106,6 +107,7 @@ module.exports = function (grunt) {
       common: {
         files: {
           './dist/ui-scroll.min.js': ['./dist/ui-scroll.js'],
+          './dist/ui-scroll-grid.min.js': ['./dist/ui-scroll-grid.js'],
           './dist/ui-scroll-jqlite.min.js': ['./dist/ui-scroll-jqlite.js']
         }
       }

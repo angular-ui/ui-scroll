@@ -27,7 +27,6 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite'])
 				}, 100);
 			};
 
-			var current = 0;
 			$rootScope.$watch((function () {
 				return $rootScope.key;
 			}), function () {
@@ -37,16 +36,12 @@ angular.module('application', ['ui.scroll', 'ui.scroll.jqlite'])
 						position++;
 					}
 				}
-				current++;
+				if ($rootScope.key)
+					$rootScope.adapter.reload();
 			});
-
-			var revision = function () {
-				return current;
-			};
 
 			return {
 				get: get,
-				revision: revision
 			};
 		}
 	]);

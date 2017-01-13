@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>Scroller Demo (list based)</title>
-	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.js"></script>
 	<script src="../../dist/ui-scroll.js"></script>
 	<script src="../../dist/ui-scroll-jqlite.js"></script>
 	<script src="positionedList.js"></script>
@@ -31,7 +31,7 @@
 		</div>
 
 		<div class="viewport" id="viewport-positionedList" ui-scroll-viewport>
-			<div class="item" ui-scroll="item in datasource">{{$index}}: {{item}}</div>
+			<div class="item" ui-scroll="item in datasource" adapter="adapter">{{$index}}: {{item}}</div>
 		</div>
 	</div>
 

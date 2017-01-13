@@ -172,4 +172,23 @@ angular.module('ui.scroll.test.datasources', [])
                 }
             };
         }
+    ])
+
+    .factory('myGridDatasource', [
+        '$log', '$timeout', '$rootScope', function () {
+            return {
+                get: function (index, count, success) {
+                    var result = [];
+                    for (var i = index; i < index + count; i++) {
+                        result.push({
+                            col0: 'col0',
+                            col1: 'col1',
+                            col2: 'col2',
+                            col3: 'col3'
+                        });
+                    }
+                    success(result);
+                }
+            };
+        }
     ]);
