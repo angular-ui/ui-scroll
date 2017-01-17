@@ -23,7 +23,11 @@ module.exports = function (config) {
       '../temp/ui-scroll-grid.js',
       'datasources.js',
       'scaffolding.js',
-      '**/*Spec.js'
+      '**/*Spec.js',
+      {
+        pattern: '../temp/*.js.map',
+        included: false
+      }
     ],
 
     // list of files to exclude

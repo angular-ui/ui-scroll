@@ -1,12 +1,12 @@
 // Build configurations.
 module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-karma');
-  grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-webpack');
 
   grunt.initConfig({
     packageBower: grunt.file.readJSON('./bower.json'),
@@ -58,26 +58,13 @@ module.exports = function (grunt) {
         }
       }
     },
-    browserify: {
-      dist: {
-        options: {
-          transform: [
-            ["babelify", {
-              loose: "all"
-            }]
-          ]
-        },
-        files: {
-          "./temp/ui-scroll-jqlite.js": ["./src/ui-scroll-jqlite.js"],
-          "./temp/ui-scroll.js": ["./src/ui-scroll.js"],
-          "./temp/ui-scroll-grid.js": ["./src/ui-scroll-grid.js"]
-        }
-      }
+    webpack: {
+      dist: require("./webpack.config.js")
     },
     concat: {
       options: {
-        banner: '<%= releaseData %> \n\n (function () {\n',
-        footer: '}());',
+        banner: '<%= releaseData %> \n',
+        footer: '',
         stripBanners: true,
         process: function (src, filepath) {
           var singleQuotes, strings;
@@ -174,26 +161,26 @@ module.exports = function (grunt) {
   grunt.registerTask('default', ['server']);
 
   grunt.registerTask('test', [
-    'browserify',
+    'webpack',
     'karma:unit'
   ]);
 
   grunt.registerTask('buildWatcher', [
-    'browserify',
+    'webpack',
     'concat'
   ]);
 
   grunt.registerTask('build', [
     'jshint:test',
     'jshint:src',
-    'browserify',
+    'webpack',
     'karma:travis',
     'concat',
     'uglify:common'
   ]);
 
   grunt.registerTask('travis', [
-    'browserify',
+    'webpack',
     'karma:travis'
   ]);
 };

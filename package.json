@@ -22,23 +22,27 @@
     "test": "grunt test"
   },
   "devDependencies": {
+    "babel": "^6.5.2",
+    "babel-core": "^6.21.0",
+    "babel-loader": "^6.2.10",
     "babel-preset-es2015": "^6.5.0",
     "babelify": "^6.1.0",
     "express": "~3.4.8",
     "grunt": "~0.4.5",
-    "grunt-browserify": "^3.8.0",
     "grunt-contrib-concat": "~0.5.1",
     "grunt-contrib-connect": "~0.10.1",
     "grunt-contrib-jshint": "~1.0.0",
     "grunt-contrib-uglify": "0.9.1",
     "grunt-contrib-watch": "~0.6.1",
     "grunt-karma": "~0.12.0",
+    "grunt-webpack": "^1.0.18",
     "jasmine-core": "^2.4.1",
     "karma": "~0.13",
     "karma-chrome-launcher": "~0.2",
     "karma-firefox-launcher": "~0.1",
     "karma-ie-launcher": "~0.2",
-    "karma-jasmine": "~0.3"
+    "karma-jasmine": "~0.3",
+    "webpack": "^1.14.0"
   },
   "keywords": [
     "angular",
