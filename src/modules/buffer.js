@@ -1,4 +1,4 @@
-export default function Buffer(elementRoutines, bufferSize) {
+export default function ScrollBuffer(elementRoutines, bufferSize) {
   const buffer = Object.create(Array.prototype);
 
   angular.extend(buffer, {

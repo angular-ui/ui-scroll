@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.2 -- 2017-01-13T00:53:53.341Z
+ * Version: 1.5.2 -- 2017-01-17T11:43:56.479Z
  * License: MIT
  */
  
@@ -197,9 +197,9 @@ module.exports = exports['default'];
 'use strict';
 
 exports.__esModule = true;
-exports['default'] = Buffer;
+exports['default'] = ScrollBuffer;
 
-function Buffer(elementRoutines, bufferSize) {
+function ScrollBuffer(elementRoutines, bufferSize) {
   var buffer = Object.create(Array.prototype);
 
   angular.extend(buffer, {
@@ -695,7 +695,6 @@ angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
   };
 
   function link($scope, element, $attr, controllers, linker) {
-
     var match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([(\w|\$)\.]+)\s*$/);
     if (!match) {
       throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');

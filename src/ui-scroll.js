@@ -10,7 +10,7 @@
  */
 
 import ElementRoutines from './modules/elementRoutines.js';
-import Buffer from './modules/buffer.js';
+import ScrollBuffer from './modules/buffer.js';
 import Viewport from './modules/viewport.js';
 import Adapter from './modules/adapter.js';
 
@@ -56,7 +56,6 @@ angular.module('ui.scroll', [])
 
 
       function link($scope, element, $attr, controllers, linker) {
-
         const match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([(\w|\$)\.]+)\s*$/);
         if (!match) {
           throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
@@ -83,7 +82,7 @@ angular.module('ui.scroll', [])
         let pending = [];
 
         let elementRoutines = new ElementRoutines($injector);
-        let buffer = new Buffer(elementRoutines, bufferSize);
+        let buffer = new ScrollBuffer(elementRoutines, bufferSize);
         let viewport = new Viewport(elementRoutines, buffer, element, viewportController, padding);
         let adapter = new Adapter($rootScope, $parse, $attr, viewport, buffer, adjustBuffer, element);
 
