@@ -18,7 +18,6 @@ module.exports = function (config) {
       'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js',
       'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-mocks.js',
       'test.css',
-      '../temp/ui-scroll-jqlite.js',
       '../temp/ui-scroll.js',
       '../temp/ui-scroll-grid.js',
       'datasources.js',

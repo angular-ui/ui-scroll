@@ -5,8 +5,7 @@ var packageJSON = require('./package.json');
 module.exports.config = {
   entry: {
     'ui-scroll': './src/ui-scroll.js',
-    'ui-scroll-grid': './src/ui-scroll-grid.js',
-    'ui-scroll-jqlite': './src/ui-scroll-jqlite.js'
+    'ui-scroll-grid': './src/ui-scroll-grid.js'
   },
   output: {
     path: path.join(__dirname, 'temp'),

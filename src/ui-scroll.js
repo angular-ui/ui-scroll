@@ -9,6 +9,7 @@
  element.scrollTop(value)
  */
 
+import JQLiteExtras from './modules/jqLiteExtras';
 import ElementRoutines from './modules/elementRoutines.js';
 import ScrollBuffer from './modules/buffer.js';
 import Viewport from './modules/viewport.js';
@@ -451,4 +452,8 @@ angular.module('ui.scroll', [])
       }
 
     }
+  ])
+  .service('jqLiteExtras', () => new JQLiteExtras())
+  .run(['jqLiteExtras', (jqLiteExtras) =>
+    !window.jQuery ? jqLiteExtras.registerFor(angular.element) : null
   ]);

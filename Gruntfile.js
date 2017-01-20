@@ -64,6 +64,11 @@ module.exports = function (grunt) {
         files: [
           {expand: true, src: ['*'], cwd: 'temp', dest: 'dist/'},
         ]
+      },
+      jqLiteExtrasFake: {
+        files: [
+          {expand: true, src: ['ui-scroll-jqlite.js'], cwd: 'src', dest: 'dist/'},
+        ]
       }
     },
     jshint: {
@@ -130,7 +135,8 @@ module.exports = function (grunt) {
     'jshint:sources',
     'webpack:prod',
     'karma:prod',
-    'copy:sources'
+    'copy:sources',
+    'copy:jqLiteExtrasFake'
   ]);
 
   grunt.registerTask('travis', [
