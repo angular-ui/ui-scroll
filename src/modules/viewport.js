@@ -1,4 +1,4 @@
-import Padding from './padding'
+import Padding from './padding';
 
 export default function Viewport(elementRoutines, buffer, element, viewportController, padding) {
   let topPadding = null;

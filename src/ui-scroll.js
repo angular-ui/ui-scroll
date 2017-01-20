@@ -81,7 +81,7 @@ angular.module('ui.scroll', [])
         let ridActual = 0;// current data revision id
         let pending = [];
 
-        let elementRoutines = new ElementRoutines($injector);
+        let elementRoutines = new ElementRoutines($injector, $q);
         let buffer = new ScrollBuffer(elementRoutines, bufferSize);
         let viewport = new Viewport(elementRoutines, buffer, element, viewportController, padding);
         let adapter = new Adapter($rootScope, $parse, $attr, viewport, buffer, adjustBuffer, element);

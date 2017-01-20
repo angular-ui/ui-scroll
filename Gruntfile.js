@@ -60,22 +60,11 @@ module.exports = function (grunt) {
       }
     },
     jshint: {
-      dist: {
-        files: {
-          src: [
-            './dist/ui-scroll.js',
-            './dist/ui-scroll-jqlite.js'
-          ]
-        },
-        options: {
-          jshintrc: '.jshintrc'
-        }
-      },
       src: {
         files: {
           src: [
-            './src/ui-scroll.js',
-            './src/ui-scroll-jqlite.js'
+            './src/*.js',
+            './src/modules/*.js'
           ]
         },
         options: grunt.util._.extend({}, grunt.file.readJSON('.jshintrc'), grunt.file.readJSON('./src/.jshintrc'))
@@ -125,6 +114,7 @@ module.exports = function (grunt) {
   ]);
 
   grunt.registerTask('buildWatcher', [
+    'jshint:src',
     'webpack',
     'copy:sources'
   ]);

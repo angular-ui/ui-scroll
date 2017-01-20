@@ -1,8 +1,9 @@
 export default class ElementRoutines {
 
-  constructor($injector) {
+  constructor($injector, $q) {
     this.$animate = ($injector.has && $injector.has('$animate')) ? $injector.get('$animate') : null;
     this.isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
+    this.$q = $q;
   }
 
   insertElement(newElement, previousElement) {
@@ -18,11 +19,11 @@ export default class ElementRoutines {
 
   insertElementAnimated(newElement, previousElement) {
     if (!this.$animate) {
-      return insertElement(newElement, previousElement);
+      return this.insertElement(newElement, previousElement);
     }
 
     if (this.isAngularVersionLessThen1_3) {
-      const deferred = $q.defer();
+      const deferred = this.$q.defer();
       // no need for parent - previous element is never null
       this.$animate.enter(newElement, null, previousElement, () => deferred.resolve());
 
@@ -35,11 +36,11 @@ export default class ElementRoutines {
 
   removeElementAnimated(wrapper) {
     if (!this.$animate) {
-      return removeElement(wrapper);
+      return this.removeElement(wrapper);
     }
 
     if (this.isAngularVersionLessThen1_3) {
-      const deferred = $q.defer();
+      const deferred = this.$q.defer();
       this.$animate.leave(wrapper.element, () => {
         wrapper.scope.$destroy();
         return deferred.resolve();

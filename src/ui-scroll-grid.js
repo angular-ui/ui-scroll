@@ -31,7 +31,7 @@ angular.module('ui.scroll.grid', [])
 
       this.exchangeWith = (index) => controller.exchangeWith(column, index);
 
-      Object.defineProperty(this, 'columnId', {get: () => column.id})
+      Object.defineProperty(this, 'columnId', {get: () => column.id});
     }
 
     function ColumnController(controller, columns, header) {
@@ -234,10 +234,10 @@ angular.module('ui.scroll.grid', [])
         controllers[0].gridController = controllers[0].gridController || new GridController(controllers[0]);
         controllers[0].gridController.registerColumn(element);
       }
-    }
+    };
   }])
 
-  .directive('uiScrollTd', ['$log', function () {
+  .directive('uiScrollTd', function () {
     return {
       require: ['?^^uiScrollViewport'],
       restrict: 'A',
@@ -249,5 +249,5 @@ angular.module('ui.scroll.grid', [])
           }
         }
       }
-    }
-  }]);
+    };
+  });
