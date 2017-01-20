@@ -56,7 +56,8 @@ module.exports = function (grunt) {
         plugins: require("./webpack.config.js").prodPlugins
       },
       dev: {
-        cache: false
+        cache: false,
+        plugins: require("./webpack.config.js").devPlugins
       }
     },
     copy: {

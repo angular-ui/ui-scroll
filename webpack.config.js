@@ -1,6 +1,5 @@
 var path = require('path');
 var webpack = require('webpack');
-var packageJSON = require('./package.json');
 
 module.exports.config = {
   entry: {
@@ -26,13 +25,33 @@ module.exports.config = {
   }
 };
 
+/**** plugins ****/
+
+var packageJSON = require('./package.json');
+var CleanWebpackPlugin = require('clean-webpack-plugin');
+
 var banner =
   packageJSON.name + '\n' +
   packageJSON.homepage + '\n' +
   'Version: ' + packageJSON.version + ' -- ' + (new Date()).toISOString() + '\n' +
   'License: ' + packageJSON.license;
 
-module.exports.prodPlugins = [
+var plugins = [
+  new CleanWebpackPlugin(['temp'], {
+    root: process.cwd(),
+    verbose: true,
+    dry: false,
+  })
+];
+
+module.exports.devPlugins = plugins;
+
+module.exports.prodPlugins = plugins.concat([
+  new CleanWebpackPlugin(['temp'], {
+    root: process.cwd(),
+    verbose: true,
+    dry: false,
+  }),
   new webpack.optimize.UglifyJsPlugin({
     compress: {
       warnings: true,
@@ -42,4 +61,4 @@ module.exports.prodPlugins = [
     },
   }),
   new webpack.BannerPlugin(banner)
-];
+]);
