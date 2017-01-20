@@ -30,7 +30,7 @@ module.exports = function (grunt) {
       }
     },
     karma: {
-      unit: {
+      dev: {
         options: {
           autoWatch: true,
           colors: true,
@@ -40,7 +40,7 @@ module.exports = function (grunt) {
           runnerPort: 9100
         }
       },
-      travis: {
+      prod: {
         options: {
           colors: true,
           configFile: './test/karma.conf.js',
@@ -50,7 +50,14 @@ module.exports = function (grunt) {
       }
     },
     webpack: {
-      dist: require("./webpack.config.js")
+      options: require("./webpack.config.js").config,
+      prod: {
+        cache: false,
+        plugins: require("./webpack.config.js").prodPlugins
+      },
+      dev: {
+        cache: false
+      }
     },
     copy: {
       sources: {
@@ -60,7 +67,7 @@ module.exports = function (grunt) {
       }
     },
     jshint: {
-      src: {
+      sources: {
         files: {
           src: [
             './src/*.js',
@@ -69,7 +76,7 @@ module.exports = function (grunt) {
         },
         options: grunt.util._.extend({}, grunt.file.readJSON('.jshintrc'), grunt.file.readJSON('./src/.jshintrc'))
       },
-      test: {
+      tests: {
         files: {
           src: ['./test/*Spec.js']
         },
@@ -109,26 +116,25 @@ module.exports = function (grunt) {
   grunt.registerTask('default', ['server']);
 
   grunt.registerTask('test', [
-    'webpack',
-    'karma:unit'
+    'webpack:dev',
+    'karma:dev'
   ]);
 
   grunt.registerTask('buildWatcher', [
-    'jshint:src',
-    'webpack',
-    'copy:sources'
+    'jshint:sources',
+    'webpack:dev'
   ]);
 
   grunt.registerTask('build', [
-    'jshint:test',
-    'jshint:src',
-    'webpack',
-    'karma:travis',
+    'jshint:tests',
+    'jshint:sources',
+    'webpack:prod',
+    'karma:prod',
     'copy:sources'
   ]);
 
   grunt.registerTask('travis', [
-    'webpack',
-    'karma:travis'
+    'webpack:prod',
+    'karma:prod'
   ]);
 };
