@@ -4,19 +4,10 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-webpack');
 
   grunt.initConfig({
-    packageBower: grunt.file.readJSON('./bower.json'),
-    timestamp: (new Date()).toISOString(),
-    releaseData: '/*!\n' +
-    ' * <%= packageBower.name %>\n' +
-    ' * <%= packageBower.homepage %>\n' +
-    ' * Version: <%= packageBower.version %> -- <%= timestamp %>\n' +
-    ' * License: <%= packageBower.license %>\n' +
-    ' */\n',
     connect: {
       app: {
         options: {
@@ -61,43 +52,11 @@ module.exports = function (grunt) {
     webpack: {
       dist: require("./webpack.config.js")
     },
-    concat: {
-      options: {
-        banner: '<%= releaseData %> \n',
-        footer: '',
-        stripBanners: true,
-        process: function (src, filepath) {
-          var singleQuotes, strings;
-          console.log("Processing " + filepath + " ...");
-          strings = /("(?:(?:\\")|[^"])*")/g;
-          singleQuotes = /'/g;
-          return src.replace(strings, function (match) {
-            var result;
-            console.log("match: " + match);
-            result = "'" + match.substring(1, match.length - 1).replace(singleQuotes, "\\'") + "'";
-            console.log("replaced with: " + result);
-            return result;
-          });
-        }
-      },
-      dynamic_mappings: {
-        files: {
-          'dist/ui-scroll.js': ['./temp/**/ui-scroll.js'],
-          'dist/ui-scroll-grid.js': ['./temp/**/ui-scroll-grid.js'],
-          'dist/ui-scroll-jqlite.js': ['./temp/**/ui-scroll-jqlite.js']
-        }
-      }
-    },
-    uglify: {
-      options: {
-        banner: '<%= releaseData %>'
-      },
-      common: {
-        files: {
-          './dist/ui-scroll.min.js': ['./dist/ui-scroll.js'],
-          './dist/ui-scroll-grid.min.js': ['./dist/ui-scroll-grid.js'],
-          './dist/ui-scroll-jqlite.min.js': ['./dist/ui-scroll-jqlite.js']
-        }
+    copy: {
+      sources: {
+        files: [
+          {expand: true, src: ['*'], cwd: 'temp', dest: 'dist/'},
+        ]
       }
     },
     jshint: {
@@ -167,7 +126,7 @@ module.exports = function (grunt) {
 
   grunt.registerTask('buildWatcher', [
     'webpack',
-    'concat'
+    'copy:sources'
   ]);
 
   grunt.registerTask('build', [
@@ -175,8 +134,7 @@ module.exports = function (grunt) {
     'jshint:src',
     'webpack',
     'karma:travis',
-    'concat',
-    'uglify:common'
+    'copy:sources'
   ]);
 
   grunt.registerTask('travis', [
