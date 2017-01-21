@@ -1,4 +1,4 @@
-angular.module('application', ['ui.scroll', 'ui.scroll.jqlite']).controller('mainController', [
+angular.module('application', ['ui.scroll']).controller('mainController', [
   '$scope', '$log', '$timeout', function($scope, console, $timeout) {
     var datasource, idList1, idList2;
     datasource = {};

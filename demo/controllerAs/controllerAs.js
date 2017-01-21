@@ -1,4 +1,4 @@
-angular.module('application', ['ui.scroll', 'ui.scroll.jqlite']).controller('mainController', [
+angular.module('application', ['ui.scroll']).controller('mainController', [
   '$timeout', function($timeout) {
 
     var datasource = {};
