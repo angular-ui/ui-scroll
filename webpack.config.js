@@ -44,14 +44,9 @@ var plugins = [
   })
 ];
 
-module.exports.devPlugins = plugins;
+module.exports.devPlugins = plugins.concat([]);
 
 module.exports.prodPlugins = plugins.concat([
-  new CleanWebpackPlugin(['temp'], {
-    root: process.cwd(),
-    verbose: true,
-    dry: false,
-  }),
   new webpack.optimize.UglifyJsPlugin({
     compress: {
       warnings: true,

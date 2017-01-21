@@ -1,14 +1,3 @@
-/*!
- globals: angular, window
- List of used element methods available in JQuery but not in JQuery Lite
- element.before(elem)
- element.height()
- element.outerHeight(true)
- element.height(value) = only for Top/Bottom padding elements
- element.scrollTop()
- element.scrollTop(value)
- */
-
 import JQLiteExtras from './modules/jqLiteExtras';
 import ElementRoutines from './modules/elementRoutines.js';
 import ScrollBuffer from './modules/buffer.js';
