@@ -13,21 +13,8 @@ module.exports = function (config) {
 
 
     // list of files / patterns to load in the browser
-    files: [
-      'http://code.jquery.com/jquery-1.9.1.js',
-      'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js',
-      'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-mocks.js',
-      'test.css',
-      '../temp/ui-scroll.js',
-      '../temp/ui-scroll-grid.js',
-      'datasources.js',
-      'scaffolding.js',
-      '**/*Spec.js',
-      {
-        pattern: '../temp/*.js.map',
-        included: false
-      }
-    ],
+    files: require('./karma.conf.files.js').defaultFiles,
+
 
     // list of files to exclude
     exclude: [],
@@ -39,7 +26,7 @@ module.exports = function (config) {
 
 
     // web server port
-    port: 9876,
+    port: 8082,
 
 
     // enable / disable colors in the output (reporters and logs)
@@ -53,6 +40,9 @@ module.exports = function (config) {
 
     // enable / disable watching file and executing tests whenever any file changes
     autoWatch: true,
+
+
+    keepalive: true,
 
 
     // Start these browsers, currently available:

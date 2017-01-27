@@ -1,6 +1,15 @@
 var path = require('path');
 var webpack = require('webpack');
 
+var packageJSON = require('./package.json');
+
+var getBanner = function (compressed) {
+  return packageJSON.name + (compressed ? ' (compressed)' : ' (uncompressed)') + '\n' +
+    packageJSON.homepage + '\n' +
+    'Version: ' + packageJSON.version + ' -- ' + (new Date()).toISOString() + '\n' +
+    'License: ' + packageJSON.license;
+};
+
 module.exports.config = {
   entry: {
     'ui-scroll': './src/ui-scroll.js',
@@ -10,6 +19,7 @@ module.exports.config = {
     path: path.join(__dirname, 'temp'),
     filename: '[name].js'
   },
+  cache: false,
   devtool: 'source-map',
   module: {
     loaders: [
@@ -22,31 +32,13 @@ module.exports.config = {
         }
       }
     ]
-  }
+  },
+  plugins: [
+    new webpack.BannerPlugin(getBanner(false))
+  ]
 };
 
-/**** plugins ****/
-
-var packageJSON = require('./package.json');
-var CleanWebpackPlugin = require('clean-webpack-plugin');
-
-var banner =
-  packageJSON.name + '\n' +
-  packageJSON.homepage + '\n' +
-  'Version: ' + packageJSON.version + ' -- ' + (new Date()).toISOString() + '\n' +
-  'License: ' + packageJSON.license;
-
-var plugins = [
-  new CleanWebpackPlugin(['temp'], {
-    root: process.cwd(),
-    verbose: true,
-    dry: false,
-  })
-];
-
-module.exports.devPlugins = plugins.concat([]);
-
-module.exports.prodPlugins = plugins.concat([
+module.exports.compressedPlugins = [
   new webpack.optimize.UglifyJsPlugin({
     compress: {
       warnings: true,
@@ -55,5 +47,5 @@ module.exports.prodPlugins = plugins.concat([
       comments: false,
     },
   }),
-  new webpack.BannerPlugin(banner)
-]);
+  new webpack.BannerPlugin(getBanner(true))
+];

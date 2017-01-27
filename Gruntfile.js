@@ -1,11 +1,13 @@
-// Build configurations.
 module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-karma');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-webpack');
+
+  var webpackSettings = require('./webpack.config.js');
 
   grunt.initConfig({
     connect: {
@@ -30,35 +32,33 @@ module.exports = function (grunt) {
       }
     },
     karma: {
-      dev: {
-        options: {
-          autoWatch: true,
-          colors: true,
-          configFile: './test/karma.conf.js',
-          keepalive: true,
-          port: 8082,
-          runnerPort: 9100
-        }
+      options: {
+        configFile: './test/karma.conf.js',
+        runnerPort: 9100
       },
-      prod: {
+      default: {},
+      compressed: {
         options: {
-          colors: true,
-          configFile: './test/karma.conf.js',
-          runnerPort: 9100,
+          files: require('./test/karma.conf.files.js').compressedFiles,
+          port: 9876,
+          autoWatch: false,
+          keepalive: false,
           singleRun: true
         }
       }
     },
     webpack: {
-      options: require("./webpack.config.js").config,
-      prod: {
-        cache: false,
-        plugins: require("./webpack.config.js").prodPlugins
-      },
-      dev: {
-        cache: false,
-        plugins: require("./webpack.config.js").devPlugins
+      options: webpackSettings.config,
+      default: {},
+      compressed: {
+        plugins: webpackSettings.compressedPlugins,
+        output: {
+          filename: '[name].min.js'
+        }
       }
+    },
+    clean: {
+      temp: ['temp']
     },
     copy: {
       sources: {
@@ -69,6 +69,9 @@ module.exports = function (grunt) {
       jqLiteExtrasFake: {
         files: [
           {expand: true, src: ['ui-scroll-jqlite.js'], cwd: 'src', dest: 'dist/'},
+          {expand: true, src: ['ui-scroll-jqlite.js'], cwd: 'src', dest: 'dist/', rename: function(dest, src) {
+            return dest + src.replace(/\.js$/, ".min.js");
+          }}
         ]
       }
     },
@@ -109,11 +112,6 @@ module.exports = function (grunt) {
     }
   });
 
-  /**
-   * Starts a web server
-   * Enter the following command at the command line to execute this task:
-   * grunt server
-   */
   grunt.registerTask('server', [
     'connect',
     'watch'
@@ -122,26 +120,30 @@ module.exports = function (grunt) {
   grunt.registerTask('default', ['server']);
 
   grunt.registerTask('test', [
-    'webpack:dev',
-    'karma:dev'
+    'clean:temp',
+    'webpack:default',
+    'karma:default'
   ]);
 
   grunt.registerTask('buildWatcher', [
     'jshint:sources',
-    'webpack:dev'
+    'clean:temp',
+    'webpack:default'
   ]);
 
   grunt.registerTask('build', [
     'jshint:tests',
     'jshint:sources',
-    'webpack:prod',
-    'karma:prod',
+    'clean:temp',
+    'webpack:compressed',
+    'karma:compressed',
+    'webpack:default',
     'copy:sources',
     'copy:jqLiteExtrasFake'
   ]);
 
   grunt.registerTask('travis', [
-    'webpack:prod',
-    'karma:prod'
+    'webpack:compressed',
+    'karma:compressed'
   ]);
 };
