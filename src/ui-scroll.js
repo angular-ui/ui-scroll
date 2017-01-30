@@ -5,6 +5,10 @@ import Viewport from './modules/viewport.js';
 import Adapter from './modules/adapter.js';
 
 angular.module('ui.scroll', [])
+  .service('jqLiteExtras', () => new JQLiteExtras())
+  .run(['jqLiteExtras', (jqLiteExtras) =>
+    !window.jQuery ? jqLiteExtras.registerFor(angular.element) : null
+  ])
   .directive('uiScrollViewport', function () {
     return {
       restrict: 'A',
@@ -441,8 +445,4 @@ angular.module('ui.scroll', [])
       }
 
     }
-  ])
-  .service('jqLiteExtras', () => new JQLiteExtras())
-  .run(['jqLiteExtras', (jqLiteExtras) =>
-    !window.jQuery ? jqLiteExtras.registerFor(angular.element) : null
   ]);
