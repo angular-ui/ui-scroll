@@ -13,9 +13,20 @@ module.exports = function (grunt) {
     connect: {
       app: {
         options: {
-          base: './',
-          middleware: require('./server/middleware'),
-          port: 5001
+          port: 5005,
+          base: './demo',
+          middleware: function (connect, options, middlewares) {
+            middlewares.unshift(function (req, res, next) {
+              var files = ['ui-scroll.js', 'ui-scroll-grid.js', 'ui-scroll.js.map', 'ui-scroll-grid.js.map'];
+              for (var i = 0; i < files.length; i++) {
+                if (req.url === '/dist/' + files[i]) {
+                  res.end(grunt.file.read('./temp/' + files[i]));
+                }
+              }
+              next();
+            });
+            return middlewares;
+          }
         }
       }
     },
@@ -28,7 +39,7 @@ module.exports = function (grunt) {
         files: [
           'src/**/*.js'
         ],
-        tasks: 'buildWatcher'
+        tasks: 'webpack:default'
       }
     },
     karma: {
@@ -69,9 +80,11 @@ module.exports = function (grunt) {
       jqLiteExtrasFake: {
         files: [
           {expand: true, src: ['ui-scroll-jqlite.js'], cwd: 'src', dest: 'dist/'},
-          {expand: true, src: ['ui-scroll-jqlite.js'], cwd: 'src', dest: 'dist/', rename: function(dest, src) {
+          {
+            expand: true, src: ['ui-scroll-jqlite.js'], cwd: 'src', dest: 'dist/', rename: function (dest, src) {
             return dest + src.replace(/\.js$/, ".min.js");
-          }}
+          }
+          }
         ]
       }
     },
@@ -113,6 +126,7 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('server', [
+    'webpack:default',
     'connect',
     'watch'
   ]);
@@ -123,12 +137,6 @@ module.exports = function (grunt) {
     'clean:temp',
     'webpack:default',
     'karma:default'
-  ]);
-
-  grunt.registerTask('buildWatcher', [
-    'jshint:sources',
-    'clean:temp',
-    'webpack:default'
   ]);
 
   grunt.registerTask('build', [
