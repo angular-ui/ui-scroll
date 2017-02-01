@@ -127,10 +127,10 @@ The adapter object is an internal object created for every instance of the scrol
 
 Adapter object implements the following properties:
 
-* `isLoading` - a boolean value indicating whether there are any pending load requests.
-* `topVisible` - a reference to the item currently in the topmost visible position.
-* `topVisibleElement` - a reference to the DOM element currently in the topmost visible position.
-* `topVisibleScope` - a reference to the scope created for the item currently in the topmost visible position.
+* `isLoading` - a boolean value (read only) indicating whether there are any pending load requests.
+* `topVisible` - a read only reference to the item currently in the topmost visible position.
+* `topVisibleElement` - a read only reference to the DOM element currently in the topmost visible position.
+* `topVisibleScope` - a read only reference to the scope created for the item currently in the topmost visible position.
 * `disabled` - setting `disabled` to `true` disables scroller's scroll/resize events handlers. This can be useful if you have multiple scrollers within the same scrollViewport and you want to prevent some of them from responding to the events.
 
 Adapater object implements the following methods
@@ -147,7 +147,14 @@ Adapater object implements the following methods
         isEOF()
 
    #### Description
-    returns `true` if the last item of the dataset is already in the buffer. No further requests for tailing items will be issued, returns `false` otherwise,
+    returns `true` if the last item of the dataset is already in the buffer. No further requests for tailing items will be issued, returns `false` otherwise.
+
+* Method `isEmpty`
+
+        isEmpty()
+
+   #### Description
+    returns `true` if the dataset is empty and the internal buffer length = 0. Returns `false` otherwise. Mind that isEmpty() will return `true` during the **first** request is pending, so maybe it should be used together with `isLoading` property. 
 
 * Method `reload`
 

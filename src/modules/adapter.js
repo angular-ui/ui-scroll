@@ -19,6 +19,7 @@ export default function Adapter($rootScope, $parse, $attr, viewport, buffer, adj
   this.isLoading = false;
   this.isBOF = () => buffer.bof;
   this.isEOF = () => buffer.eof;
+  this.isEmpty = () => !buffer.length;
 
   this.applyUpdates = (arg1, arg2) => {
     if (angular.isFunction(arg1)) {

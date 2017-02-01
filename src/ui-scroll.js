@@ -5,10 +5,12 @@ import Viewport from './modules/viewport.js';
 import Adapter from './modules/adapter.js';
 
 angular.module('ui.scroll', [])
+
   .service('jqLiteExtras', () => new JQLiteExtras())
   .run(['jqLiteExtras', (jqLiteExtras) =>
     !window.jQuery ? jqLiteExtras.registerFor(angular.element) : null
   ])
+
   .directive('uiScrollViewport', function () {
     return {
       restrict: 'A',
@@ -30,6 +32,7 @@ angular.module('ui.scroll', [])
       ]
     };
   })
+
   .directive('uiScroll', [
     '$log',
     '$injector',
@@ -47,7 +50,6 @@ angular.module('ui.scroll', [])
         terminal: true,
         link: link
       };
-
 
       function link($scope, element, $attr, controllers, linker) {
         const match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([(\w|\$)\.]+)\s*$/);
