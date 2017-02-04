@@ -11,10 +11,9 @@
 - [Introduction](#introduction)
     - [Why?](#why)
     - [How it works](#how-it-works)
-    - [In action](#in-action)
     - [Basic usage](#basic-usage)
     - [Examples](#examples)
-    - [Structure](#structure)
+    - [Install and connect](#install-and-connect)
 - [uiScroll directive](#uiscroll-directive)
     - [Parametrs](#parametrs)
     - [Datasource](#datasource)
@@ -23,6 +22,7 @@
 - [jqLiteExtras service](#jqliteextras-service)
 - [uiScrollTh and uiScrollTd](#uiscrollth-and-uiscrolltd-directives)
     - [GridAdapter](#gridadapter)
+- [Development](#development)
 - [Change log](#change-log)
 
 
@@ -58,8 +58,6 @@ The directive is asking the datasource for data to build and render elements unt
 It will start retrieving new data for new elements again if the user scrolls up/down to the edge of visible element list.
 
 
-### In action
-
 ![](https://raw.githubusercontent.com/angular-ui/ui-scroll/modules/demo/ui-scroll-demo.gif)
 
 
@@ -92,17 +90,41 @@ absolutely independent and has its own html-page and the javascript file with th
 To run the examples use __[this link](http://rawgithub.com/angular-ui/ui-scroll/master/demo/index.html)__.
 
 
-### Structure
+### Install and connect
 
-Currently we have 3 modules wich can be added to the angular-app you are developing.
+To install the package via npm use
+
+```
+npm install --save angular-ui-scroll
+```
+
+After installation, the ui-scroll distributive files will be available as
+
+```
+<script src="node_modules/angular-ui-scroll/dist/ui-scroll.min.js">
+<script src="node_modules/angular-ui-scroll/dist/ui-scroll-grid.min.js">
+```
+
+There are also uncompressed versions (ui-scroll.js, ui-scroll-grid.js) and sourcemaps for all of js-files.
+
+To use it in your angular-app you should add the module (modules)
+
+```
+angular.module('application', ['ui.scroll', 'ui.scroll.grid'])
+```
+
+Currently we have 2 regular modules which can be added to the angular-app you are developing.
  - __ui.scroll__ module which has
-   - uiScroll directive
-   - uiScrollViewport directive
-   - jqLiteExtras service (with runner)
+   - [uiScroll directive](#uiscroll-directive)
+   - [uiScrollViewport directive](#uiscrollviewport-directive)
+   - [jqLiteExtras service](#jqliteextras-service) (with runner)
  - __ui.scroll.grid__ module which has
-   - uiScrollTh directive
-   - uiScrollTd directive
- - __ui.scroll.jqlite__ module which is just empty since it was deprecated in v1.6.0
+   - [uiScrollTh directive](#uiscrollth-and-uiscrolltd-directives)
+   - [uiScrollTd directive](#uiscrollth-and-uiscrolltd-directives)
+  
+Also there is one more additional module in a separate file
+ - __ui.scroll.jqlite__ module
+It is empty since it was deprecated in v1.6.0.
   
   
 -------------------
@@ -135,7 +157,7 @@ Some of the properties offered by the adapter can also be accessed directly from
 * **top-visible-element - assignable expression**, optional - a reference to the DOM element currently in the topmost visible position will be injected in the appropriate scope. See also `topVisibleElement` adapter property.
 * **top-visible-scope - assignable expression**, optional - a reference to the scope created for the item currently in the topmost visible position will be injected in the appropriate scope. See also `topVisibleScope` adapter property.
 
-The `expression` can be any angular expression (assignable expression where so specified). All expressions are evaluated once at the time when the scroller is initalized. Changes in the expresion value after scroller intialization will have no impact on the scroller behavior.
+The `expression` can be any angular expression (assignable expression where so specified). All expressions are evaluated once at the time when the scroller is initialized. Changes in the expression value after scroller initialization will have no impact on the scroller behavior.
 
 The assignable expressions will be used by scroller to inject the requested value into the target scope. The scope associated with the viewport (the element marked with the [uiScrollViewport](#uiscrollviewport-directive) directive) will be used as the target scope. If the viewport is not defined (window viewport), the $rootScope will be used as the target scope. Note that the nearest additional scope-wrapper (like ng-if directive set right on the viewport) makes this mechanism unusable. There are two options which help in this case:
 
@@ -175,9 +197,9 @@ exactly `count` elements unless it hit eof/bof.
 
 * Properties `minIndex` and  `maxIndex`
 
-    As the scroller recieves the items requested by the `get` method, the value of minimum and maximum values of the item index are placed in the `minIndex` and `maxIndex` properties respectively. The values of the properties are cumulative - the value of the `minIndex` will never increase, and the value of the `maxIndex` will never decrease - except the values are reset in response to a call to the adapter `reload` method. The values of the properties are used to maintain the appearance of the scroller scrollBar.
+    As the scroller receives the items requested by the `get` method, the value of minimum and maximum values of the item index are placed in the `minIndex` and `maxIndex` properties respectively. The values of the properties are cumulative - the value of the `minIndex` will never increase, and the value of the `maxIndex` will never decrease - except the values are reset in response to a call to the adapter `reload` method. The values of the properties are used to maintain the appearance of the scroller scrollBar.
 
-    Values of the properties can be assigned programmatically. If the range of the index values is known in advance, assigneing them programmatically would improve the usability of the scrollBar.
+    Values of the properties can be assigned programmatically. If the range of the index values is known in advance, assigning them programmatically would improve the usability of the scrollBar.
 
 
 ###Adapter
@@ -192,7 +214,7 @@ Adapter object implements the following properties:
 * `topVisibleScope` - a read only reference to the scope created for the item currently in the topmost visible position.
 * `disabled` - setting `disabled` to `true` disables scroller's scroll/resize events handlers. This can be useful if you have multiple scrollers within the same scrollViewport and you want to prevent some of them from responding to the events.
 
-Adapater object implements the following methods
+Adapter object implements the following methods
 
 * Method `isBOF`
 
@@ -258,7 +280,7 @@ Adapater object implements the following methods
 Adapter methods `applyUpdates`, `append` and `prepend` provide a way to update the scroller content without full reload of the content from the datasource. The updates are performed by changing the items in the scroller internal buffer after they are loaded from the datasource. Items in the buffer can be deleted or replaced with one or more items.
 
 _Important!_ Update datasource to match the scroller buffer content. Keep in mind that the modifications made by the adapter methods are only applied to the content of the buffer. As the items in response to scrolling are pushed out of the buffer, the modifications are lost. It is your responsibility to ensure that as the scroller is scrolled back and a modified item is requested from the datasource again the values returned by the datasource would reflect the updated state. In other words you have to make sure that in addition to manipulating the scroller content you also apply the modifications to the dataset underlying the datasource.
-[Here](https://rawgit.com/angular-ui/ui-scroll/master/demo/append/append.html) is the example of such implementaion.
+[Here](https://rawgit.com/angular-ui/ui-scroll/master/demo/append/append.html) is the example of such implementation.
 
 #### Animations
 In the fashion similar to ngRepeat the following animations are supported:
@@ -291,7 +313,7 @@ the browser window object will be used as viewport.
 
 ## jqLiteExtras service
 
-This service implements some DOM element methods of jQuery which are currently not implemented in jQlite, namely
+This service implements some DOM element methods of jQuery which are currently not implemented in jqLite, namely
 
 * before(elem)
 * height() and height(value)
@@ -300,7 +322,7 @@ This service implements some DOM element methods of jQuery which are currently n
 * offset()
 
 These methods are being registered on angular.element during 'ui.scroll' module run automatically only if jQuery is not loaded.
-It is so since ui-scroll v1.6.0. In previous versions there was a separate module 'ui.scroll.jqlite' wchich should have been
+It is so since ui-scroll v1.6.0. In previous versions there was a separate module 'ui.scroll.jqlite' which should have been
 included in the dependency list of the main app module. So currently we leave 'ui.scroll.jqlite' module stub with no content
 to provide full backward compatibility.
 
@@ -310,10 +332,10 @@ to provide full backward compatibility.
 
 ## uiScrollTh and uiScrollTd directives
 
-The uiScrollTh and uiScrollTd directives provide a way to build flexible dynamic grids. Handling of grid rows is done by the uiScroll directive itself. In addition to this uiScrollTh and uiScrollTd directive provide tools to programmatically change grid layout, inclduing applying styles to columns, changing column size and order, as well as saving the modifications to the layout and applying previosly saved layouts.
+The uiScrollTh and uiScrollTd directives provide a way to build flexible dynamic grids. Handling of grid rows is done by the uiScroll directive itself. In addition to this uiScrollTh and uiScrollTd directive provide tools to programmatically change grid layout, including applying styles to columns, changing column size and order, as well as saving the modifications to the layout and applying previously saved layouts.
 At this point the above functionality is supported only for table based scrollable grids.
 
-Here is the basic html template for scrollable grid using the uiScrollTh and uiScrollTd directives. Keep in mind that the height of the scroll viewport (in this case the `<TABLE>` tag) should be constrained. Also make sure that the initial column widths are applied uniformly to both headers (`<TH>`) and cells (`<TD>`)
+Here is the basic html template for scrollable grid using the uiScrollTh and uiScrollTd directives. Keep in mind that the height of the scroll viewport (in this case the `<TABLE>` tag) should be constrained. Also, make sure that the initial column widths are applied uniformly to both headers (`<TH>`) and cells (`<TD>`)
 
 ```html
 <TABLE ui-scroll-viewport class="grid">
@@ -349,13 +371,62 @@ A reference to this object is injected as a property named `gridAdapter`in the s
 
 * Method `getLayout()` - returns an object describing current scrollable grid layout.
 * Method `applyLayout(layout)` - restores scrollabel grid layout to the state as defined by the object passed as the parameter
-* Method `columnFromPoint(x,y)` - if the coordinates belong to a scrollable grid column returns the appropriate ColumnAdapter object. Otherwise returns `undefined`.
+* Method `columnFromPoint(x,y)` - if the coordinates belong to a scrollable grid column returns the appropriate ColumnAdapter object. Otherwise, returns `undefined`.
 
 `ColumnAdapter` object implements the following methods:
 
 * Method `css(name, value)` - sets the css property `name` to `value` for the column header as well as for the column cells.
-* Method `moveBefore(column)` - moves the column in front of the column refrenced by the parameter. If the parameter is null the column will become the rightmost column.
+* Method `moveBefore(column)` - moves the column in front of the column referenced by the parameter. If the parameter is null, the column will become the rightmost column.
 
+
+-------------------
+
+
+## Development
+
+Please feel free to make Pull Requests. Below is the information which could be useful for local developing and contributing.
+
+The ui-scroll sources are in [./src](https://github.com/angular-ui/ui-scroll/tree/master/src) folder. They could not be run as is
+because of ES6 modules (since v1.6.0), they should be built. Build process includes jshint sources verification, webpack-based
+distributive files forming and tests running.
+
+Three npm scripts are available for developing.
+
+ __1__. To run dev-server use
+ 
+```
+npm start
+```
+  
+  This should start development server on 5005 port over the [./demo](https://github.com/angular-ui/ui-scroll/tree/master/demo) folder.
+  The middleware is configured to provide work with temporary distributive files (./temp) despite the direct links to public distributive
+  files (./dist). So the dist-folder should stay clear until the development is finished. Dev-server watches for the source codes (./src)
+  and automatically re-build temporary distributive files.
+  
+ __2__. To run tests in keep-alive mode use
+ 
+```
+npm run test
+```
+  
+  This runs karma testing against temporary distributive files (./temp). We created a number of specifications which consist of more
+  than 160 tests. They are living at [./test](https://github.com/angular-ui/ui-scroll/tree/master/test) folder. Karma watches for temp
+  and test folders changes and automatically re-run tests.
+
+ __3__. To run full build use
+ 
+```
+npm run build
+```
+  
+  After developing and testing complete the build process should be run to
+  a) pass through jshint,
+  b) generate minified versions of distributive,
+  c) run tests with minified distributive files,
+  d) obtain all necessary files in [./dist](https://github.com/angular-ui/ui-scroll/tree/master/dist) folder.
+
+PR should include source code (./scr) and tests (./test) changes and may not include public distributive (./dist) changes.
+  
 
 -------------------
 
@@ -366,6 +437,7 @@ A reference to this object is injected as a property named `gridAdapter`in the s
  * Introduced ES6 modules in the source codes.
  * Improved build process with Webpack.
  * Added sourcemaps. Fixed dev-server.
+ * Removed 'ui.scroll.jqlite' module. Added jqLiteExtras service to 'ui.scroll' module.
  * Significantly changed readme.
 
 ###v1.5.2
@@ -382,7 +454,7 @@ A reference to this object is injected as a property named `gridAdapter`in the s
 * Implemented "on controller" syntax to specify the scope where an adapter object has to be injected.
 
 ###v1.4.1
-* Developed a new complex approach of paddings elements height calculation (see [details](https://github.com/angular-ui/ui-scroll/pull/77)).
+* Developed a new complex approach of padding elements height calculation (see [details](https://github.com/angular-ui/ui-scroll/pull/77)).
 * Added startIndex attribute.
 * Changed clipTop/clipBottom methods logic.
 * Some new demos, tests, cleanup and other minor refactoring.
@@ -427,4 +499,3 @@ A reference to this object is injected as a property named `gridAdapter`in the s
 * Introduced API to dynamically update scroller content.
 * Deep 'name' properties access via dot-notation in template.
 * Fixed the problem occurring if the scroller is $destroyed while there are requests pending: [#64](https://github.com/Hill30/NGScroller/issues/64).
-
