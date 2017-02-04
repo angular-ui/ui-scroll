@@ -1,1 +1,11 @@
 /node_modules/
+/src
+/temp
+/test
+.gitignore
+.jshintrc
+.npmignore
+.travis.yml
+bower.json
+Gruntfile.js
+webpack.config.js

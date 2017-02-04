@@ -928,200 +928,244 @@ describe('uiScroll', function () {
 		});
 	});
 
-    describe('append tests\n', function () {
-        var scrollSettings = {datasource: 'myOnePageDatasource', adapter: 'adapter'};
+  describe('append tests\n', function () {
 
-        it('should append two rows to the dataset', function () {
-            runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
+    it('should append two rows to the dataset', function () {
+      runTest({datasource: 'myOnePageDatasource', adapter: 'adapter'},
+        function (viewport, scope, $timeout) {
 
-                    scope.adapter.append(['appended one', 'appended two']);
+          scope.adapter.append(['appended one', 'appended two']);
 
-                    $timeout.flush();
+          $timeout.flush();
 
-                    expect(viewport.children().length).toBe(7);
+          expect(viewport.children().length).toBe(7);
 
-                    var row1 = viewport.children()[1];
-                    expect(row1.tagName.toLowerCase()).toBe('div');
-                    expect(row1.innerHTML).toBe('1: one');
+          var row1 = viewport.children()[1];
+          expect(row1.tagName.toLowerCase()).toBe('div');
+          expect(row1.innerHTML).toBe('1: one');
 
-                    var row2 = viewport.children()[2];
-                    expect(row2.tagName.toLowerCase()).toBe('div');
-                    expect(row2.innerHTML).toBe('2: two');
+          var row2 = viewport.children()[2];
+          expect(row2.tagName.toLowerCase()).toBe('div');
+          expect(row2.innerHTML).toBe('2: two');
 
-                    var row3 = viewport.children()[3];
-                    expect(row3.tagName.toLowerCase()).toBe('div');
-                    expect(row3.innerHTML).toBe('3: three');
+          var row3 = viewport.children()[3];
+          expect(row3.tagName.toLowerCase()).toBe('div');
+          expect(row3.innerHTML).toBe('3: three');
 
-                    var row4 = viewport.children()[4];
-                    expect(row4.tagName.toLowerCase()).toBe('div');
-                    expect(row4.innerHTML).toBe('4: appended one');
+          var row4 = viewport.children()[4];
+          expect(row4.tagName.toLowerCase()).toBe('div');
+          expect(row4.innerHTML).toBe('4: appended one');
 
-                    var row5 = viewport.children()[5];
-                    expect(row5.tagName.toLowerCase()).toBe('div');
-                    expect(row5.innerHTML).toBe('5: appended two');
+          var row5 = viewport.children()[5];
+          expect(row5.tagName.toLowerCase()).toBe('div');
+          expect(row5.innerHTML).toBe('5: appended two');
 
-                    expect(scope.adapter).toBeTruthy();
-                    expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
-                }
-            );
-        });
-
-        var emptyScrollSettings = {datasource: 'myEmptyDatasource', adapter: 'adapter'};
-
-        it('should append two rows to the empty dataset', function () {
-            runTest(emptyScrollSettings,
-                function (viewport, scope, $timeout) {
-
-                    scope.adapter.append(['appended one', 'appended two']);
-
-                    $timeout.flush();
-
-                    expect(viewport.children().length).toBe(4);
-
-                    var row4 = viewport.children()[1];
-                    expect(row4.tagName.toLowerCase()).toBe('div');
-                    expect(row4.innerHTML).toBe('1: appended one');
-
-                    var row5 = viewport.children()[2];
-                    expect(row5.tagName.toLowerCase()).toBe('div');
-                    expect(row5.innerHTML).toBe('2: appended two');
-
-                    expect(scope.adapter).toBeTruthy();
-                    expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: appended one');
-                }
-            );
-        });
-
+          expect(scope.adapter).toBeTruthy();
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+        }
+      );
     });
 
-    describe('prepend tests\n', function () {
-        var scrollSettings = {datasource: 'myOnePageDatasource', adapter: 'adapter'};
+    it('should append two rows to the empty dataset', function () {
+      runTest({datasource: 'myEmptyDatasource', adapter: 'adapter'},
+        function (viewport, scope, $timeout) {
 
-        it('should prepend two rows to the dataset', function () {
-            runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
+          scope.adapter.append(['appended one', 'appended two']);
 
-                    scope.adapter.prepend(['prepended one', 'prepended two']);
+          $timeout.flush();
 
-                    $timeout.flush();
+          expect(viewport.children().length).toBe(4);
 
-                    expect(viewport.children().length).toBe(7);
+          var row4 = viewport.children()[1];
+          expect(row4.tagName.toLowerCase()).toBe('div');
+          expect(row4.innerHTML).toBe('1: appended one');
 
-                    var row4 = viewport.children()[1];
-                    expect(row4.tagName.toLowerCase()).toBe('div');
-                    expect(row4.innerHTML).toBe('-1: prepended one');
+          var row5 = viewport.children()[2];
+          expect(row5.tagName.toLowerCase()).toBe('div');
+          expect(row5.innerHTML).toBe('2: appended two');
 
-                    var row5 = viewport.children()[2];
-                    expect(row5.tagName.toLowerCase()).toBe('div');
-                    expect(row5.innerHTML).toBe('0: prepended two');
-
-                    var row1 = viewport.children()[3];
-                    expect(row1.tagName.toLowerCase()).toBe('div');
-                    expect(row1.innerHTML).toBe('1: one');
-
-                    var row2 = viewport.children()[4];
-                    expect(row2.tagName.toLowerCase()).toBe('div');
-                    expect(row2.innerHTML).toBe('2: two');
-
-                    var row3 = viewport.children()[5];
-                    expect(row3.tagName.toLowerCase()).toBe('div');
-                    expect(row3.innerHTML).toBe('3: three');
-
-                    expect(scope.adapter).toBeTruthy();
-                    expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: prepended one');
-                }
-            );
-        });
-
-        var emptyScrollSettings = {datasource: 'myEmptyDatasource', adapter: 'adapter'};
-
-        it('should prepend two rows to the empty dataset', function () {
-            runTest(emptyScrollSettings,
-                function (viewport, scope, $timeout) {
-
-                    scope.adapter.prepend(['prepended one', 'prepended two']);
-
-                    $timeout.flush();
-
-                    expect(viewport.children().length).toBe(4);
-
-                    var row4 = viewport.children()[1];
-                    expect(row4.tagName.toLowerCase()).toBe('div');
-                    expect(row4.innerHTML).toBe('-1: prepended one');
-
-                    var row5 = viewport.children()[2];
-                    expect(row5.tagName.toLowerCase()).toBe('div');
-                    expect(row5.innerHTML).toBe('0: prepended two');
-
-                    expect(scope.adapter).toBeTruthy();
-                    expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: prepended one');
-                }
-            );
-        });
-
+          expect(scope.adapter).toBeTruthy();
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: appended one');
+        }
+      );
     });
 
-    describe('adapter reload tests', function () {
-        var scrollSettings = {datasource: 'myInfiniteDatasource', adapter: 'adapter'};
+  });
 
-        it ('initial load should be positioned at item#1', function () {
-            runTest (scrollSettings,
-                function (viewport, scope) {
-                    expect(scope.adapter.topVisible).toBe('item1');
-                }
-            );
-        });
+  describe('prepend tests\n', function () {
 
-        it ('reload(100) should position it at item#100', function () {
-            runTest (scrollSettings,
-                function (viewport, scope, $timeout) {
-                    expect(scope.adapter.topVisible).toBe('item1');
+    it('should prepend two rows to the dataset', function () {
+      runTest({datasource: 'myOnePageDatasource', adapter: 'adapter'},
+        function (viewport, scope, $timeout) {
 
-                    scope.adapter.reload(100);
-                    $timeout.flush();
+          scope.adapter.prepend(['prepended one', 'prepended two']);
 
-                    expect(scope.adapter.topVisible).toBe('item100');
-                }
-            );
-        });
+          $timeout.flush();
 
-        it ('reload() should position it at item#1', function () {
-            runTest (scrollSettings,
-                function (viewport, scope, $timeout) {
-                    expect(scope.adapter.topVisible).toBe('item1');
+          expect(viewport.children().length).toBe(7);
 
-                    scope.adapter.reload(100);
-                    $timeout.flush();
+          var row4 = viewport.children()[1];
+          expect(row4.tagName.toLowerCase()).toBe('div');
+          expect(row4.innerHTML).toBe('-1: prepended one');
 
-                    expect(scope.adapter.topVisible).toBe('item100');
+          var row5 = viewport.children()[2];
+          expect(row5.tagName.toLowerCase()).toBe('div');
+          expect(row5.innerHTML).toBe('0: prepended two');
 
-                    scope.adapter.reload();
-                    $timeout.flush();
+          var row1 = viewport.children()[3];
+          expect(row1.tagName.toLowerCase()).toBe('div');
+          expect(row1.innerHTML).toBe('1: one');
 
-                    expect(scope.adapter.topVisible).toBe('item100');
-                }
-            );
-        });
+          var row2 = viewport.children()[4];
+          expect(row2.tagName.toLowerCase()).toBe('div');
+          expect(row2.innerHTML).toBe('2: two');
 
-        it ('reload(0) should position it at item#0', function () {
-            runTest (scrollSettings,
-                function (viewport, scope, $timeout) {
-                    expect(scope.adapter.topVisible).toBe('item1');
+          var row3 = viewport.children()[5];
+          expect(row3.tagName.toLowerCase()).toBe('div');
+          expect(row3.innerHTML).toBe('3: three');
 
-                    scope.adapter.reload(100);
-                    $timeout.flush();
-
-                    expect(scope.adapter.topVisible).toBe('item100');
-
-                    scope.adapter.reload(0);
-                    $timeout.flush();
-
-                    expect(scope.adapter.topVisible).toBe('item0');
-                }
-            );
-        });
-
+          expect(scope.adapter).toBeTruthy();
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: prepended one');
+        }
+      );
     });
+
+    it('should prepend two rows to the empty dataset', function () {
+      runTest({datasource: 'myEmptyDatasource', adapter: 'adapter'},
+        function (viewport, scope, $timeout) {
+
+          scope.adapter.prepend(['prepended one', 'prepended two']);
+
+          $timeout.flush();
+
+          expect(viewport.children().length).toBe(4);
+
+          var row4 = viewport.children()[1];
+          expect(row4.tagName.toLowerCase()).toBe('div');
+          expect(row4.innerHTML).toBe('-1: prepended one');
+
+          var row5 = viewport.children()[2];
+          expect(row5.tagName.toLowerCase()).toBe('div');
+          expect(row5.innerHTML).toBe('0: prepended two');
+
+          expect(scope.adapter).toBeTruthy();
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: prepended one');
+        }
+      );
+    });
+
+  });
+
+  describe('adapter reload tests', function () {
+    var scrollSettings = {datasource: 'myInfiniteDatasource', adapter: 'adapter'};
+
+    it('initial load should be positioned at item#1', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          expect(scope.adapter.topVisible).toBe('item1');
+        }
+      );
+    });
+
+    it('reload(100) should position it at item#100', function () {
+      runTest(scrollSettings,
+        function (viewport, scope, $timeout) {
+          expect(scope.adapter.topVisible).toBe('item1');
+
+          scope.adapter.reload(100);
+          $timeout.flush();
+
+          expect(scope.adapter.topVisible).toBe('item100');
+        }
+      );
+    });
+
+    it('reload() should position it at item#1', function () {
+      runTest(scrollSettings,
+        function (viewport, scope, $timeout) {
+          expect(scope.adapter.topVisible).toBe('item1');
+
+          scope.adapter.reload(100);
+          $timeout.flush();
+
+          expect(scope.adapter.topVisible).toBe('item100');
+
+          scope.adapter.reload();
+          $timeout.flush();
+
+          expect(scope.adapter.topVisible).toBe('item100');
+        }
+      );
+    });
+
+    it('reload(0) should position it at item#0', function () {
+      runTest(scrollSettings,
+        function (viewport, scope, $timeout) {
+          expect(scope.adapter.topVisible).toBe('item1');
+
+          scope.adapter.reload(100);
+          $timeout.flush();
+
+          expect(scope.adapter.topVisible).toBe('item100');
+
+          scope.adapter.reload(0);
+          $timeout.flush();
+
+          expect(scope.adapter.topVisible).toBe('item0');
+        }
+      );
+    });
+
+  });
+
+  describe('adapter bof/eof/empty', function () {
+
+    it('empty dataset', function () {
+      runTest({datasource: 'myEmptyDatasource', adapter: 'adapter'},
+        function (viewport, scope) {
+          expect(scope.adapter.isEmpty()).toBe(true);
+          expect(scope.adapter.isBOF()).toBe(true);
+          expect(scope.adapter.isEOF()).toBe(true);
+        }
+      );
+    });
+
+    it('one short page dataset', function () {
+      runTest({datasource: 'myOnePageDatasource', adapter: 'adapter'},
+        function (viewport, scope) {
+          expect(scope.adapter.isEmpty()).toBe(false);
+          expect(scope.adapter.isBOF()).toBe(true);
+          expect(scope.adapter.isEOF()).toBe(true);
+        }
+      );
+    });
+
+    it('one big page dataset', function () {
+      runTest({datasource: 'myOneBigPageDatasource', adapter: 'adapter'},
+        function (viewport, scope) {
+          expect(scope.adapter.isEmpty()).toBe(false);
+          expect(scope.adapter.isBOF()).toBe(true);
+          expect(scope.adapter.isEOF()).toBe(false);
+        }
+      );
+    });
+
+    it('one big page dataset after scroll down', function () {
+      runTest({datasource: 'myOneBigPageDatasource', adapter: 'adapter'},
+        function (viewport, scope) {
+
+          expect(scope.adapter.isEmpty()).toBe(false);
+          expect(scope.adapter.isBOF()).toBe(true);
+          expect(scope.adapter.isEOF()).toBe(false);
+
+          viewport.scrollTop(10000);
+          viewport.trigger('scroll');
+
+          expect(scope.adapter.isEOF()).toBe(true);
+        }
+      );
+    });
+
+  });
 
 });

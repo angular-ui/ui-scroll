@@ -1,15 +1,12 @@
 <!doctype html>
-<html ng-app="application">
+<html>
 <head>
-    <meta charset="utf-8">
-    <title>Scroller Demo (controller as)</title>
+	<meta charset="utf-8">
+	<title>Scroller Demo (controller as)</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
 	<script src="../../dist/ui-scroll.js"></script>
-	<script src="../../dist/ui-scroll-jqlite.js"></script>
-    <script src="controllerAs.js"></script>
+	<script src="controllerAs.js"></script>
 	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
-
-
 </head>
 <body ng-app="application">
 
@@ -41,8 +38,9 @@
 	<div ng-if="show">
 		<div ui-scroll-viewport class="viewport viewport-height-fixed" id="viewport-adapter1">
 			<div class="item" ui-scroll="item in mainCtrl.datasource"
-			     adapter="mainCtrl.adapter"
-			     buffer-size='5'>{{item.content}}</div>
+				 adapter="mainCtrl.adapter"
+				 buffer-size='5'>{{item.content}}
+			</div>
 		</div>
 	</div>
 </div>

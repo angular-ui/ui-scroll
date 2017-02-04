@@ -6,13 +6,11 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
 	<script src="../../dist/ui-scroll.js"></script>
 	<script src="../../dist/ui-scroll-grid.js"></script>
-	<script src="../../dist/ui-scroll-jqlite.js"></script>
 	<script src="grid-dnd-sort.js"></script>
 	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
 	<link rel="stylesheet" href="grid.css" type="text/css"/>
 </head>
 <body ng-controller="gridController" ng-app="application">
-
 <div class="cont cont-global">
 
 	<a class="back" href="../index.html">browse other examples</a>
@@ -34,7 +32,7 @@ column.moveBefore(target)</pre>
 		<thead style="display:block">
 		<tr dnd-sortable-list="headers" >
 			<th ng-repeat="item in headers"
-				draggable="true" 
+				draggable="true"
 					ondragstart="angular.element(arguments[0].currentTarget).scope().dragStart(arguments[0])"
 					ondragover="angular.element(arguments[0].currentTarget).scope().dragOver(arguments[0])"
 					ondrop="angular.element(arguments[0].currentTarget).scope().dragDrop(arguments[0])"
@@ -54,6 +52,5 @@ column.moveBefore(target)</pre>
 	</table>
 
 </div>
-
 </body>
 </html>

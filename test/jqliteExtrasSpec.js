@@ -5,7 +5,7 @@ describe('\njqLite: testing against jQuery\n', function () {
 
 	var extras;
 
-	beforeEach(module('ui.scroll.jqlite'));
+	beforeEach(module('ui.scroll'));
 	beforeEach(function(){
 		angular.element(document).find('body').append(sandbox = angular.element('<div></div>'));
 		inject(function(jqLiteExtras) {

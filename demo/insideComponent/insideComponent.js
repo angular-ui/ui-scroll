@@ -29,7 +29,7 @@
   }
 
   angular
-    .module('application', ['ui.scroll', 'ui.scroll.jqlite'])
+    .module('application', ['ui.scroll'])
     .component('myComponent', {
       controllerAs: 'ctrl',
       template:

@@ -1,28 +1,32 @@
-// Build configurations.
 module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-karma');
-  grunt.loadNpmTasks('grunt-babel');
   grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-copy');
+  grunt.loadNpmTasks('grunt-contrib-clean');
+  grunt.loadNpmTasks('grunt-webpack');
+
+  var webpackSettings = require('./webpack.config.js');
 
   grunt.initConfig({
-    packageBower: grunt.file.readJSON('./bower.json'),
-    timestamp: (new Date()).toISOString(),
-    releaseData: '/*!\n' +
-    ' * <%= packageBower.name %>\n' +
-    ' * <%= packageBower.homepage %>\n' +
-    ' * Version: <%= packageBower.version %> -- <%= timestamp %>\n' +
-    ' * License: <%= packageBower.license %>\n' +
-    ' */\n',
     connect: {
       app: {
         options: {
-          base: './',
-          middleware: require('./server/middleware'),
-          port: 5001
+          port: 5005,
+          base: './demo',
+          middleware: function (connect, options, middlewares) {
+            middlewares.unshift(function (req, res, next) {
+              var files = ['ui-scroll.js', 'ui-scroll-grid.js', 'ui-scroll.js.map', 'ui-scroll-grid.js.map'];
+              for (var i = 0; i < files.length; i++) {
+                if (req.url === '/dist/' + files[i]) {
+                  res.end(grunt.file.read('./temp/' + files[i]));
+                }
+              }
+              next();
+            });
+            return middlewares;
+          }
         }
       }
     },
@@ -35,108 +39,66 @@ module.exports = function (grunt) {
         files: [
           'src/**/*.js'
         ],
-        tasks: 'buildWatcher'
+        tasks: 'webpack:default'
       }
     },
     karma: {
-      unit: {
-        options: {
-          autoWatch: true,
-          colors: true,
-          configFile: './test/karma.conf.js',
-          keepalive: true,
-          port: 8082,
-          runnerPort: 9100
-        }
+      options: {
+        configFile: './test/karma.conf.js',
+        runnerPort: 9100
       },
-      travis: {
+      default: {},
+      compressed: {
         options: {
-          colors: true,
-          configFile: './test/karma.conf.js',
-          runnerPort: 9100,
+          files: require('./test/karma.conf.files.js').compressedFiles,
+          port: 9876,
+          autoWatch: false,
+          keepalive: false,
           singleRun: true
         }
       }
     },
-    babel: {
-      options: {
-        //sourceMap: true,
-        babelrc: false,
-        presets: ['es2015']
-      },
-      dist: {
+    webpack: {
+      options: webpackSettings.config,
+      default: {},
+      compressed: {
+        plugins: webpackSettings.compressedPlugins,
+        output: {
+          filename: '[name].min.js'
+        }
+      }
+    },
+    clean: {
+      temp: ['temp']
+    },
+    copy: {
+      sources: {
         files: [
+          {expand: true, src: ['*'], cwd: 'temp', dest: 'dist/'},
+        ]
+      },
+      jqLiteExtrasFake: {
+        files: [
+          {expand: true, src: ['ui-scroll-jqlite.js'], cwd: 'src', dest: 'dist/'},
           {
-            expand: true,
-            cwd: 'src/',
-            src: ['**/*.js'],
-            dest: 'temp/',
-            ext: '.js'
+            expand: true, src: ['ui-scroll-jqlite.js'], cwd: 'src', dest: 'dist/', rename: function (dest, src) {
+            return dest + src.replace(/\.js$/, ".min.js");
+          }
           }
         ]
       }
     },
-    concat: {
-      options: {
-        banner: '<%= releaseData %> \n\n (function () {\n',
-        footer: '}());',
-        stripBanners: true,
-        process: function (src, filepath) {
-          var singleQuotes, strings;
-          console.log("Processing " + filepath + " ...");
-          strings = /("(?:(?:\\")|[^"])*")/g;
-          singleQuotes = /'/g;
-          return src.replace(strings, function (match) {
-            var result;
-            console.log("match: " + match);
-            result = "'" + match.substring(1, match.length - 1).replace(singleQuotes, "\\'") + "'";
-            console.log("replaced with: " + result);
-            return result;
-          });
-        }
-      },
-      dynamic_mappings: {
-        files: {
-          'dist/ui-scroll.js': ['./temp/**/ui-scroll.js'],
-          'dist/ui-scroll-grid.js': ['./temp/**/ui-scroll-grid.js'],
-          'dist/ui-scroll-jqlite.js': ['./temp/**/ui-scroll-jqlite.js']
-        }
-      }
-    },
-    uglify: {
-      options: {
-        banner: '<%= releaseData %>'
-      },
-      common: {
-        files: {
-          './dist/ui-scroll.min.js': ['./dist/ui-scroll.js'],
-          './dist/ui-scroll-grid.min.js': ['./dist/ui-scroll-grid.js'],
-          './dist/ui-scroll-jqlite.min.js': ['./dist/ui-scroll-jqlite.js']
-        }
-      }
-    },
     jshint: {
-      dist: {
+      sources: {
         files: {
           src: [
-            './dist/ui-scroll.js',
-            './dist/ui-scroll-jqlite.js'
-          ]
-        },
-        options: {
-          jshintrc: '.jshintrc'
-        }
-      },
-      src: {
-        files: {
-          src: [
-            './src/ui-scroll.js',
-            './src/ui-scroll-jqlite.js'
+            './src/*.js',
+            './src/modules/*.js'
           ]
         },
         options: grunt.util._.extend({}, grunt.file.readJSON('.jshintrc'), grunt.file.readJSON('./src/.jshintrc'))
       },
-      test: {
+      tests: {
         files: {
           src: ['./test/*Spec.js']
         },
@@ -163,12 +125,8 @@ module.exports = function (grunt) {
     }
   });
 
-  /**
-   * Starts a web server
-   * Enter the following command at the command line to execute this task:
-   * grunt server
-   */
   grunt.registerTask('server', [
+    'webpack:default',
     'connect',
     'watch'
   ]);
@@ -176,26 +134,24 @@ module.exports = function (grunt) {
   grunt.registerTask('default', ['server']);
 
   grunt.registerTask('test', [
-    'babel',
-    'karma:unit'
-  ]);
-
-  grunt.registerTask('buildWatcher', [
-    'babel',
-    'concat'
+    'clean:temp',
+    'webpack:default',
+    'karma:default'
   ]);
 
   grunt.registerTask('build', [
-    'jshint:test',
-    'jshint:src',
-    'babel',
-    'karma:travis',
-    'concat',
-    'uglify:common'
+    'jshint:tests',
+    'jshint:sources',
+    'clean:temp',
+    'webpack:compressed',
+    'karma:compressed',
+    'webpack:default',
+    'copy:sources',
+    'copy:jqLiteExtrasFake'
   ]);
 
   grunt.registerTask('travis', [
-    'babel',
-    'karma:travis'
+    'webpack:compressed',
+    'karma:compressed'
   ]);
 };

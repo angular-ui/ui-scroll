@@ -1,65 +1,73 @@
+// Karma configuration
+// Generated on Sat Aug 10 2013 19:47:03 GMT-0500 (Central Daylight Time)
+
 module.exports = function (config) {
-	config.set({
+  config.set({
 
-		// base path, that will be used to resolve files and exclude
-		basePath: '',
+    // base path, that will be used to resolve files and exclude
+    basePath: '',
 
-		// frameworks to use
-		frameworks: ['jasmine'],
 
-		// list of files / patterns to load in the browser
-		files: [
-			'http://code.jquery.com/jquery-1.9.1.js',
-			'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js',
-			'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-mocks.js',
-			'../temp/ui-scroll*.js',
-			'./datasources.js',
-			'./scaffolding.js',
-			'**/*Spec.js',
-			'./test.css'
-		],
+    // frameworks to use
+    frameworks: ['jasmine'],
 
-		// list of files to exclude
-		exclude: [],
 
-		// test results reporter to use
-		// possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
-		reporters: ['dots'],
+    // list of files / patterns to load in the browser
+    files: require('./karma.conf.files.js').defaultFiles,
 
-		// web server port
-		port: 9876,
 
-		// enable / disable colors in the output (reporters and logs)
-		colors: true,
+    // list of files to exclude
+    exclude: [],
 
-		// level of logging
-		// possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
-		logLevel: config.LOG_INFO,
 
-		// enable / disable watching file and executing tests whenever any file changes
-		autoWatch: true,
+    // test results reporter to use
+    // possible values: 'dots', 'progress', 'junit', 'growl', 'coverage'
+    reporters: ['dots'],
 
-		// Start these browsers, currently available:
-		// - Chrome
-		// - ChromeCanary
-		// - Firefox
-		// - Opera
-		// - Safari (only Mac)
-		// - PhantomJS
-		// - IE (only Windows)
-		browsers: process.env.TRAVIS ?
-			['Firefox'] :
-			//['Chrome', 'IE', 'Firefox'],
-			['Chrome'],
-		//browsers: ['Firefox'],
-		//browsers = ['Chrome'];
-		//browsers = ['IE'];
 
-		// If browser does not capture in given timeout [ms], kill it
-		captureTimeout: 60000,
+    // web server port
+    port: 8082,
 
-		// Continuous Integration mode
-		// if true, it capture browsers, run tests and exit
-		singleRun: false
-	});
+
+    // enable / disable colors in the output (reporters and logs)
+    colors: true,
+
+
+    // level of logging
+    // possible values: config.LOG_DISABLE || config.LOG_ERROR || config.LOG_WARN || config.LOG_INFO || config.LOG_DEBUG
+    logLevel: config.LOG_INFO,
+
+
+    // enable / disable watching file and executing tests whenever any file changes
+    autoWatch: true,
+
+
+    keepalive: true,
+
+
+    // Start these browsers, currently available:
+    // - Chrome
+    // - ChromeCanary
+    // - Firefox
+    // - Opera
+    // - Safari (only Mac)
+    // - PhantomJS
+    // - IE (only Windows)
+    browsers: process.env.TRAVIS ?
+      ['Firefox'] :
+      //['Chrome', 'IE', 'Firefox'],
+      ['Chrome'],
+    //browsers: ['Firefox'],
+    //browsers = ['Chrome'];
+    //browsers = ['IE'];
+
+
+    // If browser does not capture in given timeout [ms], kill it
+    captureTimeout: 60000,
+
+
+    // Continuous Integration mode
+    // if true, it capture browsers, run tests and exit
+    singleRun: false
+  });
 };

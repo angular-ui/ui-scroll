@@ -3,4 +3,4 @@ public
 node_modules
 temp
 /nbproject/private/
-local_development
+*.log

@@ -1,4 +1,4 @@
-angular.module('application', ['ui.scroll', 'ui.scroll.jqlite', 'ui.scroll.grid', 'dnd'])
+angular.module('application', ['ui.scroll', 'ui.scroll.grid', 'dnd'])
 	.controller('gridController', [
 		'$scope', '$log', '$timeout', function ($scope, console, $timeout) {
 			var datasource = {};
