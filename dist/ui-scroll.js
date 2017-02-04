@@ -1,11 +1,10 @@
 /*!
- * angular-ui-scroll
- * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.2 -- 2017-01-17T19:28:50.705Z
+ * angular-ui-scroll (uncompressed)
+ * https://github.com/angular-ui/ui-scroll
+ * Version: 1.6.0 -- 2017-02-04T09:24:37.966Z
  * License: MIT
  */
- 
-(function(modules) { // webpackBootstrap
+/******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -41,7 +40,7 @@
 /******/ 	__webpack_require__.c = installedModules;
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = '';
+/******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -53,36 +52,33 @@
 
 	'use strict';
 	
-	var _elementRoutines = __webpack_require__(1);
+	var _jqLiteExtras = __webpack_require__(1);
+	
+	var _jqLiteExtras2 = _interopRequireDefault(_jqLiteExtras);
+	
+	var _elementRoutines = __webpack_require__(2);
 	
 	var _elementRoutines2 = _interopRequireDefault(_elementRoutines);
 	
-	var _buffer = __webpack_require__(2);
+	var _buffer = __webpack_require__(3);
 	
 	var _buffer2 = _interopRequireDefault(_buffer);
 	
-	var _viewport = __webpack_require__(3);
+	var _viewport = __webpack_require__(4);
 	
 	var _viewport2 = _interopRequireDefault(_viewport);
 	
-	var _adapter = __webpack_require__(5);
+	var _adapter = __webpack_require__(6);
 	
 	var _adapter2 = _interopRequireDefault(_adapter);
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	/*!
-	 globals: angular, window
-	 List of used element methods available in JQuery but not in JQuery Lite
-	 element.before(elem)
-	 element.height()
-	 element.outerHeight(true)
-	 element.height(value) = only for Top/Bottom padding elements
-	 element.scrollTop()
-	 element.scrollTop(value)
-	 */
-	
-	angular.module('ui.scroll', []).directive('uiScrollViewport', function () {
+	angular.module('ui.scroll', []).service('jqLiteExtras', function () {
+	  return new _jqLiteExtras2.default();
+	}).run(['jqLiteExtras', function (jqLiteExtras) {
+	  return !window.jQuery ? jqLiteExtras.registerFor(angular.element) : null;
+	}]).directive('uiScrollViewport', function () {
 	  return {
 	    restrict: 'A',
 	    controller: ['$scope', '$element', function (scope, element) {
@@ -137,7 +133,7 @@
 	    var ridActual = 0; // current data revision id
 	    var pending = [];
 	
-	    var elementRoutines = new _elementRoutines2.default($injector);
+	    var elementRoutines = new _elementRoutines2.default($injector, $q);
 	    var buffer = new _buffer2.default(elementRoutines, bufferSize);
 	    var viewport = new _viewport2.default(elementRoutines, buffer, element, viewportController, padding);
 	    var adapter = new _adapter2.default($rootScope, $parse, $attr, viewport, buffer, adjustBuffer, element);
@@ -531,22 +527,337 @@
 
 	'use strict';
 	
-	Object.defineProperty(exports, '__esModule', {
+	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	
-	var _typeof = typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol' ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === 'function' && obj.constructor === Symbol && obj !== Symbol.prototype ? 'symbol' : typeof obj; };
+	var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 	
-	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+	
+	/*!
+	 globals: angular, window
+	 List of used element methods available in JQuery but not in JQuery Lite
+	 element.before(elem)
+	 element.height()
+	 element.outerHeight(true)
+	 element.height(value) = only for Top/Bottom padding elements
+	 element.scrollTop()
+	 element.scrollTop(value)
+	 */
+	
+	var JQLiteExtras = function () {
+	  function JQLiteExtras() {
+	    _classCallCheck(this, JQLiteExtras);
+	  }
+	
+	  _createClass(JQLiteExtras, [{
+	    key: 'registerFor',
+	    value: function registerFor(element) {
+	      var convertToPx = void 0,
+	          css = void 0,
+	          getStyle = void 0,
+	          isWindow = void 0;
+	      // angular implementation blows up if elem is the window
+	      css = angular.element.prototype.css;
+	
+	      element.prototype.css = function (name, value) {
+	        var self = this;
+	        var elem = self[0];
+	        if (!(!elem || elem.nodeType === 3 || elem.nodeType === 8 || !elem.style)) {
+	          return css.call(self, name, value);
+	        }
+	      };
+	
+	      // as defined in angularjs v1.0.5
+	      isWindow = function isWindow(obj) {
+	        return obj && obj.document && obj.location && obj.alert && obj.setInterval;
+	      };
+	
+	      function scrollTo(self, direction, value) {
+	        var elem = self[0];
+	
+	        var _top$left$direction = _slicedToArray({
+	          top: ['scrollTop', 'pageYOffset', 'scrollLeft'],
+	          left: ['scrollLeft', 'pageXOffset', 'scrollTop']
+	        }[direction], 3),
+	            method = _top$left$direction[0],
+	            prop = _top$left$direction[1],
+	            preserve = _top$left$direction[2];
+	
+	        if (isWindow(elem)) {
+	          if (angular.isDefined(value)) {
+	            return elem.scrollTo(self[preserve].call(self), value);
+	          }
+	          return prop in elem ? elem[prop] : elem.document.documentElement[method];
+	        } else {
+	          if (angular.isDefined(value)) {
+	            elem[method] = value;
+	          }
+	          return elem[method];
+	        }
+	      }
+	
+	      if (window.getComputedStyle) {
+	        getStyle = function getStyle(elem) {
+	          return window.getComputedStyle(elem, null);
+	        };
+	        convertToPx = function convertToPx(elem, value) {
+	          return parseFloat(value);
+	        };
+	      } else {
+	        getStyle = function getStyle(elem) {
+	          return elem.currentStyle;
+	        };
+	        convertToPx = function convertToPx(elem, value) {
+	          var left = void 0,
+	              result = void 0,
+	              rs = void 0,
+	              rsLeft = void 0,
+	              style = void 0;
+	          var core_pnum = /[+-]?(?:\d*\.|)\d+(?:[eE][+-]?\d+|)/.source;
+	          var rnumnonpx = new RegExp('^(' + core_pnum + ')(?!px)[a-z%]+$', 'i');
+	
+	          if (!rnumnonpx.test(value)) {
+	            return parseFloat(value);
+	          }
+	
+	          // ported from JQuery
+	          style = elem.style;
+	          left = style.left;
+	          rs = elem.runtimeStyle;
+	          rsLeft = rs && rs.left;
+	          if (rs) {
+	            rs.left = style.left;
+	          }
+	          // put in the new values to get a computed style out
+	          style.left = value;
+	          result = style.pixelLeft;
+	          style.left = left;
+	          if (rsLeft) {
+	            rs.left = rsLeft;
+	          }
+	          return result;
+	        };
+	      }
+	
+	      function getMeasurements(elem, measure) {
+	        var base = void 0,
+	            borderA = void 0,
+	            borderB = void 0,
+	            computedMarginA = void 0,
+	            computedMarginB = void 0,
+	            computedStyle = void 0,
+	            dirA = void 0,
+	            dirB = void 0,
+	            marginA = void 0,
+	            marginB = void 0,
+	            paddingA = void 0,
+	            paddingB = void 0;
+	
+	        if (isWindow(elem)) {
+	          base = document.documentElement[{ height: 'clientHeight', width: 'clientWidth' }[measure]];
+	
+	          return {
+	            base: base,
+	            padding: 0,
+	            border: 0,
+	            margin: 0
+	          };
+	        }
+	
+	        // Start with offset property
+	
+	        var _width$height$measure = _slicedToArray({
+	          width: [elem.offsetWidth, 'Left', 'Right'],
+	          height: [elem.offsetHeight, 'Top', 'Bottom']
+	        }[measure], 3);
+	
+	        base = _width$height$measure[0];
+	        dirA = _width$height$measure[1];
+	        dirB = _width$height$measure[2];
+	
+	
+	        computedStyle = getStyle(elem);
+	        paddingA = convertToPx(elem, computedStyle['padding' + dirA]) || 0;
+	        paddingB = convertToPx(elem, computedStyle['padding' + dirB]) || 0;
+	        borderA = convertToPx(elem, computedStyle['border' + dirA + 'Width']) || 0;
+	        borderB = convertToPx(elem, computedStyle['border' + dirB + 'Width']) || 0;
+	        computedMarginA = computedStyle['margin' + dirA];
+	        computedMarginB = computedStyle['margin' + dirB];
+	
+	        // I do not care for width for now, so this hack is irrelevant
+	        // if ( !supportsPercentMargin )
+	        // computedMarginA = hackPercentMargin( elem, computedStyle, computedMarginA )
+	        // computedMarginB = hackPercentMargin( elem, computedStyle, computedMarginB )
+	        marginA = convertToPx(elem, computedMarginA) || 0;
+	        marginB = convertToPx(elem, computedMarginB) || 0;
+	
+	        return {
+	          base: base,
+	          padding: paddingA + paddingB,
+	          border: borderA + borderB,
+	          margin: marginA + marginB
+	        };
+	      }
+	
+	      function getWidthHeight(elem, direction, measure) {
+	        var computedStyle = void 0,
+	            result = void 0;
+	
+	        var measurements = getMeasurements(elem, direction);
+	
+	        if (measurements.base > 0) {
+	          return {
+	            base: measurements.base - measurements.padding - measurements.border,
+	            outer: measurements.base,
+	            outerfull: measurements.base + measurements.margin
+	          }[measure];
+	        }
+	
+	        // Fall back to computed then uncomputed css if necessary
+	        computedStyle = getStyle(elem);
+	        result = computedStyle[direction];
+	
+	        if (result < 0 || result === null) {
+	          result = elem.style[direction] || 0;
+	        }
+	
+	        // Normalize "", auto, and prepare for extra
+	        result = parseFloat(result) || 0;
+	
+	        return {
+	          base: result - measurements.padding - measurements.border,
+	          outer: result,
+	          outerfull: result + measurements.padding + measurements.border + measurements.margin
+	        }[measure];
+	      }
+	
+	      // define missing methods
+	      return angular.forEach({
+	        before: function before(newElem) {
+	          var children, elem, i, j, parent, ref, self;
+	          self = this;
+	          elem = self[0];
+	          parent = self.parent();
+	          children = parent.contents();
+	          if (children[0] === elem) {
+	            return parent.prepend(newElem);
+	          } else {
+	            for (i = j = 1, ref = children.length - 1; 1 <= ref ? j <= ref : j >= ref; i = 1 <= ref ? ++j : --j) {
+	              if (children[i] === elem) {
+	                angular.element(children[i - 1]).after(newElem);
+	                return;
+	              }
+	            }
+	            throw new Error('invalid DOM structure ' + elem.outerHTML);
+	          }
+	        },
+	        height: function height(value) {
+	          var self;
+	          self = this;
+	          if (angular.isDefined(value)) {
+	            if (angular.isNumber(value)) {
+	              value = value + 'px';
+	            }
+	            return css.call(self, 'height', value);
+	          } else {
+	            return getWidthHeight(this[0], 'height', 'base');
+	          }
+	        },
+	        outerHeight: function outerHeight(option) {
+	          return getWidthHeight(this[0], 'height', option ? 'outerfull' : 'outer');
+	        },
+	        outerWidth: function outerWidth(option) {
+	          return getWidthHeight(this[0], 'width', option ? 'outerfull' : 'outer');
+	        },
+	
+	
+	        /*
+	         The offset setter method is not implemented
+	         */
+	        offset: function offset(value) {
+	          var docElem = void 0,
+	              win = void 0;
+	          var self = this;
+	          var box = {
+	            top: 0,
+	            left: 0
+	          };
+	          var elem = self[0];
+	          var doc = elem && elem.ownerDocument;
+	
+	          if (arguments.length) {
+	            if (value === undefined) {
+	              return self;
+	            }
+	            // TODO: implement setter
+	            throw new Error('offset setter method is not implemented');
+	          }
+	
+	          if (!doc) {
+	            return;
+	          }
+	
+	          docElem = doc.documentElement;
+	
+	          // TODO: Make sure it's not a disconnected DOM node
+	
+	          if (elem.getBoundingClientRect != null) {
+	            box = elem.getBoundingClientRect();
+	          }
+	
+	          win = doc.defaultView || doc.parentWindow;
+	
+	          return {
+	            top: box.top + (win.pageYOffset || docElem.scrollTop) - (docElem.clientTop || 0),
+	            left: box.left + (win.pageXOffset || docElem.scrollLeft) - (docElem.clientLeft || 0)
+	          };
+	        },
+	        scrollTop: function scrollTop(value) {
+	          return scrollTo(this, 'top', value);
+	        },
+	        scrollLeft: function scrollLeft(value) {
+	          return scrollTo(this, 'left', value);
+	        }
+	      }, function (value, key) {
+	        if (!element.prototype[key]) {
+	          return element.prototype[key] = value;
+	        }
+	      });
+	    }
+	  }]);
+	
+	  return JQLiteExtras;
+	}();
+	
+	exports.default = JQLiteExtras;
+
+/***/ },
+/* 2 */
+/***/ function(module, exports) {
+
+	'use strict';
+	
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+	
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
 	var ElementRoutines = function () {
-	  function ElementRoutines($injector) {
+	  function ElementRoutines($injector, $q) {
 	    _classCallCheck(this, ElementRoutines);
 	
 	    this.$animate = $injector.has && $injector.has('$animate') ? $injector.get('$animate') : null;
 	    this.isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
+	    this.$q = $q;
 	  }
 	
 	  _createClass(ElementRoutines, [{
@@ -568,12 +879,12 @@
 	      var _this = this;
 	
 	      if (!this.$animate) {
-	        return insertElement(newElement, previousElement);
+	        return this.insertElement(newElement, previousElement);
 	      }
 	
 	      if (this.isAngularVersionLessThen1_3) {
 	        var _ret = function () {
-	          var deferred = $q.defer();
+	          var deferred = _this.$q.defer();
 	          // no need for parent - previous element is never null
 	          _this.$animate.enter(newElement, null, previousElement, function () {
 	            return deferred.resolve();
@@ -584,7 +895,7 @@
 	          };
 	        }();
 	
-	        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === 'object') return _ret.v;
+	        if ((typeof _ret === 'undefined' ? 'undefined' : _typeof(_ret)) === "object") return _ret.v;
 	      }
 	
 	      // no need for parent - previous element is never null
@@ -596,12 +907,12 @@
 	      var _this2 = this;
 	
 	      if (!this.$animate) {
-	        return removeElement(wrapper);
+	        return this.removeElement(wrapper);
 	      }
 	
 	      if (this.isAngularVersionLessThen1_3) {
 	        var _ret2 = function () {
-	          var deferred = $q.defer();
+	          var deferred = _this2.$q.defer();
 	          _this2.$animate.leave(wrapper.element, function () {
 	            wrapper.scope.$destroy();
 	            return deferred.resolve();
@@ -612,7 +923,7 @@
 	          };
 	        }();
 	
-	        if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === 'object') return _ret2.v;
+	        if ((typeof _ret2 === 'undefined' ? 'undefined' : _typeof(_ret2)) === "object") return _ret2.v;
 	      }
 	
 	      return [this.$animate.leave(wrapper.element).then(function () {
@@ -627,12 +938,12 @@
 	exports.default = ElementRoutines;
 
 /***/ },
-/* 2 */
+/* 3 */
 /***/ function(module, exports) {
 
 	'use strict';
 	
-	Object.defineProperty(exports, '__esModule', {
+	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.default = ScrollBuffer;
@@ -734,17 +1045,17 @@
 	}
 
 /***/ },
-/* 3 */
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 	
-	Object.defineProperty(exports, '__esModule', {
+	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.default = Viewport;
 	
-	var _padding = __webpack_require__(4);
+	var _padding = __webpack_require__(5);
 	
 	var _padding2 = _interopRequireDefault(_padding);
 	
@@ -914,12 +1225,12 @@
 	}
 
 /***/ },
-/* 4 */
+/* 5 */
 /***/ function(module, exports) {
 
 	'use strict';
 	
-	Object.defineProperty(exports, '__esModule', {
+	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.default = Padding;
@@ -970,12 +1281,12 @@
 	}
 
 /***/ },
-/* 5 */
+/* 6 */
 /***/ function(module, exports) {
 
 	'use strict';
 	
-	Object.defineProperty(exports, '__esModule', {
+	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
 	exports.default = Adapter;
@@ -1007,6 +1318,9 @@
 	  };
 	  this.isEOF = function () {
 	    return buffer.eof;
+	  };
+	  this.isEmpty = function () {
+	    return !buffer.length;
 	  };
 	
 	  this.applyUpdates = function (arg1, arg2) {
@@ -1093,13 +1407,13 @@
 	        var candidate = element;
 	        while (candidate.length) {
 	          var candidateScope = candidate.scope();
-	          // ng-controller's 'Controller As' parsing
+	          // ng-controller's "Controller As" parsing
 	          var candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
 	          if (candidateName && candidateName[on ? 1 : 2] === controllerName) {
 	            scope = candidateScope;
 	            return true;
 	          }
-	          // directive's/component's 'Controller As' parsing
+	          // directive's/component's "Controller As" parsing
 	          if (!on && candidateScope && candidateScope.hasOwnProperty(controllerName) && Object.getPrototypeOf(candidateScope[controllerName]).constructor.hasOwnProperty('$inject')) {
 	            scope = candidateScope;
 	            return true;
@@ -1109,14 +1423,14 @@
 	      };
 	
 	      if (onControllerName) {
-	        // 'on' syntax DOM parsing (adapter='adapter on ctrl')
+	        // 'on' syntax DOM parsing (adapter="adapter on ctrl")
 	        scope = null;
 	        parseController(onControllerName, true);
 	        if (!scope) {
 	          throw new Error('Failed to locate target controller \'' + onControllerName + '\' to inject \'' + target + '\'');
 	        }
 	      } else {
-	        // try to parse DOM with 'Controller As' syntax (adapter='ctrl.adapter')
+	        // try to parse DOM with 'Controller As' syntax (adapter="ctrl.adapter")
 	        var controllerAsName = void 0;
 	        var dotIndex = target.indexOf('.');
 	        if (dotIndex > 0) {

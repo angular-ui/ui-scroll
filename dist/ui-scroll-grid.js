@@ -1,11 +1,10 @@
 /*!
- * angular-ui-scroll
- * https://github.com/angular-ui/ui-scroll.git
- * Version: 1.5.2 -- 2017-01-17T19:28:50.705Z
+ * angular-ui-scroll (uncompressed)
+ * https://github.com/angular-ui/ui-scroll
+ * Version: 1.6.0 -- 2017-02-04T09:24:37.966Z
  * License: MIT
  */
- 
-(function(modules) { // webpackBootstrap
+/******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 /******/
@@ -41,7 +40,7 @@
 /******/ 	__webpack_require__.c = installedModules;
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = '';
+/******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(0);
@@ -331,7 +330,7 @@
 	      controllers[0].gridController.registerColumn(element);
 	    }
 	  };
-	}]).directive('uiScrollTd', ['$log', function () {
+	}]).directive('uiScrollTd', function () {
 	  return {
 	    require: ['?^^uiScrollViewport'],
 	    restrict: 'A',
@@ -348,7 +347,7 @@
 	      }
 	    }
 	  };
-	}]);
+	});
 
 /***/ }
 /******/ ]);
