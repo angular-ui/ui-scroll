@@ -208,7 +208,9 @@ angular.module('ui.scroll', [])
                 delete item.unregisterVisibilityWatcher;
               }
             });
-            adjustBuffer();
+            if (!pending.length) {
+              adjustBuffer();
+            }
           }
         }
 
