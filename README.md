@@ -58,7 +58,7 @@ The directive is asking the datasource for data to build and render elements unt
 It will start retrieving new data for new elements again if the user scrolls up/down to the edge of visible element list.
 
 
-![](https://raw.githubusercontent.com/angular-ui/ui-scroll/modules/demo/ui-scroll-demo.gif)
+![](https://raw.githubusercontent.com/angular-ui/ui-scroll/master/demo/ui-scroll-demo.gif)
 
 
 ### Basic usage
@@ -406,7 +406,7 @@ npm start
  __2__. To run tests in keep-alive mode use
  
 ```
-npm run test
+npm test
 ```
   
   This runs karma testing against temporary distributive files (./temp). We created a number of specifications which consist of more
