@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.0 -- 2017-02-04T09:24:37.966Z
+ * Version: 1.6.0 -- 2017-02-15T02:04:11.508Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -270,7 +270,9 @@
 	            delete item.unregisterVisibilityWatcher;
 	          }
 	        });
-	        adjustBuffer();
+	        if (!pending.length) {
+	          adjustBuffer();
+	        }
 	      }
 	    }
 	
@@ -1068,6 +1070,7 @@
 	  var container = viewportController && viewportController.container ? viewportController.container : undefined;
 	
 	  viewport.css({
+	    'overflow-anchor': 'none',
 	    'overflow-y': 'auto',
 	    'display': 'block'
 	  });
