@@ -7,6 +7,7 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
   const container = viewportController && viewportController.container ? viewportController.container : undefined;
 
   viewport.css({
+    'overflow-anchor': 'none',
     'overflow-y': 'auto',
     'display': 'block'
   });
