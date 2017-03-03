@@ -20,6 +20,7 @@ angular.module('ui.scroll', [])
         function (scope, element) {
           this.container = element;
           this.viewport = element;
+          this.scope = scope;
 
           angular.forEach(element.children(), (child => {
             if (child.tagName.toLowerCase() === 'tbody') {
@@ -79,8 +80,8 @@ angular.module('ui.scroll', [])
 
         let elementRoutines = new ElementRoutines($injector, $q);
         let buffer = new ScrollBuffer(elementRoutines, bufferSize);
-        let viewport = new Viewport(elementRoutines, buffer, element, viewportController, padding);
-        let adapter = new Adapter($rootScope, $parse, $attr, viewport, buffer, adjustBuffer, element);
+        let viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
+        let adapter = new Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, element);
 
         if (viewportController) {
           viewportController.adapter = adapter;
@@ -139,8 +140,6 @@ angular.module('ui.scroll', [])
             count: bufferSize
           }, success);
         };
-
-        adapter.reload = reload;
 
         /**
          * Build padding elements

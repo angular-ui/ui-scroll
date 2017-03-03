@@ -112,7 +112,7 @@ angular.module('ui.scroll.grid', [])
       let rowMap = new Map();
 
       $timeout(() => {
-        scrollViewport.adapter.gridAdapter = new GridAdapter(this);
+        scrollViewport.adapter.publicContext.gridAdapter = new GridAdapter(this);
         scrollViewport.adapter.transform = (scope, item) => transform(rowMap.get(scope), item);
       });
 
