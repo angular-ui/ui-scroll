@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.0 -- 2017-02-04T09:24:37.966Z
+ * Version: 1.6.1 -- 2017-03-03T05:28:34.208Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -188,7 +188,7 @@
 	    var rowMap = new Map();
 	
 	    $timeout(function () {
-	      scrollViewport.adapter.gridAdapter = new GridAdapter(_this3);
+	      scrollViewport.adapter.publicContext.gridAdapter = new GridAdapter(_this3);
 	      scrollViewport.adapter.transform = function (scope, item) {
 	        return transform(rowMap.get(scope), item);
 	      };
