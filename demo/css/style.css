@@ -291,7 +291,7 @@
 }
 #viewport-scrollBubblingPrevent-wrap:before,
 #viewport-scrollBubblingPrevent-wrap:after {
-  content: "padding";
+  content: "wrapper";
   position: absolute;
   width: 100%;
   text-align: center;

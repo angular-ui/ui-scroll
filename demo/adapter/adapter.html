@@ -18,14 +18,14 @@
 
 		<div class="description">
 			<ul>
-				<li>New mechanism of scroller data custom processing is introduced. </li>
-				<li>Single datasource but two different viewports with two different processing adapters.</li>
-				<li>The firstListAdapter is initially defined on ctrl $scope as a first level object with some property.</li>
-				<li>The second.list.adapter chain is not defined on ctrl $scope. The scroller defines it during linking.</li>
+				<li>This is a simple demo which demonstrates some basic Adapter usage.</li>
+				<li>For all operations presented here the only one Adapter method is being used: applyUpdates.</li>
+				<li>In this demo we have single datasource defined on the Main Controller .</li>
+				<li>And two different viewports with two different processing Adapters (on the First and the Second Controllers).</li>
 			</ul>
 		</div>
 
-		<div class="viewport-group">
+		<div class="viewport-group" ng-controller="firstController">
 			<h2 class="viewport-group-tilte">1st list</h2>
 
 			<div class="info">
@@ -49,7 +49,7 @@
 
 		<hr>
 
-		<div class="viewport-group">
+		<div class="viewport-group" ng-controller="secondController">
 			<h2 class="viewport-group-tilte">2st list</h2>
 
 			<div class="info">

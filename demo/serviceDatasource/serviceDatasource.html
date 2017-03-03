@@ -27,11 +27,13 @@
 
 			<div class="code">
 				<pre>
-angular.module('application', ['ui.scroll']).factory('datasource', ...
+angular.module('application', ['ui.scroll'])
+  .factory('datasource', function() { ...
 
-	var get = function ...
+    var get = function(index, count, success) { ... };
 
-	return { get: get };</pre>
+    return { get: get };
+  });</pre>
 			</div>
 
 		</div>
