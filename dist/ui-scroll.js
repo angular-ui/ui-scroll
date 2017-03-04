@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.1 -- 2017-03-03T05:28:34.208Z
+ * Version: 1.6.1 -- 2017-03-04T06:00:38.359Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -137,7 +137,7 @@
 	    var elementRoutines = new _elementRoutines2.default($injector, $q);
 	    var buffer = new _buffer2.default(elementRoutines, bufferSize);
 	    var viewport = new _viewport2.default(elementRoutines, buffer, element, viewportController, $rootScope, padding);
-	    var adapter = new _adapter2.default(viewport, buffer, adjustBuffer, reload, $attr, $parse, element);
+	    var adapter = new _adapter2.default(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope);
 	
 	    if (viewportController) {
 	      viewportController.adapter = adapter;
@@ -1300,26 +1300,9 @@
 	
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	function findCtrl(scope, ctrl) {
-	  if (!scope) {
-	    return;
-	  }
-	  if (scope.hasOwnProperty(ctrl) && Object.getPrototypeOf(scope[ctrl]).constructor.hasOwnProperty('$inject')) {
-	    return scope[ctrl];
-	  }
-	  return findCtrl(scope.$parent, ctrl);
-	}
-	
-	function assignAttr(attr, scope, element) {
-	  if (!attr || !(attr = attr.replace(/^\s+|\s+$/gm, ''))) {
-	    return;
-	  }
-	
+	function getCtrlOnData(attr, element) {
 	  var onSyntax = attr.match(/^(.+)(\s+on\s+)(.+)?/);
-	  var asSyntax = attr.match(/^([^.]+)\.(.+)?/);
-	
 	  if (onSyntax && onSyntax.length === 4) {
-	    // controller on (backward compatibility), deprecated since v1.6.1
 	    window.console.warn('Angular ui-scroll adapter assignment warning. "Controller On" syntax has been deprecated since ui-scroll v1.6.1.');
 	    var ctrl = onSyntax[3];
 	    var tail = onSyntax[1];
@@ -1336,27 +1319,11 @@
 	      candidate = candidate.parent();
 	    }
 	    throw new Error('Angular ui-scroll adapter assignment error. Failed to locate target controller "' + ctrl + '" to inject "' + tail + '"');
-	  } else if (asSyntax && asSyntax.length === 3) {
-	    // controller as
-	    var _ctrl = asSyntax[1];
-	    var _tail = asSyntax[2];
-	    var foundCtrl = findCtrl(scope, _ctrl);
-	    if (foundCtrl) {
-	      return {
-	        target: foundCtrl,
-	        source: _tail
-	      };
-	    }
 	  }
-	
-	  return {
-	    target: scope,
-	    source: attr
-	  };
 	}
 	
 	var Adapter = function () {
-	  function Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, element) {
+	  function Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope) {
 	    _classCallCheck(this, Adapter);
 	
 	    this.viewport = viewport;
@@ -1364,35 +1331,46 @@
 	    this.adjustBuffer = adjustBuffer;
 	    this.reload = reload;
 	
-	    this.publicContext = {};
-	    this.assignAdapter($attr, $parse, element);
-	    this.generatePublicContext($attr, $parse, element);
-	
 	    this.isLoading = false;
 	    this.disabled = false;
+	
+	    var viewportScope = viewport.getScope();
+	    this.startScope = viewportScope.$parent ? viewportScope : $scope;
+	
+	    this.publicContext = {};
+	    this.assignAdapter($attr.adapter, $parse, element);
+	    this.generatePublicContext($attr, $parse);
 	  }
 	
 	  _createClass(Adapter, [{
 	    key: 'assignAdapter',
-	    value: function assignAdapter($attr, $parse, element) {
-	      var data = assignAttr($attr.adapter, this.viewport.getScope(), element);
-	
-	      if (data) {
-	        try {
-	          $parse(data.source).assign(data.target, {});
-	          var adapterOnScope = $parse(data.source)(data.target);
-	
-	          angular.extend(adapterOnScope, this.publicContext);
-	          this.publicContext = adapterOnScope;
-	        } catch (error) {
-	          error.message = 'Angular ui-scroll Adapter assignment exception.\n' + ('Can\'t parse "' + $attr.adapter + '" expression.\n') + error.message;
-	          throw error;
-	        }
+	    value: function assignAdapter(adapterAttr, $parse, element) {
+	      if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
+	        return;
 	      }
+	      var ctrlOnData = getCtrlOnData(adapterAttr, element);
+	      var adapterOnScope = void 0;
+	
+	      try {
+	        if (ctrlOnData) {
+	          // "Controller On", deprecated since v1.6.1
+	          $parse(ctrlOnData.source).assign(ctrlOnData.target, {});
+	          adapterOnScope = $parse(ctrlOnData.source)(ctrlOnData.target);
+	        } else {
+	          $parse(adapterAttr).assign(this.startScope, {});
+	          adapterOnScope = $parse(adapterAttr)(this.startScope);
+	        }
+	      } catch (error) {
+	        error.message = 'Angular ui-scroll Adapter assignment exception.\n' + ('Can\'t parse "' + adapterAttr + '" expression.\n') + error.message;
+	        throw error;
+	      }
+	
+	      angular.extend(adapterOnScope, this.publicContext);
+	      this.publicContext = adapterOnScope;
 	    }
 	  }, {
 	    key: 'generatePublicContext',
-	    value: function generatePublicContext($attr, $parse, element) {
+	    value: function generatePublicContext($attr, $parse) {
 	      var _this = this;
 	
 	      // these methods will be accessible out of ui-scroll via user defined adapter
@@ -1406,21 +1384,17 @@
 	
 	      var _loop = function _loop(_i) {
 	        var property = void 0,
-	            assignProp = void 0;
-	        var data = assignAttr($attr[publicProps[_i]], _this.viewport.getScope(), element);
-	        if (data) {
-	          assignProp = $parse(data.source).assign;
-	        }
+	            attr = $attr[publicProps[_i]];
 	        Object.defineProperty(_this, publicProps[_i], {
 	          get: function get() {
 	            return property;
 	          },
 	          set: function set(value) {
 	            property = value;
-	            if (assignProp) {
-	              assignProp(data.target, value);
-	            }
 	            _this.publicContext[publicProps[_i]] = value;
+	            if (attr) {
+	              $parse(attr).assign(_this.startScope, value);
+	            }
 	          }
 	        });
 	      };

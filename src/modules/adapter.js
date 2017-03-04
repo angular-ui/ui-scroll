@@ -1,22 +1,6 @@
-function findCtrl(scope, ctrl) {
-  if (!scope) {
-    return;
-  }
-  if (scope.hasOwnProperty(ctrl) && Object.getPrototypeOf(scope[ctrl]).constructor.hasOwnProperty('$inject')) {
-    return scope[ctrl];
-  }
-  return findCtrl(scope.$parent, ctrl);
-}
-
-function assignAttr(attr, scope, element) {
-  if (!attr || !(attr = attr.replace(/^\s+|\s+$/gm, ''))) {
-    return;
-  }
-
+function getCtrlOnData(attr, element) {
   let onSyntax = attr.match(/^(.+)(\s+on\s+)(.+)?/);
-  let asSyntax = attr.match(/^([^.]+)\.(.+)?/);
-
-  if (onSyntax && onSyntax.length === 4) { // controller on (backward compatibility), deprecated since v1.6.1
+  if (onSyntax && onSyntax.length === 4) {
     window.console.warn('Angular ui-scroll adapter assignment warning. "Controller On" syntax has been deprecated since ui-scroll v1.6.1.');
     let ctrl = onSyntax[3];
     let tail = onSyntax[1];
@@ -34,61 +18,56 @@ function assignAttr(attr, scope, element) {
     }
     throw new Error('Angular ui-scroll adapter assignment error. Failed to locate target controller "' + ctrl + '" to inject "' + tail + '"');
   }
-  else if (asSyntax && asSyntax.length === 3) { // controller as
-    let ctrl = asSyntax[1];
-    let tail = asSyntax[2];
-    let foundCtrl = findCtrl(scope, ctrl);
-    if (foundCtrl) {
-      return {
-        target: foundCtrl,
-        source: tail
-      };
-    }
-  }
-
-  return {
-    target: scope,
-    source: attr
-  };
 }
 
 class Adapter {
 
-  constructor(viewport, buffer, adjustBuffer, reload, $attr, $parse, element) {
+  constructor(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope) {
     this.viewport = viewport;
     this.buffer = buffer;
     this.adjustBuffer = adjustBuffer;
     this.reload = reload;
 
-    this.publicContext = {};
-    this.assignAdapter($attr, $parse, element);
-    this.generatePublicContext($attr, $parse, element);
-
     this.isLoading = false;
     this.disabled = false;
+
+    const viewportScope = viewport.getScope();
+    this.startScope = viewportScope.$parent ? viewportScope : $scope;
+
+    this.publicContext = {};
+    this.assignAdapter($attr.adapter, $parse, element);
+    this.generatePublicContext($attr, $parse);
   }
 
-  assignAdapter($attr, $parse, element) {
-    let data = assignAttr($attr.adapter, this.viewport.getScope(), element);
+  assignAdapter(adapterAttr, $parse, element) {
+    if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
+      return;
+    }
+    let ctrlOnData = getCtrlOnData(adapterAttr, element);
+    let adapterOnScope;
 
-    if (data) {
-      try {
-        $parse(data.source).assign(data.target, {});
-        let adapterOnScope = $parse(data.source)(data.target);
-
-        angular.extend(adapterOnScope, this.publicContext);
-        this.publicContext = adapterOnScope;
+    try {
+      if (ctrlOnData) { // "Controller On", deprecated since v1.6.1
+        $parse(ctrlOnData.source).assign(ctrlOnData.target, {});
+        adapterOnScope = $parse(ctrlOnData.source)(ctrlOnData.target);
       }
-      catch (error) {
-        error.message = `Angular ui-scroll Adapter assignment exception.\n` +
-          `Can't parse "${$attr.adapter}" expression.\n` +
-          error.message;
-        throw error;
+      else {
+        $parse(adapterAttr).assign(this.startScope, {});
+        adapterOnScope = $parse(adapterAttr)(this.startScope);
       }
     }
+    catch (error) {
+      error.message = `Angular ui-scroll Adapter assignment exception.\n` +
+        `Can't parse "${adapterAttr}" expression.\n` +
+        error.message;
+      throw error;
+    }
+
+    angular.extend(adapterOnScope, this.publicContext);
+    this.publicContext = adapterOnScope;
   }
 
-  generatePublicContext($attr, $parse, element) {
+  generatePublicContext($attr, $parse) {
     // these methods will be accessible out of ui-scroll via user defined adapter
     const publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty'];
     for (let i = publicMethods.length - 1; i >= 0; i--) {
@@ -98,19 +77,15 @@ class Adapter {
     // these read-only props will be accessible out of ui-scroll via user defined adapter
     const publicProps = ['isLoading', 'topVisible', 'topVisibleElement', 'topVisibleScope'];
     for (let i = publicProps.length - 1; i >= 0; i--) {
-      let property, assignProp;
-      let data = assignAttr($attr[publicProps[i]], this.viewport.getScope(), element);
-      if (data) {
-        assignProp = $parse(data.source).assign;
-      }
+      let property, attr = $attr[publicProps[i]];
       Object.defineProperty(this, publicProps[i], {
         get: () => property,
         set: (value) => {
           property = value;
-          if (assignProp) {
-            assignProp(data.target, value);
-          }
           this.publicContext[publicProps[i]] = value;
+          if (attr) {
+            $parse(attr).assign(this.startScope, value);
+          }
         }
       });
     }

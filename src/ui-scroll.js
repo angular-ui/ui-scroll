@@ -81,7 +81,7 @@ angular.module('ui.scroll', [])
         let elementRoutines = new ElementRoutines($injector, $q);
         let buffer = new ScrollBuffer(elementRoutines, bufferSize);
         let viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
-        let adapter = new Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, element);
+        let adapter = new Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope);
 
         if (viewportController) {
           viewportController.adapter = adapter;
