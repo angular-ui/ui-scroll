@@ -1,7 +1,7 @@
 function getCtrlOnData(attr, element) {
   let onSyntax = attr.match(/^(.+)(\s+on\s+)(.+)?/);
   if (onSyntax && onSyntax.length === 4) {
-    window.console.warn('Angular ui-scroll adapter assignment warning. "Controller On" syntax has been deprecated since ui-scroll v1.6.1.');
+    window.console.log('Angular ui-scroll adapter assignment warning. "Controller On" syntax has been deprecated since ui-scroll v1.6.1.');
     let ctrl = onSyntax[3];
     let tail = onSyntax[1];
     let candidate = element;

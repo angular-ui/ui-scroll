@@ -169,7 +169,7 @@ The `assignable expressions` will be used by scroller to inject the requested va
 The target scope is being defined in accordance with standard Angular rules (nested scopes and controller As syntax should be taken into account):
 the scroller will traverse its parents (from the ui-scroll element's scope up to the $rootScope) to locate the target scope.
 If the viewport is presented (the element marked with the [uiScrollViewport](#uiscrollviewport-directive) directive),
-then the scope associated with the viewport will be a start point in target scope detecting.
+then the scope associated with the viewport will be a start point in the target scope locating.
 Angular $parse service is being used in `assignable expressions` implementation.
 
 _Deprecated!_ The format `expression on controller` introduced in v1.5.0 (and deprecated in v1.6.1) can be used to explicitly target the scope associated with the specified controller as the target scope for the injection. In this format `expression` is any angular assignable expression, and `controller` is the name of controller constructor function as specified in the `ng-controller` directive.
@@ -423,8 +423,8 @@ npm test
 ```
   
   This runs karma testing against temporary distributive files (./temp). We created a number of specifications which consist of more
-  than 160 tests. They are living at [./test](https://github.com/angular-ui/ui-scroll/tree/master/test) folder. Karma watches for temp
-  and test folders changes and automatically re-run tests.
+  than 160 tests. They are living at the [./test](https://github.com/angular-ui/ui-scroll/tree/master/test) folder. Karma watches for temp
+  and test folders changes and automatically re-runs tests.
 
  __3__. To run full build use
  
@@ -432,13 +432,13 @@ npm test
 npm run build
 ```
   
-  After developing and testing complete the build process should be run to
+  After developing and testing complete, the build process should be run to
   a) pass through jshint,
   b) generate minified versions of distributive,
   c) run tests with minified distributive files,
-  d) obtain all necessary files in [./dist](https://github.com/angular-ui/ui-scroll/tree/master/dist) folder.
+  d) obtain all necessary files in the [./dist](https://github.com/angular-ui/ui-scroll/tree/master/dist) folder.
 
-PR should include source code (./scr) and tests (./test) changes and may not include public distributive (./dist) changes.
+PR should include source code (./scr) changes, may include tests (./test) changes and may not include public distributive (./dist) changes.
   
 
 -------------------

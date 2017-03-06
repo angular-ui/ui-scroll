@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.1 -- 2017-03-04T06:00:38.359Z
+ * Version: 1.6.1 -- 2017-03-06T07:25:29.944Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1303,7 +1303,7 @@
 	function getCtrlOnData(attr, element) {
 	  var onSyntax = attr.match(/^(.+)(\s+on\s+)(.+)?/);
 	  if (onSyntax && onSyntax.length === 4) {
-	    window.console.warn('Angular ui-scroll adapter assignment warning. "Controller On" syntax has been deprecated since ui-scroll v1.6.1.');
+	    window.console.log('Angular ui-scroll adapter assignment warning. "Controller On" syntax has been deprecated since ui-scroll v1.6.1.');
 	    var ctrl = onSyntax[3];
 	    var tail = onSyntax[1];
 	    var candidate = element;
