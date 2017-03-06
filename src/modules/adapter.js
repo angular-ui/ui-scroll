@@ -1,33 +1,125 @@
-export default function Adapter($rootScope, $parse, $attr, viewport, buffer, adjustBuffer, element) {
-  const viewportScope = viewport.scope() || $rootScope;
-  let disabled = false;
-  let self = this;
+function getCtrlOnData(attr, element) {
+  let onSyntax = attr.match(/^(.+)(\s+on\s+)(.+)?/);
+  if (onSyntax && onSyntax.length === 4) {
+    window.console.log('Angular ui-scroll adapter assignment warning. "Controller On" syntax has been deprecated since ui-scroll v1.6.1.');
+    let ctrl = onSyntax[3];
+    let tail = onSyntax[1];
+    let candidate = element;
+    while (candidate.length) {
+      let candidateScope = candidate.scope(); // doesn't work when debugInfoEnabled flag = true
+      let candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
+      if (candidateName && candidateName[1] === ctrl) {
+        return {
+          target: candidateScope,
+          source: tail
+        };
+      }
+      candidate = candidate.parent();
+    }
+    throw new Error('Angular ui-scroll adapter assignment error. Failed to locate target controller "' + ctrl + '" to inject "' + tail + '"');
+  }
+}
 
-  createValueInjector('adapter')(self);
-  let topVisibleInjector = createValueInjector('topVisible');
-  let topVisibleElementInjector = createValueInjector('topVisibleElement');
-  let topVisibleScopeInjector = createValueInjector('topVisibleScope');
-  let isLoadingInjector = createValueInjector('isLoading');
+class Adapter {
 
-  // Adapter API definition
+  constructor(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope) {
+    this.viewport = viewport;
+    this.buffer = buffer;
+    this.adjustBuffer = adjustBuffer;
+    this.reload = reload;
 
-  Object.defineProperty(this, 'disabled', {
-    get: () => disabled,
-    set: (value) => (!(disabled = value)) ? adjustBuffer() : null
-  });
+    this.isLoading = false;
+    this.disabled = false;
 
-  this.isLoading = false;
-  this.isBOF = () => buffer.bof;
-  this.isEOF = () => buffer.eof;
-  this.isEmpty = () => !buffer.length;
+    const viewportScope = viewport.getScope();
+    this.startScope = viewportScope.$parent ? viewportScope : $scope;
 
-  this.applyUpdates = (arg1, arg2) => {
+    this.publicContext = {};
+    this.assignAdapter($attr.adapter, $parse, element);
+    this.generatePublicContext($attr, $parse);
+  }
+
+  assignAdapter(adapterAttr, $parse, element) {
+    if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
+      return;
+    }
+    let ctrlOnData = getCtrlOnData(adapterAttr, element);
+    let adapterOnScope;
+
+    try {
+      if (ctrlOnData) { // "Controller On", deprecated since v1.6.1
+        $parse(ctrlOnData.source).assign(ctrlOnData.target, {});
+        adapterOnScope = $parse(ctrlOnData.source)(ctrlOnData.target);
+      }
+      else {
+        $parse(adapterAttr).assign(this.startScope, {});
+        adapterOnScope = $parse(adapterAttr)(this.startScope);
+      }
+    }
+    catch (error) {
+      error.message = `Angular ui-scroll Adapter assignment exception.\n` +
+        `Can't parse "${adapterAttr}" expression.\n` +
+        error.message;
+      throw error;
+    }
+
+    angular.extend(adapterOnScope, this.publicContext);
+    this.publicContext = adapterOnScope;
+  }
+
+  generatePublicContext($attr, $parse) {
+    // these methods will be accessible out of ui-scroll via user defined adapter
+    const publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty'];
+    for (let i = publicMethods.length - 1; i >= 0; i--) {
+      this.publicContext[publicMethods[i]] = this[publicMethods[i]].bind(this);
+    }
+
+    // these read-only props will be accessible out of ui-scroll via user defined adapter
+    const publicProps = ['isLoading', 'topVisible', 'topVisibleElement', 'topVisibleScope'];
+    for (let i = publicProps.length - 1; i >= 0; i--) {
+      let property, attr = $attr[publicProps[i]];
+      Object.defineProperty(this, publicProps[i], {
+        get: () => property,
+        set: (value) => {
+          property = value;
+          this.publicContext[publicProps[i]] = value;
+          if (attr) {
+            $parse(attr).assign(this.startScope, value);
+          }
+        }
+      });
+    }
+
+    // non-read-only public property
+    Object.defineProperty(this.publicContext, 'disabled', {
+      get: () => this.disabled,
+      set: (value) => (!(this.disabled = value)) ? this.adjustBuffer() : null
+    });
+  }
+
+  loading(value) {
+    this['isLoading'] = value;
+  }
+
+  isBOF() {
+    return this.buffer.bof;
+  }
+
+  isEOF() {
+    return this.buffer.eof;
+  }
+
+  isEmpty() {
+    return !this.buffer.length;
+  }
+
+  applyUpdates(arg1, arg2) {
     if (angular.isFunction(arg1)) {
       // arg1 is the updater function, arg2 is ignored
-      buffer.slice(0).forEach((wrapper) => {
+      this.buffer.slice(0).forEach((wrapper) => {
         // we need to do it on the buffer clone, because buffer content
         // may change as we iterate through
-        applyUpdate(wrapper, arg1(wrapper.item, wrapper.scope, wrapper.element));
+        this.applyUpdate(wrapper, arg1(wrapper.item, wrapper.scope, wrapper.element));
       });
     } else {
       // arg1 is item index, arg2 is the newItems array
@@ -35,127 +127,63 @@ export default function Adapter($rootScope, $parse, $attr, viewport, buffer, adj
         throw new Error('applyUpdates - ' + arg1 + ' is not a valid index');
       }
 
-      const index = arg1 - buffer.first;
-      if ((index >= 0 && index < buffer.length)) {
-        applyUpdate(buffer[index], arg2);
+      const index = arg1 - this.buffer.first;
+      if ((index >= 0 && index < this.buffer.length)) {
+        this.applyUpdate(this.buffer[index], arg2);
       }
     }
 
-    adjustBuffer();
-  };
+    this.adjustBuffer();
+  }
 
-  this.append = (newItems) => {
-    buffer.append(newItems);
-    adjustBuffer();
-  };
+  append(newItems) {
+    this.buffer.append(newItems);
+    this.adjustBuffer();
+  }
 
-  this.prepend = (newItems) => {
-    buffer.prepend(newItems);
-    adjustBuffer();
-  };
+  prepend(newItems) {
+    this.buffer.prepend(newItems);
+    this.adjustBuffer();
+  }
 
-  this.loading = (value) => {
-    isLoadingInjector(value);
-  };
-
-  this.calculateProperties = () => {
+  calculateProperties() {
     let item, itemHeight, itemTop, isNewRow, rowTop = null;
     let topHeight = 0;
-    for (let i = 0; i < buffer.length; i++) {
-      item = buffer[i];
+    for (let i = 0; i < this.buffer.length; i++) {
+      item = this.buffer[i];
       itemTop = item.element.offset().top;
       isNewRow = rowTop !== itemTop;
       rowTop = itemTop;
       if (isNewRow) {
         itemHeight = item.element.outerHeight(true);
       }
-      if (isNewRow && (viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos())) {
+      if (isNewRow && (this.viewport.topDataPos() + topHeight + itemHeight <= this.viewport.topVisiblePos())) {
         topHeight += itemHeight;
       } else {
         if (isNewRow) {
-          topVisibleInjector(item.item);
-          topVisibleElementInjector(item.element);
-          topVisibleScopeInjector(item.scope);
+          this['topVisible'] = item.item;
+          this['topVisibleElement'] = item.element;
+          this['topVisibleScope'] = item.scope;
         }
         break;
       }
     }
-  };
-
-  // private function definitions
-
-  function createValueInjector(attribute) {
-    let expression = $attr[attribute];
-    let scope = viewportScope;
-    let assign;
-    if (expression) {
-      // it is ok to have relaxed validation for the first part of the 'on' expression.
-      // additional validation will be done by the $parse service below
-      let match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?/);
-      if (!match)
-        throw new Error('Expected injection expression in form of \'target\' or \'target on controller\' but got \'' + expression + '\'');
-      let target = match[1];
-      let onControllerName = match[2];
-
-      let parseController = (controllerName, on) => {
-        let candidate = element;
-        while (candidate.length) {
-          let candidateScope = candidate.scope();
-          // ng-controller's "Controller As" parsing
-          let candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
-          if (candidateName && candidateName[on ? 1 : 2] === controllerName) {
-            scope = candidateScope;
-            return true;
-          }
-          // directive's/component's "Controller As" parsing
-          if (!on && candidateScope && candidateScope.hasOwnProperty(controllerName) && Object.getPrototypeOf(candidateScope[controllerName]).constructor.hasOwnProperty('$inject')) {
-            scope = candidateScope;
-            return true;
-          }
-          candidate = candidate.parent();
-        }
-      };
-
-      if (onControllerName) { // 'on' syntax DOM parsing (adapter="adapter on ctrl")
-        scope = null;
-        parseController(onControllerName, true);
-        if (!scope) {
-          throw new Error('Failed to locate target controller \'' + onControllerName + '\' to inject \'' + target + '\'');
-        }
-      }
-      else { // try to parse DOM with 'Controller As' syntax (adapter="ctrl.adapter")
-        let controllerAsName;
-        let dotIndex = target.indexOf('.');
-        if (dotIndex > 0) {
-          controllerAsName = target.substr(0, dotIndex);
-          parseController(controllerAsName, false);
-        }
-      }
-
-      assign = $parse(target).assign;
-    }
-    return (value) => {
-      if (self !== value) // just to avoid injecting adapter reference in the adapter itself. Kludgy, I know.
-        self[attribute] = value;
-      if (assign)
-        assign(scope, value);
-    };
   }
 
-  function applyUpdate(wrapper, newItems) {
+  applyUpdate(wrapper, newItems) {
     if (!angular.isArray(newItems)) {
       return;
     }
 
     let keepIt;
-    let pos = (buffer.indexOf(wrapper)) + 1;
+    let pos = (this.buffer.indexOf(wrapper)) + 1;
 
     newItems.reverse().forEach((newItem) => {
       if (newItem === wrapper.item) {
         keepIt = true;
         pos--;
       } else {
-        buffer.insert(pos, newItem);
+        this.buffer.insert(pos, newItem);
       }
     });
 
@@ -165,3 +193,5 @@ export default function Adapter($rootScope, $parse, $attr, viewport, buffer, adj
   }
 
 }
+
+export default Adapter;

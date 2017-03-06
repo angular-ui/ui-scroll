@@ -1,9 +1,9 @@
 {
   "name": "angular-ui-scroll",
   "description": "AngularJS infinite scrolling module",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "src": "./src/",
-  "public": "./public/",
+  "public": "./dist/",
   "main": "./dist/ui-scroll.js",
   "homepage": "https://github.com/angular-ui/ui-scroll",
   "author": {
@@ -19,15 +19,17 @@
   },
   "license": "MIT",
   "scripts": {
-    "start": "grunt server",
-    "build": "grunt build",
-    "test": "grunt test"
+    "start": "grunt",
+    "test": "grunt test",
+    "dev": "concurrently --kill-others --raw \"grunt server\" \"grunt test\"",
+    "build": "grunt build"
   },
   "devDependencies": {
     "babel-core": "^6.22.1",
     "babel-loader": "^6.2.10",
     "babel-preset-es2015": "^6.22.0",
     "clean-webpack-plugin": "^0.1.15",
+    "concurrently": "^3.4.0",
     "express": "^4.14.0",
     "grunt": "^1.0.1",
     "grunt-contrib-clean": "^1.0.0",

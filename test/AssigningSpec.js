@@ -106,7 +106,7 @@ describe('uiScroll', function () {
         '</div>' +
     '</div>' +
 '</div>';
-            executeTest(template);
+            executeTest(template, 'MyBottomController');
         });
 
         it('should work with additional container (viewport)', function () {
@@ -136,7 +136,7 @@ describe('uiScroll', function () {
         '</div>' +
     '</div>' +
 '</div>';
-            executeTest(template, null, 'ctrl');
+            executeTest(template, 'MyBottomController', 'ctrl');
         });
 
         it('should work for "on" syntax (viewport)', function () {
@@ -245,7 +245,7 @@ describe('uiScroll', function () {
             myApp.directive('myDir3', setDirective({
               ctrlAs: 'ctrl2',
               template:
-'<div style="height:200px" ng-if="ctrl2.show">' +
+'<div ui-scroll-viewport style="height:200px" ng-if="ctrl2.show">' +
     '<div ui-scroll="item in myMultipageDatasource" adapter="ctrl.adapter">' +
         '{{$index}}: {{item}}' +
     '</div>' +
@@ -260,27 +260,6 @@ describe('uiScroll', function () {
     '</div>' +
 '</div>';
             executeTest(template, 'MyInnerController as ctrl', 'ctrl');
-        });
-
-        it('should work with "Controller As" and ingnore intermediate containers which are not controllers', function () {
-            myApp.directive('myDir4', setDirective({
-              ctrlAs: 'ctrl2',
-              template:
-'<div style="height:200px" ng-if="ctrl2.show">' +
-    '<div ui-scroll="item in myMultipageDatasource" adapter="container.adapter">' +
-        '{{$index}}: {{item}}' +
-    '</div>' +
-'</div>'
-            }));
-            var template =
-'<div ng-controller="MyTopController">' +
-    '<div ng-controller="MyInnerController as container" ng-if="name">' +
-        '<div ng-controller="MyBottomController" ng-if="name">' +
-            '<my-dir4></my-dir4>' +
-        '</div>' +
-    '</div>' +
-'</div>';   // here Directive and MyBottomController have a container object
-            executeTest(template, 'MyInnerController as container', 'container');
         });
     });
 

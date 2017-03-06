@@ -1,10 +1,11 @@
 import Padding from './padding';
 
-export default function Viewport(elementRoutines, buffer, element, viewportController, padding) {
+export default function Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding) {
   let topPadding = null;
   let bottomPadding = null;
   const viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
   const container = viewportController && viewportController.container ? viewportController.container : undefined;
+  const scope = viewportController && viewportController.scope ? viewportController.scope : $rootScope;
 
   viewport.css({
     'overflow-anchor': 'none',
@@ -17,6 +18,10 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
   }
 
   angular.extend(viewport, {
+    getScope() {
+      return scope;
+    },
+
     createPaddingElements(template) {
       topPadding = new Padding(template);
       bottomPadding = new Padding(template);

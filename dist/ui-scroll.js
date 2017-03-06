@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.0 -- 2017-02-15T02:04:11.508Z
+ * Version: 1.6.1 -- 2017-03-06T07:25:29.944Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -86,6 +86,7 @@
 	
 	      this.container = element;
 	      this.viewport = element;
+	      this.scope = scope;
 	
 	      angular.forEach(element.children(), function (child) {
 	        if (child.tagName.toLowerCase() === 'tbody') {
@@ -135,8 +136,8 @@
 	
 	    var elementRoutines = new _elementRoutines2.default($injector, $q);
 	    var buffer = new _buffer2.default(elementRoutines, bufferSize);
-	    var viewport = new _viewport2.default(elementRoutines, buffer, element, viewportController, padding);
-	    var adapter = new _adapter2.default($rootScope, $parse, $attr, viewport, buffer, adjustBuffer, element);
+	    var viewport = new _viewport2.default(elementRoutines, buffer, element, viewportController, $rootScope, padding);
+	    var adapter = new _adapter2.default(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope);
 	
 	    if (viewportController) {
 	      viewportController.adapter = adapter;
@@ -201,8 +202,6 @@
 	        count: bufferSize
 	      }, success);
 	    };
-	
-	    adapter.reload = reload;
 	
 	    /**
 	     * Build padding elements
@@ -1063,11 +1062,12 @@
 	
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 	
-	function Viewport(elementRoutines, buffer, element, viewportController, padding) {
+	function Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding) {
 	  var topPadding = null;
 	  var bottomPadding = null;
 	  var viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
 	  var container = viewportController && viewportController.container ? viewportController.container : undefined;
+	  var scope = viewportController && viewportController.scope ? viewportController.scope : $rootScope;
 	
 	  viewport.css({
 	    'overflow-anchor': 'none',
@@ -1080,6 +1080,9 @@
 	  }
 	
 	  angular.extend(viewport, {
+	    getScope: function getScope() {
+	      return scope;
+	    },
 	    createPaddingElements: function createPaddingElements(template) {
 	      topPadding = new _padding2.default(template);
 	      bottomPadding = new _padding2.default(template);
@@ -1292,187 +1295,243 @@
 	Object.defineProperty(exports, "__esModule", {
 	  value: true
 	});
-	exports.default = Adapter;
-	function Adapter($rootScope, $parse, $attr, viewport, buffer, adjustBuffer, element) {
-	  var viewportScope = viewport.scope() || $rootScope;
-	  var disabled = false;
-	  var self = this;
 	
-	  createValueInjector('adapter')(self);
-	  var topVisibleInjector = createValueInjector('topVisible');
-	  var topVisibleElementInjector = createValueInjector('topVisibleElement');
-	  var topVisibleScopeInjector = createValueInjector('topVisibleScope');
-	  var isLoadingInjector = createValueInjector('isLoading');
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 	
-	  // Adapter API definition
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 	
-	  Object.defineProperty(this, 'disabled', {
-	    get: function get() {
-	      return disabled;
-	    },
-	    set: function set(value) {
-	      return !(disabled = value) ? adjustBuffer() : null;
-	    }
-	  });
-	
-	  this.isLoading = false;
-	  this.isBOF = function () {
-	    return buffer.bof;
-	  };
-	  this.isEOF = function () {
-	    return buffer.eof;
-	  };
-	  this.isEmpty = function () {
-	    return !buffer.length;
-	  };
-	
-	  this.applyUpdates = function (arg1, arg2) {
-	    if (angular.isFunction(arg1)) {
-	      // arg1 is the updater function, arg2 is ignored
-	      buffer.slice(0).forEach(function (wrapper) {
-	        // we need to do it on the buffer clone, because buffer content
-	        // may change as we iterate through
-	        applyUpdate(wrapper, arg1(wrapper.item, wrapper.scope, wrapper.element));
-	      });
-	    } else {
-	      // arg1 is item index, arg2 is the newItems array
-	      if (arg1 % 1 !== 0) {
-	        // checking if it is an integer
-	        throw new Error('applyUpdates - ' + arg1 + ' is not a valid index');
+	function getCtrlOnData(attr, element) {
+	  var onSyntax = attr.match(/^(.+)(\s+on\s+)(.+)?/);
+	  if (onSyntax && onSyntax.length === 4) {
+	    window.console.log('Angular ui-scroll adapter assignment warning. "Controller On" syntax has been deprecated since ui-scroll v1.6.1.');
+	    var ctrl = onSyntax[3];
+	    var tail = onSyntax[1];
+	    var candidate = element;
+	    while (candidate.length) {
+	      var candidateScope = candidate.scope(); // doesn't work when debugInfoEnabled flag = true
+	      var candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
+	      if (candidateName && candidateName[1] === ctrl) {
+	        return {
+	          target: candidateScope,
+	          source: tail
+	        };
 	      }
-	
-	      var index = arg1 - buffer.first;
-	      if (index >= 0 && index < buffer.length) {
-	        applyUpdate(buffer[index], arg2);
-	      }
+	      candidate = candidate.parent();
 	    }
-	
-	    adjustBuffer();
-	  };
-	
-	  this.append = function (newItems) {
-	    buffer.append(newItems);
-	    adjustBuffer();
-	  };
-	
-	  this.prepend = function (newItems) {
-	    buffer.prepend(newItems);
-	    adjustBuffer();
-	  };
-	
-	  this.loading = function (value) {
-	    isLoadingInjector(value);
-	  };
-	
-	  this.calculateProperties = function () {
-	    var item = void 0,
-	        itemHeight = void 0,
-	        itemTop = void 0,
-	        isNewRow = void 0,
-	        rowTop = null;
-	    var topHeight = 0;
-	    for (var i = 0; i < buffer.length; i++) {
-	      item = buffer[i];
-	      itemTop = item.element.offset().top;
-	      isNewRow = rowTop !== itemTop;
-	      rowTop = itemTop;
-	      if (isNewRow) {
-	        itemHeight = item.element.outerHeight(true);
-	      }
-	      if (isNewRow && viewport.topDataPos() + topHeight + itemHeight <= viewport.topVisiblePos()) {
-	        topHeight += itemHeight;
-	      } else {
-	        if (isNewRow) {
-	          topVisibleInjector(item.item);
-	          topVisibleElementInjector(item.element);
-	          topVisibleScopeInjector(item.scope);
-	        }
-	        break;
-	      }
-	    }
-	  };
-	
-	  // private function definitions
-	
-	  function createValueInjector(attribute) {
-	    var expression = $attr[attribute];
-	    var scope = viewportScope;
-	    var assign = void 0;
-	    if (expression) {
-	      // it is ok to have relaxed validation for the first part of the 'on' expression.
-	      // additional validation will be done by the $parse service below
-	      var match = expression.match(/^(\S+)(?:\s+on\s+(\w(?:\w|\d)*))?/);
-	      if (!match) throw new Error('Expected injection expression in form of \'target\' or \'target on controller\' but got \'' + expression + '\'');
-	      var target = match[1];
-	      var onControllerName = match[2];
-	
-	      var parseController = function parseController(controllerName, on) {
-	        var candidate = element;
-	        while (candidate.length) {
-	          var candidateScope = candidate.scope();
-	          // ng-controller's "Controller As" parsing
-	          var candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
-	          if (candidateName && candidateName[on ? 1 : 2] === controllerName) {
-	            scope = candidateScope;
-	            return true;
-	          }
-	          // directive's/component's "Controller As" parsing
-	          if (!on && candidateScope && candidateScope.hasOwnProperty(controllerName) && Object.getPrototypeOf(candidateScope[controllerName]).constructor.hasOwnProperty('$inject')) {
-	            scope = candidateScope;
-	            return true;
-	          }
-	          candidate = candidate.parent();
-	        }
-	      };
-	
-	      if (onControllerName) {
-	        // 'on' syntax DOM parsing (adapter="adapter on ctrl")
-	        scope = null;
-	        parseController(onControllerName, true);
-	        if (!scope) {
-	          throw new Error('Failed to locate target controller \'' + onControllerName + '\' to inject \'' + target + '\'');
-	        }
-	      } else {
-	        // try to parse DOM with 'Controller As' syntax (adapter="ctrl.adapter")
-	        var controllerAsName = void 0;
-	        var dotIndex = target.indexOf('.');
-	        if (dotIndex > 0) {
-	          controllerAsName = target.substr(0, dotIndex);
-	          parseController(controllerAsName, false);
-	        }
-	      }
-	
-	      assign = $parse(target).assign;
-	    }
-	    return function (value) {
-	      if (self !== value) // just to avoid injecting adapter reference in the adapter itself. Kludgy, I know.
-	        self[attribute] = value;
-	      if (assign) assign(scope, value);
-	    };
-	  }
-	
-	  function applyUpdate(wrapper, newItems) {
-	    if (!angular.isArray(newItems)) {
-	      return;
-	    }
-	
-	    var keepIt = void 0;
-	    var pos = buffer.indexOf(wrapper) + 1;
-	
-	    newItems.reverse().forEach(function (newItem) {
-	      if (newItem === wrapper.item) {
-	        keepIt = true;
-	        pos--;
-	      } else {
-	        buffer.insert(pos, newItem);
-	      }
-	    });
-	
-	    if (!keepIt) {
-	      wrapper.op = 'remove';
-	    }
+	    throw new Error('Angular ui-scroll adapter assignment error. Failed to locate target controller "' + ctrl + '" to inject "' + tail + '"');
 	  }
 	}
+	
+	var Adapter = function () {
+	  function Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope) {
+	    _classCallCheck(this, Adapter);
+	
+	    this.viewport = viewport;
+	    this.buffer = buffer;
+	    this.adjustBuffer = adjustBuffer;
+	    this.reload = reload;
+	
+	    this.isLoading = false;
+	    this.disabled = false;
+	
+	    var viewportScope = viewport.getScope();
+	    this.startScope = viewportScope.$parent ? viewportScope : $scope;
+	
+	    this.publicContext = {};
+	    this.assignAdapter($attr.adapter, $parse, element);
+	    this.generatePublicContext($attr, $parse);
+	  }
+	
+	  _createClass(Adapter, [{
+	    key: 'assignAdapter',
+	    value: function assignAdapter(adapterAttr, $parse, element) {
+	      if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
+	        return;
+	      }
+	      var ctrlOnData = getCtrlOnData(adapterAttr, element);
+	      var adapterOnScope = void 0;
+	
+	      try {
+	        if (ctrlOnData) {
+	          // "Controller On", deprecated since v1.6.1
+	          $parse(ctrlOnData.source).assign(ctrlOnData.target, {});
+	          adapterOnScope = $parse(ctrlOnData.source)(ctrlOnData.target);
+	        } else {
+	          $parse(adapterAttr).assign(this.startScope, {});
+	          adapterOnScope = $parse(adapterAttr)(this.startScope);
+	        }
+	      } catch (error) {
+	        error.message = 'Angular ui-scroll Adapter assignment exception.\n' + ('Can\'t parse "' + adapterAttr + '" expression.\n') + error.message;
+	        throw error;
+	      }
+	
+	      angular.extend(adapterOnScope, this.publicContext);
+	      this.publicContext = adapterOnScope;
+	    }
+	  }, {
+	    key: 'generatePublicContext',
+	    value: function generatePublicContext($attr, $parse) {
+	      var _this = this;
+	
+	      // these methods will be accessible out of ui-scroll via user defined adapter
+	      var publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty'];
+	      for (var i = publicMethods.length - 1; i >= 0; i--) {
+	        this.publicContext[publicMethods[i]] = this[publicMethods[i]].bind(this);
+	      }
+	
+	      // these read-only props will be accessible out of ui-scroll via user defined adapter
+	      var publicProps = ['isLoading', 'topVisible', 'topVisibleElement', 'topVisibleScope'];
+	
+	      var _loop = function _loop(_i) {
+	        var property = void 0,
+	            attr = $attr[publicProps[_i]];
+	        Object.defineProperty(_this, publicProps[_i], {
+	          get: function get() {
+	            return property;
+	          },
+	          set: function set(value) {
+	            property = value;
+	            _this.publicContext[publicProps[_i]] = value;
+	            if (attr) {
+	              $parse(attr).assign(_this.startScope, value);
+	            }
+	          }
+	        });
+	      };
+	
+	      for (var _i = publicProps.length - 1; _i >= 0; _i--) {
+	        _loop(_i);
+	      }
+	
+	      // non-read-only public property
+	      Object.defineProperty(this.publicContext, 'disabled', {
+	        get: function get() {
+	          return _this.disabled;
+	        },
+	        set: function set(value) {
+	          return !(_this.disabled = value) ? _this.adjustBuffer() : null;
+	        }
+	      });
+	    }
+	  }, {
+	    key: 'loading',
+	    value: function loading(value) {
+	      this['isLoading'] = value;
+	    }
+	  }, {
+	    key: 'isBOF',
+	    value: function isBOF() {
+	      return this.buffer.bof;
+	    }
+	  }, {
+	    key: 'isEOF',
+	    value: function isEOF() {
+	      return this.buffer.eof;
+	    }
+	  }, {
+	    key: 'isEmpty',
+	    value: function isEmpty() {
+	      return !this.buffer.length;
+	    }
+	  }, {
+	    key: 'applyUpdates',
+	    value: function applyUpdates(arg1, arg2) {
+	      var _this2 = this;
+	
+	      if (angular.isFunction(arg1)) {
+	        // arg1 is the updater function, arg2 is ignored
+	        this.buffer.slice(0).forEach(function (wrapper) {
+	          // we need to do it on the buffer clone, because buffer content
+	          // may change as we iterate through
+	          _this2.applyUpdate(wrapper, arg1(wrapper.item, wrapper.scope, wrapper.element));
+	        });
+	      } else {
+	        // arg1 is item index, arg2 is the newItems array
+	        if (arg1 % 1 !== 0) {
+	          // checking if it is an integer
+	          throw new Error('applyUpdates - ' + arg1 + ' is not a valid index');
+	        }
+	
+	        var index = arg1 - this.buffer.first;
+	        if (index >= 0 && index < this.buffer.length) {
+	          this.applyUpdate(this.buffer[index], arg2);
+	        }
+	      }
+	
+	      this.adjustBuffer();
+	    }
+	  }, {
+	    key: 'append',
+	    value: function append(newItems) {
+	      this.buffer.append(newItems);
+	      this.adjustBuffer();
+	    }
+	  }, {
+	    key: 'prepend',
+	    value: function prepend(newItems) {
+	      this.buffer.prepend(newItems);
+	      this.adjustBuffer();
+	    }
+	  }, {
+	    key: 'calculateProperties',
+	    value: function calculateProperties() {
+	      var item = void 0,
+	          itemHeight = void 0,
+	          itemTop = void 0,
+	          isNewRow = void 0,
+	          rowTop = null;
+	      var topHeight = 0;
+	      for (var i = 0; i < this.buffer.length; i++) {
+	        item = this.buffer[i];
+	        itemTop = item.element.offset().top;
+	        isNewRow = rowTop !== itemTop;
+	        rowTop = itemTop;
+	        if (isNewRow) {
+	          itemHeight = item.element.outerHeight(true);
+	        }
+	        if (isNewRow && this.viewport.topDataPos() + topHeight + itemHeight <= this.viewport.topVisiblePos()) {
+	          topHeight += itemHeight;
+	        } else {
+	          if (isNewRow) {
+	            this['topVisible'] = item.item;
+	            this['topVisibleElement'] = item.element;
+	            this['topVisibleScope'] = item.scope;
+	          }
+	          break;
+	        }
+	      }
+	    }
+	  }, {
+	    key: 'applyUpdate',
+	    value: function applyUpdate(wrapper, newItems) {
+	      var _this3 = this;
+	
+	      if (!angular.isArray(newItems)) {
+	        return;
+	      }
+	
+	      var keepIt = void 0;
+	      var pos = this.buffer.indexOf(wrapper) + 1;
+	
+	      newItems.reverse().forEach(function (newItem) {
+	        if (newItem === wrapper.item) {
+	          keepIt = true;
+	          pos--;
+	        } else {
+	          _this3.buffer.insert(pos, newItem);
+	        }
+	      });
+	
+	      if (!keepIt) {
+	        wrapper.op = 'remove';
+	      }
+	    }
+	  }]);
+	
+	  return Adapter;
+	}();
+	
+	exports.default = Adapter;
 
 /***/ }
 /******/ ]);

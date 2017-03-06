@@ -1,9 +1,10 @@
-(function(angular) {
+(function (angular) {
 
   class Ctrl {
-    constructor($timeout) {
-        this.timeout = $timeout;
-				this.show = true;
+    constructor($timeout, $scope) {
+      this.timeout = $timeout;
+      this.show = true;
+      this.$scope = $scope;
     }
 
     get(index, count, success) {
@@ -20,7 +21,7 @@
     }
 
     update(id) {
-      return this.scrollAdapter.applyUpdates(function(item) {
+      return this.scrollAdapter.applyUpdates(function (item) {
         if (item.id === id) {
           item.name += " *";
         }
@@ -40,5 +41,5 @@
       '</div>',
       controller: Ctrl
     });
-    
+
 })(angular);

@@ -28,10 +28,14 @@
 
 			<div class="code">
 				<pre>
-angular.module('application', ['ui.scroll']).controller('mainController', ...
+angular.module('application', ['ui.scroll'])
+  .controller('mainController', ...
 
-	$scope.datasource = {}
-	$scope.datasource.get = function...</pre>
+    var get = function(index, count, success) { ... };
+
+    $scope.datasource = { get: get };
+
+  );</pre>
 			</div>
 		</div>
 

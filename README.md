@@ -64,8 +64,10 @@ It will start retrieving new data for new elements again if the user scrolls up/
 ### Basic usage
 
 ```html
-<ANY ui-scroll="{scroll_expression}" buffer-size="value" ... >
+<ANY ui-scroll-viewport>
+  <ANY ui-scroll="items in datasource" ... >
       ...
+  </ANY>
 </ANY>
 ```
 Listing `ANY` for the tag, the directive can be applied to, stretches the truth - a little bit. The directive works well with majority
@@ -80,6 +82,10 @@ _Important!_ The viewport height must be constrained. If the height of the viewp
 (style="height:auto") it will pull the entire content of the datasource and may throw an Error depending on the number of items
 in the datasource. Even if it does not, using the directive this way does not provide any advantages over using ng-repeat, because
 item template will be always instantiated for every item in the datasource.
+
+_Important!_ There is a Scroll Anchoring feature enforced by Google Chrome (since Chrome 56) which makes scroller behaviour incorrect.
+The ui-scroll-viewport directive eliminates this effect by disabling the 'overflow-anchor' css-property on its element.
+But if the ui-scroll-viewport is not presented in the template, you should take care of this manually.
 
 
 ### Examples
@@ -142,29 +148,31 @@ It is empty since it was deprecated in v1.6.0.
 >{{item}}</div>
 ```
 
-### Parametrs
+### Parameters
  
 * **uiScroll – scroll expression** – The expression indicating how to enumerate a collection. Only one format is currently supported: `variable in datasource` – where variable is the user defined loop variable and datasource is the name of the data source to enumerate.
-* **buffer-size - expression**, optional - number of items requested from the datasource in a single request. The default is 10 and the minimal value is 3
-* **padding - expression**, optional - extra height added to the visible area for the purpose of determining when the items should be created/destroyed. The value is relative to the visible height of the area, the default is 0.5 and the minimal value is 0.3
+* **buffer-size - expression**, optional - number of items requested from the datasource in a single request. The default is 10 and the minimal value is 3.
+* **padding - expression**, optional - extra height added to the visible area for the purpose of determining when the items should be created/destroyed. The value is relative to the visible height of the area, the default is 0.5 and the minimal value is 0.3.
 * **start-index - expression**, optional - index of the first item to be requested from the datasource. The default is 1.
 * **adapter - assignable expression**, optional - if provided a reference to the adapter object for the scroller instance will be injected in the appropriate scope. If you have multiple scrollers within the same viewport, make sure that every one of them has its unique adapter name.
 
 Some of the properties offered by the adapter can also be accessed directly from the directive by using matching attributes. In the same way as for the adapter attribute, syntax for such attributes allows for providing a reference expression to be used to access the corresponding value. Below is a list of such attributes:
 
-* **is-loading - assignable expression**, optional - a boolean value indicating whether there are any pending load requests will be injected in the appropriate scope. See also `isLoading` adapter property.
-* **top-visible - assignable expression**, optional - a reference to the item currently in the topmost visible position will be injected in the appropriate scope. See also `topVisible` adapter property.
-* **top-visible-element - assignable expression**, optional - a reference to the DOM element currently in the topmost visible position will be injected in the appropriate scope. See also `topVisibleElement` adapter property.
-* **top-visible-scope - assignable expression**, optional - a reference to the scope created for the item currently in the topmost visible position will be injected in the appropriate scope. See also `topVisibleScope` adapter property.
+* **is-loading - assignable expression**, optional - a boolean value indicating whether there are any pending load requests will be injected in the appropriate scope. See also `isLoading` adapter property, which is preferable.
+* **top-visible - assignable expression**, optional - a reference to the item currently in the topmost visible position will be injected in the appropriate scope. See also `topVisible` adapter property, which is preferable.
+* **top-visible-element - assignable expression**, optional - a reference to the DOM element currently in the topmost visible position will be injected in the appropriate scope. See also `topVisibleElement` adapter property, which is preferable.
+* **top-visible-scope - assignable expression**, optional - a reference to the scope created for the item currently in the topmost visible position will be injected in the appropriate scope. See also `topVisibleScope` adapter property, which is preferable.
 
 The `expression` can be any angular expression (assignable expression where so specified). All expressions are evaluated once at the time when the scroller is initialized. Changes in the expression value after scroller initialization will have no impact on the scroller behavior.
 
-The assignable expressions will be used by scroller to inject the requested value into the target scope. The scope associated with the viewport (the element marked with the [uiScrollViewport](#uiscrollviewport-directive) directive) will be used as the target scope. If the viewport is not defined (window viewport), the $rootScope will be used as the target scope. Note that the nearest additional scope-wrapper (like ng-if directive set right on the viewport) makes this mechanism unusable. There are two options which help in this case:
+The `assignable expressions` will be used by scroller to inject the requested value into the target scope.
+The target scope is being defined in accordance with standard Angular rules (nested scopes and controller As syntax should be taken into account):
+the scroller will traverse its parents (from the ui-scroll element's scope up to the $rootScope) to locate the target scope.
+If the viewport is presented (the element marked with the [uiScrollViewport](#uiscrollviewport-directive) directive),
+then the scope associated with the viewport will be a start point in the target scope locating.
+Angular $parse service is being used in `assignable expressions` implementation.
 
-1. The second format `expression on controller` can be used to explicitly target the scope associated with the specified controller as the target scope for the injection. In this format `expression` is any angular assignable expression, and `controller` is the name of controller constructor function as specified in the `ng-controller` directive. The scroller will traverse its parents to locate the target scope associated with the specified controller.
-
-2. Also `Controller As` syntax could be used as an alternative way to specify target controller in assignable expressions.
-
+_Deprecated!_ The format `expression on controller` introduced in v1.5.0 (and deprecated in v1.6.1) can be used to explicitly target the scope associated with the specified controller as the target scope for the injection. In this format `expression` is any angular assignable expression, and `controller` is the name of controller constructor function as specified in the `ng-controller` directive.
 
 ### Datasource
 
@@ -186,7 +194,8 @@ The data source object implements methods and properties to be used by the direc
         get(index, count, success)
 
     This is a mandatory method used by the directive to retrieve the data.
-#### Parameters
+
+    Parameters
     * **descriptor** is an object defining the portion of the dataset requested. The object will have 3 properties. Two of them named  `index` and `count`. They have the same meaning as in the alternative signature when the parameters passed explicitly (see below). The third one will be named either `append` if the items will be appended to the last item in the buffer, or `prepend` if they are to be prepended to the first item in the buffer. The value of the property in either case will be the item the new items will be appended/prepended to. This is useful if it is easier to identify the items to be added based on the previously requested items rather than on the index. Keep in mind that in certain use cases (i.e. on initial load) the value of the append/prepend property can be undefined.
     * **index** indicates the first data row requested
     * **count** indicates number of data rows requested
@@ -204,7 +213,7 @@ exactly `count` elements unless it hit eof/bof.
 
 ###Adapter
 
-The adapter object is an internal object created for every instance of the scroller. Properties and methods of the adapter can be used to manipulate and assess the scroller the adapter was created for. Adapter based API replaces old (undocumented) event based API introduced earlier for this purpose. The event based API is now deprecated and no longer supported.
+The adapter object is an internal object created for every instance of the scroller. Properties and methods of the adapter can be used to manipulate and assess the scroller the adapter was created for.
 
 Adapter object implements the following properties:
 
@@ -250,14 +259,16 @@ Adapter object implements the following methods
             applyUpdates(index, newItems)
 
     Replaces the item in the buffer at the given index with the new items.
-#### Parameters
+
+    Parameters
     * **index** provides position of the item to be affected in the dataset (not in the buffer). If the item with the given index currently is not in the buffer no updates will be applied. `$index` property of the item $scope can be used to access the index value for a given item
     * **newItems** is an array of items to replace the affected item. If the array is empty (`[]`) the item will be deleted, otherwise the items in the array replace the item. If the newItem array contains the old item, the old item stays in place.
 
             applyUpdates(updater)
 
     Updates scroller content as determined by the updater function
-#### Parameters
+
+    Parameters
     * **updater** is a function to be applied to every item currently in the buffer. The function will receive 3 parameters: `item`, `scope`, and `element`. Here `item` is the item to be affected, `scope` is the item $scope, and `element` is the html element for the item. The return value of the function should be an array of items. Similarly to the `newItem` parameter (see above), if the array is empty(`[]`), the item is deleted, otherwise the item is replaced by the items in the array. If the return value is not an array, the item remains unaffected, unless some updates were made to the item in the updater function. This can be thought of as in place update.
 
 * Method `append`
@@ -265,7 +276,8 @@ Adapter object implements the following methods
             append(newItems)
 
     Adds new items after the last item in the buffer.
-#### Parameters
+
+    Parameters
     * **newItems** provides an array of items to be appended.
 
 * Method `prepend`
@@ -273,7 +285,8 @@ Adapter object implements the following methods
             prepend(newItems)
 
     Adds new items before the first item in the buffer.
-#### Parameters
+
+    Parameters
     * **newItems** provides an array of items to be prepended.
 
 #### Manipulating the scroller content with adapter methods
@@ -390,7 +403,7 @@ The ui-scroll sources are in [./src](https://github.com/angular-ui/ui-scroll/tre
 because of ES6 modules (since v1.6.0), they should be built. Build process includes jshint sources verification, webpack-based
 distributive files forming and tests running.
 
-Three npm scripts are available for developing.
+There are some npm scripts available for developing.
 
  __1__. To run dev-server use
  
@@ -410,22 +423,31 @@ npm test
 ```
   
   This runs karma testing against temporary distributive files (./temp). We created a number of specifications which consist of more
-  than 160 tests. They are living at [./test](https://github.com/angular-ui/ui-scroll/tree/master/test) folder. Karma watches for temp
-  and test folders changes and automatically re-run tests.
+  than 160 tests. They are living at the [./test](https://github.com/angular-ui/ui-scroll/tree/master/test) folder. Karma watches for temp
+  and test folders changes and automatically re-runs tests.
 
- __3__. To run full build use
+ __3__. To run both dev-server and tests in keep-alive mode use
+
+```
+npm run dev
+```
+
+  This is the combination of first two scripts running in concurrently mode. This allows you to work with the ui-scroll examples on 5005 port
+  during continuous tests running.
+
+ __4__. To run full build process use
  
 ```
 npm run build
 ```
   
-  After developing and testing complete the build process should be run to
+  After developing and testing complete, the build process should be run to
   a) pass through jshint,
   b) generate minified versions of distributive,
   c) run tests with minified distributive files,
-  d) obtain all necessary files in [./dist](https://github.com/angular-ui/ui-scroll/tree/master/dist) folder.
+  d) obtain all necessary files in the [./dist](https://github.com/angular-ui/ui-scroll/tree/master/dist) folder.
 
-PR should include source code (./scr) and tests (./test) changes and may not include public distributive (./dist) changes.
+PR should include source code (./scr) changes, may include tests (./test) changes and may not include public distributive (./dist) changes.
   
 
 -------------------
@@ -433,12 +455,16 @@ PR should include source code (./scr) and tests (./test) changes and may not inc
 
 ## Change log
 
+###v1.6.1
+ * Refactored Adapter assignments logic
+ * Fixed Chrome Scroll Anchoring enforced feature [bug](https://github.com/angular-ui/ui-scroll/issues/138)
+
 ###v1.6.0
  * Introduced ES6 modules in the source codes.
  * Improved build process with Webpack.
  * Added sourcemaps. Fixed dev-server.
  * Removed 'ui.scroll.jqlite' module. Added jqLiteExtras service to 'ui.scroll' module.
- * Significantly changed readme.
+ * Significantly changed the README.
 
 ###v1.5.2
 * Refactored assignable expressions and attributes scope bindings.
@@ -481,21 +507,21 @@ PR should include source code (./scr) and tests (./test) changes and may not inc
 ###v1.3.0
 * Reorganized the repository structure.
 
-####v1.2.1
+###v1.2.1
 * Dismiss pending requests on applyUpdates().
 
-####v1.2.0
+###v1.2.0
 * Changed the algorithm of list items building.
 * Integration with angular $animation.
 * Insert/update/delete events are no longer supported.
 
-####v1.1.2
+###v1.1.2
 * Fixed inserting elements via applyUpdates error.
 
-####v1.1.1
+###v1.1.1
 * Fixed jqlite on $destroy error.
 
-####v1.1.0
+###v1.1.0
 * Introduced API to dynamically update scroller content.
 * Deep 'name' properties access via dot-notation in template.
 * Fixed the problem occurring if the scroller is $destroyed while there are requests pending: [#64](https://github.com/Hill30/NGScroller/issues/64).
