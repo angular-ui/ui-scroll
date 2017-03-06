@@ -403,7 +403,7 @@ The ui-scroll sources are in [./src](https://github.com/angular-ui/ui-scroll/tre
 because of ES6 modules (since v1.6.0), they should be built. Build process includes jshint sources verification, webpack-based
 distributive files forming and tests running.
 
-Three npm scripts are available for developing.
+There are some npm scripts available for developing.
 
  __1__. To run dev-server use
  
@@ -426,7 +426,16 @@ npm test
   than 160 tests. They are living at the [./test](https://github.com/angular-ui/ui-scroll/tree/master/test) folder. Karma watches for temp
   and test folders changes and automatically re-runs tests.
 
- __3__. To run full build use
+ __3__. To run both dev-server and tests in keep-alive mode use
+
+```
+npm run dev
+```
+
+  This is the combination of first two scripts running in concurrently mode. This allows you to work with the ui-scroll examples on 5005 port
+  during continuous tests running.
+
+ __4__. To run full build process use
  
 ```
 npm run build

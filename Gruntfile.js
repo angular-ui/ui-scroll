@@ -126,12 +126,14 @@ module.exports = function (grunt) {
   });
 
   grunt.registerTask('server', [
-    'webpack:default',
     'connect',
     'watch'
   ]);
 
-  grunt.registerTask('default', ['server']);
+  grunt.registerTask('default', [
+    'webpack:default',
+    'server'
+  ]);
 
   grunt.registerTask('test', [
     'clean:temp',
