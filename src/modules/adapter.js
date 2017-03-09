@@ -75,7 +75,7 @@ class Adapter {
     }
 
     // these read-only props will be accessible out of ui-scroll via user defined adapter
-    const publicProps = ['isLoading', 'topVisible', 'topVisibleElement', 'topVisibleScope'];
+    const publicProps = ['isLoading', 'topVisible', 'topVisibleElement', 'topVisibleScope', 'bottomVisible', 'bottomVisibleElement', 'bottomVisibleScope'];
     for (let i = publicProps.length - 1; i >= 0; i--) {
       let property, attr = $attr[publicProps[i]];
       Object.defineProperty(this, publicProps[i], {
@@ -147,24 +147,36 @@ class Adapter {
   }
 
   calculateProperties() {
-    let item, itemHeight, itemTop, isNewRow, rowTop = null;
-    let topHeight = 0;
+    let rowTop = null, topHeight = 0;
+    let topDone = false, bottomDone = false;
+
     for (let i = 0; i < this.buffer.length; i++) {
-      item = this.buffer[i];
-      itemTop = item.element.offset().top;
-      isNewRow = rowTop !== itemTop;
-      rowTop = itemTop;
-      if (isNewRow) {
-        itemHeight = item.element.outerHeight(true);
-      }
-      if (isNewRow && (this.viewport.topDataPos() + topHeight + itemHeight <= this.viewport.topVisiblePos())) {
-        topHeight += itemHeight;
-      } else {
-        if (isNewRow) {
+      const item = this.buffer[i];
+      const itemTop = item.element.offset().top;
+
+      if (rowTop !== itemTop) { // a new row condition
+        const itemHeight = item.element.outerHeight(true);
+        const top = this.viewport.topDataPos() + topHeight + itemHeight;
+
+        if (!topDone && top > this.viewport.topVisiblePos()) {
+          topDone = true;
           this['topVisible'] = item.item;
           this['topVisibleElement'] = item.element;
           this['topVisibleScope'] = item.scope;
         }
+
+        if(!bottomDone && top > this.viewport.bottomVisiblePos()) {
+          bottomDone = true;
+          this['bottomVisible'] = item.item;
+          this['bottomVisibleElement'] = item.element;
+          this['bottomVisibleScope'] = item.scope;
+        }
+        topHeight += itemHeight;
+      }
+
+      rowTop = itemTop;
+
+      if (topDone && bottomDone) {
         break;
       }
     }
