@@ -149,8 +149,9 @@ class Adapter {
   calculateProperties() {
     let rowTop = null, topHeight = 0;
     let topDone = false, bottomDone = false;
+    const length = this.buffer.length;
 
-    for (let i = 0; i < this.buffer.length; i++) {
+    for (let i = 0; i < length; i++) {
       const item = this.buffer[i];
       const itemTop = item.element.offset().top;
 
@@ -165,7 +166,7 @@ class Adapter {
           this['topVisibleScope'] = item.scope;
         }
 
-        if(!bottomDone && top > this.viewport.bottomVisiblePos()) {
+        if (!bottomDone && (top >= this.viewport.bottomVisiblePos() || (i === length - 1 && this.isEOF()))) {
           bottomDone = true;
           this['bottomVisible'] = item.item;
           this['bottomVisibleElement'] = item.element;

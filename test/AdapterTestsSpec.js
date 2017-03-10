@@ -27,6 +27,7 @@ describe('uiScroll', function () {
 
 					expect(scope.adapter).toBeTruthy();
 					expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+					expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('3: three');
 				}
 			);
 		});
