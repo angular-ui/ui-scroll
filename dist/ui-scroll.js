@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.1 -- 2017-03-09T08:56:15.032Z
+ * Version: 1.6.1 -- 2017-03-10T14:12:12.453Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1479,8 +1479,9 @@
 	          topHeight = 0;
 	      var topDone = false,
 	          bottomDone = false;
+	      var length = this.buffer.length;
 	
-	      for (var i = 0; i < this.buffer.length; i++) {
+	      for (var i = 0; i < length; i++) {
 	        var item = this.buffer[i];
 	        var itemTop = item.element.offset().top;
 	
@@ -1496,7 +1497,7 @@
 	            this['topVisibleScope'] = item.scope;
 	          }
 	
-	          if (!bottomDone && top > this.viewport.bottomVisiblePos()) {
+	          if (!bottomDone && (top >= this.viewport.bottomVisiblePos() || i === length - 1 && this.isEOF())) {
 	            bottomDone = true;
 	            this['bottomVisible'] = item.item;
 	            this['bottomVisibleElement'] = item.element;
