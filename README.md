@@ -218,9 +218,9 @@ The adapter object is an internal object created for every instance of the scrol
 Adapter object implements the following properties:
 
 * `isLoading` - a boolean value (read only) indicating whether there are any pending load requests.
-* `topVisible` - a read only reference to the item currently in the topmost visible position.
-* `topVisibleElement` - a read only reference to the DOM element currently in the topmost visible position.
-* `topVisibleScope` - a read only reference to the scope created for the item currently in the topmost visible position.
+* `topVisible`/`bottomVisible` - a read only reference to the item currently in the topmost/bottommost visible position.
+* `topVisibleElement`/`bottomVisibleElement` - a read only reference to the DOM element currently in the topmost/bottommost visible position.
+* `topVisibleScope`/`bottomVisibleScope` - a read only reference to the scope created for the item currently in the topmost/bottommost visible position.
 * `disabled` - setting `disabled` to `true` disables scroller's scroll/resize events handlers. This can be useful if you have multiple scrollers within the same scrollViewport and you want to prevent some of them from responding to the events.
 
 Adapter object implements the following methods

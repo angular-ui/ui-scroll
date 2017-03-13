@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.1 -- 2017-03-06T07:25:29.944Z
+ * Version: 1.6.1 -- 2017-03-10T14:12:12.453Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1380,7 +1380,7 @@
 	      }
 	
 	      // these read-only props will be accessible out of ui-scroll via user defined adapter
-	      var publicProps = ['isLoading', 'topVisible', 'topVisibleElement', 'topVisibleScope'];
+	      var publicProps = ['isLoading', 'topVisible', 'topVisibleElement', 'topVisibleScope', 'bottomVisible', 'bottomVisibleElement', 'bottomVisibleScope'];
 	
 	      var _loop = function _loop(_i) {
 	        var property = void 0,
@@ -1475,28 +1475,40 @@
 	  }, {
 	    key: 'calculateProperties',
 	    value: function calculateProperties() {
-	      var item = void 0,
-	          itemHeight = void 0,
-	          itemTop = void 0,
-	          isNewRow = void 0,
-	          rowTop = null;
-	      var topHeight = 0;
-	      for (var i = 0; i < this.buffer.length; i++) {
-	        item = this.buffer[i];
-	        itemTop = item.element.offset().top;
-	        isNewRow = rowTop !== itemTop;
-	        rowTop = itemTop;
-	        if (isNewRow) {
-	          itemHeight = item.element.outerHeight(true);
-	        }
-	        if (isNewRow && this.viewport.topDataPos() + topHeight + itemHeight <= this.viewport.topVisiblePos()) {
-	          topHeight += itemHeight;
-	        } else {
-	          if (isNewRow) {
+	      var rowTop = null,
+	          topHeight = 0;
+	      var topDone = false,
+	          bottomDone = false;
+	      var length = this.buffer.length;
+	
+	      for (var i = 0; i < length; i++) {
+	        var item = this.buffer[i];
+	        var itemTop = item.element.offset().top;
+	
+	        if (rowTop !== itemTop) {
+	          // a new row condition
+	          var itemHeight = item.element.outerHeight(true);
+	          var top = this.viewport.topDataPos() + topHeight + itemHeight;
+	
+	          if (!topDone && top > this.viewport.topVisiblePos()) {
+	            topDone = true;
 	            this['topVisible'] = item.item;
 	            this['topVisibleElement'] = item.element;
 	            this['topVisibleScope'] = item.scope;
 	          }
+	
+	          if (!bottomDone && (top >= this.viewport.bottomVisiblePos() || i === length - 1 && this.isEOF())) {
+	            bottomDone = true;
+	            this['bottomVisible'] = item.item;
+	            this['bottomVisibleElement'] = item.element;
+	            this['bottomVisibleScope'] = item.scope;
+	          }
+	          topHeight += itemHeight;
+	        }
+	
+	        rowTop = itemTop;
+	
+	        if (topDone && bottomDone) {
 	          break;
 	        }
 	      }
