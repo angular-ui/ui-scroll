@@ -211,7 +211,7 @@ exactly `count` elements unless it hit eof/bof.
     Values of the properties can be assigned programmatically. If the range of the index values is known in advance, assigning them programmatically would improve the usability of the scrollBar.
 
 
-###Adapter
+### Adapter
 
 The adapter object is an internal object created for every instance of the scroller. Properties and methods of the adapter can be used to manipulate and assess the scroller the adapter was created for.
 

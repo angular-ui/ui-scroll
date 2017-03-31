@@ -173,7 +173,11 @@
   height: 300px;
   list-style: none;
   padding: 0;
-  width: 300px;
+  width: 400px;
+}
+.viewport2 .uid {
+  font-size: small;
+  color: #aaa;
 }
 .viewport {
   margin-top: 15px;

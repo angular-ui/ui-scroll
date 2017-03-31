@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Adapter sync</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="adapterSync.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+	<style>
+		.remove {
+			float: right;
+			margin-right: 15px;
+			cursor: pointer;
+		}
+		.remove:hover {
+			color: #a00;
+		}
+	</style>
+</head>
+<body ng-controller="mainController" ng-app="application">
+
+<div class="cont cont-global">
+
+	<a class="back" href="../index.html">browse other examples</a>
+
+	<h1 class="page-header page-header-exapmle">Adapter: append, prepend and remove sync</h1>
+
+	<div class="description">
+		<p>
+			In this demo we are playing with adding/removing items via adapter append, prepend and applyUpdates methods.
+			All changes have to be synced and stored on the back end.
+			For this purpose a special Server factory was introduced to emulate the remote.
+			Some public methods are implemented by this Server factory:<br/>
+		<ul>
+			<li>
+				<em>appendItem(params)</em> to add one new item (based on params) to the end of the remote data set,
+			</li>
+			<li>
+				<em>prependItem(params)</em> to add one new item (based on params) in the beginning of the remote data
+				set,
+			</li>
+			<li>
+				<em>removeItemById(id)</em> remove one item (based on id) form the remote data set,
+				set,
+			</li>
+			<li>
+				<em>request(index, count)</em> just to fetch a bunch of items for the viewport.
+			</li>
+		</ul>
+		The initial data set consists of 90 items and can be extended unlimitedly.
+		</p>
+		<p> Follow the sources of the demo! The implementation of the Server factory is not so trivial, it is based on
+			indexes variations. Also you may see that new items would not be appended (<em>adapter.append()</em>) to the
+			viewport immediately if the EOF (end of file) is not reached. The same is true for prepend operation
+			(<em>adapter.prepend()</em>): BOF (begin of file) must be reached, otherwise your new item will be rendered
+			only after scrolling to the very top... This is important to build proper UI.
+		</p>
+	</div>
+
+	<div class="actions">
+		<button ng-click="prepend()">Prepend one item</button>
+		<button ng-click="append()">Append one item</button>
+		<!--button ng-click="removeAll()">Clear the viewport</button-->
+	</div>
+
+	<br/>
+
+	<ul class="viewport2" ui-scroll-viewport>
+		<li ui-scroll="item in datasource" adapter="adapter">
+			<div>
+				<span>{{item.content}} <span class="uid">({{item.id}})</span></span>
+				<span class="remove" ng-click="remove(item)">[x]</span>
+			</div>
+		</li>
+	</ul>
+
+</div>
+</body>
+</html>
