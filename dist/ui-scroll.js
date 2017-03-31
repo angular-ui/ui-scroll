@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.1 -- 2017-03-10T14:12:12.453Z
+ * Version: 1.6.1 -- 2017-03-31T22:19:12.378Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -325,7 +325,7 @@
 	      });
 	
 	      toBeRemoved.forEach(function (wrapper) {
-	        return promises = promises.concat(buffer.remove(wrapper));
+	        return promises = promises.concat(viewport.removeItem(wrapper));
 	      });
 	
 	      if (toBePrepended.length) toBePrepended.forEach(function (wrapper) {
@@ -1224,6 +1224,11 @@
 	    resetBottomPadding: function resetBottomPadding() {
 	      bottomPadding.height(0);
 	      bottomPadding.cache.clear();
+	    },
+	    removeItem: function removeItem(item) {
+	      topPadding.cache.remove(item);
+	      bottomPadding.cache.remove(item);
+	      return buffer.remove(item);
 	    }
 	  });
 	
@@ -1255,6 +1260,22 @@
 	        index: item.scope.$index,
 	        height: item.element.outerHeight()
 	      });
+	      cache.sort(function (a, b) {
+	        return a.index < b.index ? -1 : a.index > b.index ? 1 : 0;
+	      });
+	    },
+	    remove: function remove(item) {
+	      for (var i = cache.length - 1; i >= 0; i--) {
+	        if (cache[i].index === item.scope.$index) {
+	          cache.splice(i, 1);
+	          break;
+	        }
+	      }
+	      for (var _i = cache.length - 1; _i >= 0; _i--) {
+	        if (cache[_i].index > item.scope.$index) {
+	          cache[_i].index--;
+	        }
+	      }
 	    },
 	    clear: function clear() {
 	      cache.length = 0;
