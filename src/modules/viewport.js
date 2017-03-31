@@ -175,6 +175,12 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     resetBottomPadding() {
       bottomPadding.height(0);
       bottomPadding.cache.clear();
+    },
+
+    removeItem(item) {
+      topPadding.cache.remove(item);
+      bottomPadding.cache.remove(item);
+      return buffer.remove(item);
     }
   });
 

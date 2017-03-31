@@ -261,7 +261,7 @@ angular.module('ui.scroll', [])
             }
           });
 
-          toBeRemoved.forEach((wrapper) => promises = promises.concat(buffer.remove(wrapper)));
+          toBeRemoved.forEach((wrapper) => promises = promises.concat(viewport.removeItem(wrapper)));
 
           if (toBePrepended.length)
             toBePrepended.forEach((wrapper) => {
