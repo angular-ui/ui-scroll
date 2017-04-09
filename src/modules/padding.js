@@ -41,7 +41,7 @@ function Cache() {
 export default function Padding(template) {
   let result;
 
-  switch (template.tagName) {
+  switch (template.tagName.toLowerCase()) {
     case 'dl':
       throw new Error(`ui-scroll directive does not support <${template.tagName}> as a repeating tag: ${template.outerHTML}`);
     case 'tr':

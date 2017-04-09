@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.1 -- 2017-03-31T22:19:12.378Z
+ * Version: 1.6.1 -- 2017-04-09T18:25:50.697Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1288,7 +1288,7 @@
 	function Padding(template) {
 	  var result = void 0;
 	
-	  switch (template.tagName) {
+	  switch (template.tagName.toLowerCase()) {
 	    case 'dl':
 	      throw new Error('ui-scroll directive does not support <' + template.tagName + '> as a repeating tag: ' + template.outerHTML);
 	    case 'tr':
