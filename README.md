@@ -312,7 +312,7 @@ The uiScrollViewport directive marks a particular element as viewport for the ui
 If no parent of the uiScroll directive is marked with uiScrollViewport directive,
 the browser window object will be used as viewport.
 
-###Usage
+### Usage
 
 ```html
 <ANY ui-scroll-viewport>
@@ -455,73 +455,73 @@ PR should include source code (./scr) changes, may include tests (./test) change
 
 ## Change log
 
-###v1.6.1
+### v1.6.1
  * Refactored Adapter assignments logic
  * Fixed Chrome Scroll Anchoring enforced feature [bug](https://github.com/angular-ui/ui-scroll/issues/138)
 
-###v1.6.0
+### v1.6.0
  * Introduced ES6 modules in the source codes.
  * Improved build process with Webpack.
  * Added sourcemaps. Fixed dev-server.
  * Removed 'ui.scroll.jqlite' module. Added jqLiteExtras service to 'ui.scroll' module.
  * Significantly changed the README.
 
-###v1.5.2
+### v1.5.2
 * Refactored assignable expressions and attributes scope bindings.
 * Added new demos and tests. Fixed IE compatibility.
 
-###v1.5.1
+### v1.5.1
 * Refactored adjustments during elements append/prepend.
 * Bof/eof information is accessible out of the scroller.
 
-###v1.5.0
+### v1.5.0
 * Implemented uiScrollTh and uiScrollTd directives; uiScroll major refactoring.
 * Added "disabled" property to the adapter object to ignore user's scroll events.
 * Implemented "on controller" syntax to specify the scope where an adapter object has to be injected.
 
-###v1.4.1
+### v1.4.1
 * Developed a new complex approach of padding elements height calculation (see [details](https://github.com/angular-ui/ui-scroll/pull/77)).
 * Added startIndex attribute.
 * Changed clipTop/clipBottom methods logic.
 * Some new demos, tests, cleanup and other minor refactoring.
 
-###v1.4.0
+### v1.4.0
 * Migrated sources from CoffeeScript to ES6.
 * Optimized scroll events handling, removed odd $digest cycles.
 * Examples (demo) refactoring.
 
-###v1.3.3
+### v1.3.3
 * Implemented new signature of the Datasource get(descriptor, success) method.
 * Implemented new signature of the Adapter reload(startIndex) method.
 * Changed the logic of scroll bar adjustment (minIndex, maxIndex).
 
-###v1.3.2
+### v1.3.2
 * Implemented the logic for adjustBuffer triggering during invisible items became visible.
 
-###v1.3.1
+### v1.3.1
 * Changed the logic of viewport scroll/padding recalculation (to solve the problem [#8](https://github.com/angular-ui/ui-scroll/issues/8)).
 * Splitted test specifications.
 * Updated dev-dependencies (package.json).
 * Implemented append/prepend methods on the adapter.
 
-###v1.3.0
+### v1.3.0
 * Reorganized the repository structure.
 
-###v1.2.1
+### v1.2.1
 * Dismiss pending requests on applyUpdates().
 
-###v1.2.0
+### v1.2.0
 * Changed the algorithm of list items building.
 * Integration with angular $animation.
 * Insert/update/delete events are no longer supported.
 
-###v1.1.2
+### v1.1.2
 * Fixed inserting elements via applyUpdates error.
 
-###v1.1.1
+### v1.1.1
 * Fixed jqlite on $destroy error.
 
-###v1.1.0
+### v1.1.0
 * Introduced API to dynamically update scroller content.
 * Deep 'name' properties access via dot-notation in template.
 * Fixed the problem occurring if the scroller is $destroyed while there are requests pending: [#64](https://github.com/Hill30/NGScroller/issues/64).
