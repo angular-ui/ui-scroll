@@ -38,15 +38,14 @@
     "grunt-contrib-jshint": "^1.1.0",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-karma": "^2.0.0",
-    "grunt-webpack": "^1.0.18",
+    "grunt-webpack": "^2.0.1",
     "jasmine-core": "^2.5.2",
     "karma": "^1.4.0",
     "karma-chrome-launcher": "^2.0.0",
     "karma-firefox-launcher": "^1.0.0",
     "karma-ie-launcher": "^1.0.0",
     "karma-jasmine": "^1.1.0",
-    "webpack": "^1.14.0",
-    "webpack-dev-server": "^2.4.5"
+    "webpack": "^2.6.1"
   },
   "keywords": [
     "angular",
