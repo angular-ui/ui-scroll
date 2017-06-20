@@ -230,8 +230,18 @@ angular.module('ui.scroll', [])
             wrapper.scope = scope;
             scope[itemName] = wrapper.item;
           });
-          if (adapter.transform)
-            adapter.transform(wrapper.scope, wrapper.element);
+          // ui-scroll-grid apply
+          if (adapter.transform) {
+            let tdInitializer = wrapper.scope.uiScrollTdInitializer;
+            if (tdInitializer && tdInitializer.linking) {
+              adapter.transform(wrapper.scope, wrapper.element);
+            } else {
+              wrapper.scope.uiScrollTdInitializer = {
+                onLink: () => adapter.transform(wrapper.scope, wrapper.element),
+                scope: wrapper.scope
+              };
+            }
+          }
           return promises;
         }
 
