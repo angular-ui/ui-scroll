@@ -98,6 +98,7 @@ To run the examples use __[this link](http://rawgithub.com/angular-ui/ui-scroll/
 
 ### Install and connect
 
+#### npm
 To install the package via npm use
 
 ```
@@ -109,6 +110,20 @@ After installation, the ui-scroll distributive files will be available as
 ```
 <script src="node_modules/angular-ui-scroll/dist/ui-scroll.min.js">
 <script src="node_modules/angular-ui-scroll/dist/ui-scroll-grid.min.js">
+```
+
+#### Bower
+To install the package via bower use
+
+```
+bower install angular-ui-scroll
+```
+
+After installation, the ui-scroll distributive files will be available as
+
+```
+<script src="lib/angular-ui-scroll/dist/ui-scroll.min.js">
+<script src="lib/angular-ui-scroll/dist/ui-scroll-grid.min.js">
 ```
 
 There are also uncompressed versions (ui-scroll.js, ui-scroll-grid.js) and sourcemaps for all of js-files.
