@@ -1,29 +1,44 @@
-angular.module('application', ['ui.scroll']).factory('datasource', [
-  '$log', '$timeout', function(console, $timeout) {
-    var get, max, min;
-    min = -50;
-    max = 100;
+angular.module('application', ['ui.scroll'])
 
-    get = function(index, count, success) {
-      $timeout(function() {
+.run(function($rootScope) {
+  $rootScope.doReload = function () {
+    $rootScope.$broadcast('DO_RELOAD');
+  };
+})
+
+.controller('MainCtrl', function($scope) {
+  $scope.hello = 'Hello Main Controller!';
+  var counter = 0;
+
+  var reloadListener = $scope.$on('DO_RELOAD', function() {
+    if ($scope.adapter) {
+      counter = 0;
+      $scope.adapter.reload();
+    }
+  });
+
+  $scope.$on("$destroy", function() {
+    reloadListener();
+  });
+
+  var min = -1000, max = 1000, delay = 0;
+
+  $scope.datasource = {
+    get: function(index, count, success) {
+      setTimeout(function() {
         var result = [];
         var start = Math.max(min, index);
         var end = Math.min(index + count - 1, max);
         if (start <= end) {
           for (var i = start; i <= end; i++) {
-            var j = i > 0 ? i : (-1) * i;
-            result.push({
-              text: "item #" + i,
-              height: 20 + (j%2) * 10
-            });
+            height = 50 + (counter++ * 2);
+            result.push({ index: i, height: height });
           }
         }
-         success(result);
-      }, 50);
-    };
+        console.log('Got ' + result.length + ' items [' + start + '..' + end + ']');
+        success(result);
+      }, delay);
+    }
+  };
 
-    return {
-      get: get
-    };
-  }
-]);
+});

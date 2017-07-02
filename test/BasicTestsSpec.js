@@ -637,6 +637,9 @@ describe('uiScroll', function () {
 					var topVisibleChangeCount = 0;
 
 					scope.$watch('container1.adapter.topVisible', function(newValue) {
+						if(newValue === 'item1') {
+							return;
+						}
 						topVisibleChangeCount++;
 
 						expect(scope.container1.adapter.topVisible).toBe(newValue);
@@ -675,6 +678,9 @@ describe('uiScroll', function () {
 					var topVisibleChangeCount = 0;
 
 					scope.$watch('container1.adapter.topVisible', function(newValue) {
+						if(newValue === 'item1') {
+							return;
+						}
 						topVisibleChangeCount++;
 
 						expect(scope.container1.adapter.topVisible).toBe(newValue);
@@ -836,6 +842,47 @@ describe('uiScroll', function () {
           }
         );
       });
+    });
+  });
+
+  describe('interpolation', function() {
+    var myTemplate = '<div ng-style="{\'height\': itemHeight + \'px\'}">{{$index}}: {{item}}</div>';
+    var scrollSettings = {
+      datasource: 'myInfiniteDatasource',
+      template: myTemplate,
+      topVisible: 'topVisible',
+      bufferSize: 10
+    };
+
+    it('should keep 1st item at the top after initial auto fetching is done', function() {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          expect(scope.topVisible).toBe('item1');
+          expect(viewport.scrollTop()).toBe(400); // 1 pack (bufferSize * itemHeight) from the top
+        }, {
+          scope: {
+            'itemHeight': 40
+          }
+        }
+      );
+    });
+
+    it('should keep (-bufferSize) item at the top after one manual fetching is done', function() {
+      runTest(scrollSettings,
+        function (viewport, scope, $timeout) {
+
+          viewport.scrollTop(0); // scroll to the very top
+          viewport.trigger('scroll');
+          $timeout.flush();
+
+          expect(scope.topVisible).toBe('item-9');
+          expect(viewport.scrollTop()).toBe(400); // 1 pack (bufferSize * itemHeight) from the top
+        }, {
+          scope: {
+            'itemHeight': 40
+          }
+        }
+      );
     });
   });
 
