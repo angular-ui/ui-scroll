@@ -1,0 +1,31 @@
+.grid {
+	height: 300px;
+}
+
+.grid tbody {
+	width: 380px;
+}
+
+hr {
+	margin: 5px;
+}
+
+.col1 {
+	width: 80px;
+}
+
+td.col1 {
+	font-style: italic;
+}
+
+.col2 {
+	width: 200px;
+}
+
+.col3 {
+	width: 80px;
+}
+
+input {
+	margin-bottom: 5px;
+}
