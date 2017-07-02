@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.1 -- 2017-06-20T03:26:22.415Z
+ * Version: 1.6.1 -- 2017-07-02T04:33:05.420Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1330,7 +1330,9 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
           }
         });
         if (!pending.length) {
-          adjustBuffer();
+          $timeout(function () {
+            return adjustBuffer();
+          });
         }
       }
     }
@@ -1462,26 +1464,28 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       var updates = updateDOM();
 
       // We need the item bindings to be processed before we can do adjustment
-      $timeout(function () {
+      $scope.$apply(function () {
+        return $timeout(function () {
 
-        // show elements after data binging has been done
-        updates.inserted.forEach(function (w) {
-          return w.element.removeClass('ng-hide');
+          // show elements after data binging has been done
+          updates.inserted.forEach(function (w) {
+            return w.element.removeClass('ng-hide');
+          });
+          updates.prepended.forEach(function (w) {
+            return w.element.removeClass('ng-hide');
+          });
+
+          if (isInvalid(rid)) {
+            return;
+          }
+
+          updatePaddings(rid, updates);
+          enqueueFetch(rid);
+
+          if (!pending.length) {
+            adapter.calculateProperties();
+          }
         });
-        updates.prepended.forEach(function (w) {
-          return w.element.removeClass('ng-hide');
-        });
-
-        if (isInvalid(rid)) {
-          return;
-        }
-
-        updatePaddings(rid, updates);
-        enqueueFetch(rid);
-
-        if (!pending.length) {
-          adapter.calculateProperties();
-        }
       });
     }
 
@@ -1489,31 +1493,32 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       var updates = updateDOM();
 
       // We need the item bindings to be processed before we can do adjustment
-      $timeout(function () {
+      $scope.$apply(function () {
+        return $timeout(function () {
+          // show elements after data binging has been done
+          updates.inserted.forEach(function (w) {
+            return w.element.removeClass('ng-hide');
+          });
+          updates.prepended.forEach(function (w) {
+            return w.element.removeClass('ng-hide');
+          });
 
-        // show elements after data binging has been done
-        updates.inserted.forEach(function (w) {
-          return w.element.removeClass('ng-hide');
+          viewport.adjustScrollTopAfterPrepend(updates);
+
+          if (isInvalid(rid)) {
+            return;
+          }
+
+          updatePaddings(rid, updates);
+          enqueueFetch(rid, updates);
+          pending.shift();
+
+          if (pending.length) fetch(rid);else {
+            adapter.loading(false);
+            bindEvents();
+            adapter.calculateProperties();
+          }
         });
-        updates.prepended.forEach(function (w) {
-          return w.element.removeClass('ng-hide');
-        });
-
-        viewport.adjustScrollTopAfterPrepend(updates);
-
-        if (isInvalid(rid)) {
-          return;
-        }
-
-        updatePaddings(rid, updates);
-        enqueueFetch(rid, updates);
-        pending.shift();
-
-        if (pending.length) fetch(rid);else {
-          adapter.loading(false);
-          bindEvents();
-          adapter.calculateProperties();
-        }
       });
     }
 
