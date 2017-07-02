@@ -183,8 +183,7 @@ angular.module('ui.scroll.grid', [])
           return; // throw an error?
         }
 
-        let mapTo = selected.mapTo,
-          next = null;
+        let mapTo = selected.mapTo, next = null;
         index -= mapTo < index ? 1 : 0;
 
         columns.forEach(c => {
