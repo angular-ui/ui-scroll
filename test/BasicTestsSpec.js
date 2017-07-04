@@ -157,8 +157,7 @@ describe('uiScroll', function () {
                 function (viewport) {
                     viewport.scrollTop(100);
                     viewport.trigger('scroll');
-                    inject(function ($timeout) {
-                        $timeout.flush();
+                    inject(function () {
                         expect(viewport.children().length).toBe(itemsWithPaddings);
                         expect(viewport.scrollTop()).toBe(100);
                         expect(viewport.children().css('height')).toBe('0px');
@@ -180,10 +179,9 @@ describe('uiScroll', function () {
                 spy = spyOn(myMultipageDatasource, 'get').and.callThrough();
             });
             runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
+                function (viewport) {
                     viewport.scrollTop(100);
                     viewport.trigger('scroll');
-                    $timeout.flush();
 
                     expect(spy.calls.all().length).toBe(5);
 
@@ -198,17 +196,15 @@ describe('uiScroll', function () {
 
         it('should clip 4 divs from the top and add 3 more divs to the bottom (11 divs total) (+ 2 padding divs)', function () {
             runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
+                function (viewport) {
                     var itemsLoaded = 11;
                     var itemsWithPaddings = itemsLoaded + 2;
                     var clippedDivs = 4;
                     viewport.scrollTop(100);
                     viewport.trigger('scroll');
-                    $timeout.flush();
 
                     viewport.scrollTop(400);
                     viewport.trigger('scroll');
-                    $timeout.flush();
 
                     expect(viewport.children().length).toBe(itemsWithPaddings);
                     expect(viewport.scrollTop()).toBe(280);
@@ -230,16 +226,14 @@ describe('uiScroll', function () {
                 spy = spyOn(myMultipageDatasource, 'get').and.callThrough();
             });
             runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
+                function (viewport) {
                     var calls = 6;
 
                     viewport.scrollTop(100);
                     viewport.trigger('scroll');
-                    $timeout.flush();
 
                     viewport.scrollTop(400);
                     viewport.trigger('scroll');
-                    $timeout.flush();
 
                     expect(spy.calls.all().length).toBe(calls);
                     expect(spy.calls.all()[0].args[0]).toBe(1);
@@ -254,21 +248,18 @@ describe('uiScroll', function () {
 
         it('should re-add 3 divs at the top and clip 2 divs from the bottom (9 divs total) (+ 2 padding divs)', function () {
             runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
-                    var flush = $timeout.flush;
+                function (viewport) {
                     var itemsLoaded = 8;
                     var itemsWithPaddings = itemsLoaded + 2;
 
                     viewport.scrollTop(100);
                     viewport.trigger('scroll');
-                    flush();
 
                     viewport.scrollTop(400);
                     viewport.trigger('scroll');
 
                     viewport.scrollTop(0);
                     viewport.trigger('scroll');
-                    flush();
 
                     expect(viewport.children().length).toBe(itemsWithPaddings);
                     expect(viewport.scrollTop()).toBe(0);
@@ -291,20 +282,17 @@ describe('uiScroll', function () {
             });
 
             runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
-                    var flush = $timeout.flush;
+                function (viewport) {
                     var totalCallsNumber = 8;
 
                     viewport.scrollTop(100);
                     viewport.trigger('scroll');
-                    flush();
 
                     viewport.scrollTop(400);
                     viewport.trigger('scroll');
 
                     viewport.scrollTop(0);
                     viewport.trigger('scroll');
-                    flush();
 
                     expect(spy.calls.all().length).toBe(totalCallsNumber);
                     expect(spy.calls.all()[0].args[0]).toBe(1);
@@ -391,14 +379,12 @@ describe('uiScroll', function () {
                     viewportHeight: viewportHeight,
                     itemHeight: itemHeight
                 },
-                function (viewport, scope, $timeout) {
-                    var flush = $timeout.flush;
+                function (viewport) {
                     viewport.scrollTop(viewportHeight + itemHeight);
                     viewport.trigger('scroll');
 
                     viewport.scrollTop(viewportHeight + itemHeight * 2);
                     viewport.trigger('scroll');
-                    flush();
 
                     expect(spy.calls.all().length).toBe(4);
 
@@ -426,19 +412,15 @@ describe('uiScroll', function () {
                     viewportHeight: viewportHeight,
                     itemHeight: itemHeight
                 },
-                function (viewport, scope, $timeout) {
-                    var flush = $timeout.flush;
-
+                function (viewport) {
                     viewport.scrollTop(0); //first full, scroll to -2
                     viewport.trigger('scroll');
 
                     viewport.scrollTop(0); //last full, scroll to -5, bof is reached
                     viewport.trigger('scroll');
-                    flush();
 
                     viewport.scrollTop(0); //empty, no scroll occurred (-8)
                     viewport.trigger('scroll');
-                    //flush();
 
                     expect(spy.calls.all().length).toBe(5);
                     expect(spy.calls.all()[0].args[0]).toBe(1);
@@ -492,20 +474,14 @@ describe('uiScroll', function () {
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //now we are at the top but preventDefault is occurred because of bof will be reached only after next scroll trigger
                     expect(documentScrollBubblingCount).toBe(2); //here! the only one prevented wheel-event
 
-                    //flush();
-
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred but document will not scroll because of viewport will be scrolled
                     expect(documentScrollBubblingCount).toBe(3);
 
                     viewport.scrollTop(0);
                     viewport.trigger('scroll'); //bof will be reached right after that
 
-                    //flush();
-
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred because of we are at the top and bof is reached
                     expect(documentScrollBubblingCount).toBe(4);
-
-                    //expect(flush).toThrow(); //there is no new data, bof is reached
 
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred because of we are at the top and bof is reached
                     expect(documentScrollBubblingCount).toBe(5);
@@ -534,14 +510,13 @@ describe('uiScroll', function () {
 
         it('should calculate top padding element\'s height during scroll down', function () {
             runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
+                function (viewport) {
                     var topPaddingElement = angular.element(viewport.children()[0]);
 
                     // scroll down + expectation
                     for(var i = 0; i < 6; i++) {
                         viewport.scrollTop(5000);
                         viewport.trigger('scroll');
-                        $timeout.flush();
                         expect(topPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
                     }
                 }
@@ -550,14 +525,13 @@ describe('uiScroll', function () {
 
         it('should calculate bottom padding element\'s height during scroll up', function () {
             runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
+                function (viewport) {
                     var bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
 
                     // scroll up + expectation
                     for(var i = 0; i < 6; i++) {
                         viewport.scrollTop(-5000);
                         viewport.trigger('scroll');
-                        $timeout.flush();
                         expect(bottomPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
                     }
 
@@ -567,7 +541,7 @@ describe('uiScroll', function () {
 
         it('should calculate both padding elements heights during scroll down and up', function () {
             runTest(scrollSettings,
-                function (viewport, scope, $timeout) {
+                function (viewport) {
                     var topPaddingElement = angular.element(viewport.children()[0]);
                     var bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
 
@@ -578,7 +552,6 @@ describe('uiScroll', function () {
                     for(i = 0; i < scrollIteration; i++) {
                         viewport.scrollTop(viewport.scrollTop() + scrollDelta);
                         viewport.trigger('scroll');
-                        $timeout.flush();
                         expect(topPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
                         expect(bottomPaddingElement.height()).toBe(0);
                     }
@@ -587,7 +560,6 @@ describe('uiScroll', function () {
                     for(i = 0; i < scrollIteration; i++) {
                         viewport.scrollTop(viewport.scrollTop() - scrollDelta);
                         viewport.trigger('scroll');
-                        $timeout.flush();
                         expect(topPaddingElement.height()).toBe(itemHeight * bufferSize * (scrollIteration - i - 1));
                         expect(bottomPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
                     }
@@ -596,7 +568,6 @@ describe('uiScroll', function () {
                     for(i = scrollIteration; i < 2*scrollIteration; i++) {
                       viewport.scrollTop(viewport.scrollTop() - scrollDelta);
                       viewport.trigger('scroll');
-                      $timeout.flush();
                       expect(topPaddingElement.height()).toBe(0);
                       expect(bottomPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
                     }
@@ -633,7 +604,7 @@ describe('uiScroll', function () {
 					adapter: 'container1.adapter',
 					topVisible: 'container2.topVisible'
 				},
-				function (viewport, scope, $timeout) {
+				function (viewport, scope) {
 					var topVisibleChangeCount = 0;
 
 					scope.$watch('container1.adapter.topVisible', function(newValue) {
@@ -655,11 +626,9 @@ describe('uiScroll', function () {
 
 					viewport.scrollTop(100); // 100 : 40 = 2.5 --> item3
 					viewport.trigger('scroll');
-					$timeout.flush();
 
 					viewport.scrollTop(300); // 300 : 40 = 7.5 --> item8
 					viewport.trigger('scroll');
-					$timeout.flush();
 
 					expect(topVisibleChangeCount).toBe(2);
 				}
@@ -716,15 +685,12 @@ describe('uiScroll', function () {
 			});
 
 			runTest({datasource: 'myInfiniteDatasource', adapter: 'adapter'},
-				function (viewport, scope, $timeout) {
-
-					expect(spy.calls.all().length).toBe(3); // three initial requests
-
+				function (viewport, scope) {
 					scope.adapter.disabled = true;
 					viewport.scrollTop(1000); // scroll to bottom
 					viewport.trigger('scroll');
 
-					expect($timeout.flush).toThrow(); // no new data fetch
+          expect(spy.calls.all().length).toBe(3); // just three initial requests
 				}
 			);
 		});
@@ -736,14 +702,13 @@ describe('uiScroll', function () {
 			});
 
 			runTest({datasource: 'myInfiniteDatasource', adapter: 'adapter'},
-				function (viewport, scope, $timeout) {
+				function (viewport, scope) {
 
 					scope.adapter.disabled = true;
 					viewport.scrollTop(1000); // scroll to bottom
 					viewport.trigger('scroll');
 
 					scope.adapter.disabled = false;
-					$timeout.flush(); // here new data must be fetched
 
 					expect(spy.calls.all().length).toBe(4); // 3 initial + 1 new requests
 				}
@@ -777,11 +742,10 @@ describe('uiScroll', function () {
 			});
 
 			runTest(scrollSettings,
-				function (viewport, scope, $timeout) {
+				function (viewport) {
 					var bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
 
 					setMaxIndex();
-					$timeout.flush();
 
 					var virtualItemsAmount = userMaxIndex - (viewportHeight / itemHeight) - bufferSize;
 					expect(bottomPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
@@ -799,11 +763,10 @@ describe('uiScroll', function () {
 			});
 
 			runTest(scrollSettings,
-				function (viewport, scope, $timeout) {
+				function (viewport) {
 					var topPaddingElement = angular.element(viewport.children()[0]);
 
 					setMinIndex();
-					$timeout.flush();
 
 					var virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
 					expect(topPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
@@ -869,11 +832,10 @@ describe('uiScroll', function () {
 
     it('should keep (-bufferSize) item at the top after one manual fetching is done', function() {
       runTest(scrollSettings,
-        function (viewport, scope, $timeout) {
+        function (viewport, scope) {
 
           viewport.scrollTop(0); // scroll to the very top
           viewport.trigger('scroll');
-          $timeout.flush();
 
           expect(scope.topVisible).toBe('item-9');
           expect(viewport.scrollTop()).toBe(400); // 1 pack (bufferSize * itemHeight) from the top

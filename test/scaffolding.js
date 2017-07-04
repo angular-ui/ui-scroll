@@ -8,11 +8,13 @@ function createHtml (settings) {
 	var adapter = settings.adapter ? ' adapter="' + settings.adapter + '"' : '';
 	var template = settings.template ? settings.template : '{{$index}}: {{item}}';
 	return '<div ui-scroll-viewport' + viewportStyle + '>' +
+		(settings.wrapper ? settings.wrapper.start : '') +
 		'<div ui-scroll="item in ' + settings.datasource + '"' +
 		adapter +
 		itemStyle + bufferSize + isLoading + topVisible + disabled + '>' +
 		template +
 		'</div>' +
+		(settings.wrapper ? settings.wrapper.end : '') +
 		'</div>';
 }
 
