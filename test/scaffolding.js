@@ -25,15 +25,19 @@ function createGridHtml (settings) {
 			'<thead style="display:block">' +
 				'<tr>';
 	columns.forEach(col => { html +=
-					'<th ui-scroll-th class="' + col + '">' + col + '</th>'
+					'<th ui-scroll-th class="' + col + '">' + col + '</th>';
 	}); html +=
 				'</tr>' +
 			'</thead>' +
 			'<tbody class="grid">' +
 				'<tr ui-scroll="item in ' + settings.datasource + '" adapter="adapter">';
-	columns.forEach(col => { html +=
-					'<td ui-scroll-td class="' + col + '">{{item.' + col + '}}</td>'
-	}); html +=
+				if(settings.rowTemplate) {
+					html += settings.rowTemplate;
+				} else {
+					columns.forEach(col => { html +=
+						'<td ui-scroll-td class="' + col + '">{{item.' + col + '}}</td>';
+					});
+				} html +=
 				'</tr>' +
 			'</tbody>' +
 		'</table>';
@@ -82,6 +86,10 @@ function runGridTest (scrollSettings, run, options) {
 		angular.element(document).find('body').append(scroller);
 		var head = angular.element(scroller.children()[0]);
 		var body = angular.element(scroller.children()[1]);
+
+		if(options && options.scope) {
+			angular.extend(scope, options.scope);
+		}
 
 		$compile(scroller)(scope);
 
