@@ -305,8 +305,8 @@ angular.module('ui.scroll', [])
             if (!updates || buffer.effectiveHeight(updates.inserted) > 0) {
               // this means that at least one item appended in the last batch has height > 0
               if (pending.push(true) === 1) {
-                fetch(rid);
                 adapter.loading(true);
+                fetch(rid);
               }
             }
           } else if (viewport.shouldLoadTop()) {
@@ -315,8 +315,8 @@ angular.module('ui.scroll', [])
               // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
               // BTW there will always be at least 1 element in the pending array because bottom is fetched first
               if (pending.push(false) === 1) {
-                fetch(rid);
                 adapter.loading(true);
+                fetch(rid);
               }
             }
           }
