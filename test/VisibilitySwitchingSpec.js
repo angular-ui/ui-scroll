@@ -80,6 +80,25 @@ describe('uiScroll', function () {
                 }
             );
         });
+
+        it('should stay on the 1st item after the visibility is on (infinite list)', function () {
+            var infititeScrollSettings = scrollSettings;
+            infititeScrollSettings.datasource = 'myInfiniteDatasource';
+            infititeScrollSettings.topVisible = 'topVisible';
+            runTest(infititeScrollSettings,
+                function (viewport, scope, $timeout) {
+                    viewport.css('display','none');
+                    scope.adapter.reload();
+                    $timeout.flush();
+
+                    viewport.css('display','block');
+                    scope.$apply();
+                    $timeout.flush();
+
+                    expect(scope.topVisible).toBe('item1');
+                }
+            );
+        });
     });
 
     describe('items visibility changing', function () {
@@ -105,7 +124,6 @@ describe('uiScroll', function () {
                     angular.element(viewport.children()[onePackItemsCount - 1]).css('height', 40);
                     expect(angular.element(viewport.children()[onePackItemsCount - 1]).css('height')).toBe('40px');
                     scope.$apply();
-                    //$timeout.flush();
 
                     $timeout(function() {
                         expect(viewport.children().length).toBe(twoPacksItemsCount);

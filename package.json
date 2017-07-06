@@ -42,7 +42,7 @@
     "jasmine-core": "^2.5.2",
     "karma": "^1.4.0",
     "karma-chrome-launcher": "^2.0.0",
-    "karma-firefox-launcher": "^1.0.0",
+    "karma-firefox-launcher": "^1.0.1",
     "karma-ie-launcher": "^1.0.0",
     "karma-jasmine": "^1.1.0",
     "webpack": "^2.6.1"

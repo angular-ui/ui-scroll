@@ -37,6 +37,7 @@ module.exports.config = {
 
 module.exports.compressedPlugins = [
   new webpack.optimize.UglifyJsPlugin({
+    sourceMap: true,
     compress: {
       warnings: true,
     },
