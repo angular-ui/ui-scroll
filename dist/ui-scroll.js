@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.6.2 -- 2017-07-06T23:27:28.920Z
+ * Version: 1.7.0-rc.1 -- 2017-07-07T03:44:49.342Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1222,16 +1222,14 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
         Object.defineProperty(datasource, propName, {
           set: function set(value) {
             indexStore[propName] = value;
-            $timeout(function () {
-              buffer[propUserName] = value;
-              if (!pending.length) {
-                var topPaddingHeightOld = viewport.topDataPos();
-                viewport.adjustPadding();
-                if (propName === 'minIndex') {
-                  viewport.adjustScrollTopAfterMinIndexSet(topPaddingHeightOld);
-                }
+            buffer[propUserName] = value;
+            if (!pending.length) {
+              var topPaddingHeightOld = viewport.topDataPos();
+              viewport.adjustPadding();
+              if (propName === 'minIndex') {
+                viewport.adjustScrollTopAfterMinIndexSet(topPaddingHeightOld);
               }
-            });
+            }
           },
           get: function get() {
             return indexStore[propName];
@@ -1437,8 +1435,8 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
         if (!updates || buffer.effectiveHeight(updates.inserted) > 0) {
           // this means that at least one item appended in the last batch has height > 0
           if (pending.push(true) === 1) {
-            fetch(rid);
             adapter.loading(true);
+            fetch(rid);
           }
         }
       } else if (viewport.shouldLoadTop()) {
@@ -1447,8 +1445,8 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
           // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
           // BTW there will always be at least 1 element in the pending array because bottom is fetched first
           if (pending.push(false) === 1) {
-            fetch(rid);
             adapter.loading(true);
+            fetch(rid);
           }
         }
       }
@@ -1464,62 +1462,55 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       var updates = updateDOM();
 
       // We need the item bindings to be processed before we can do adjustment
-      $scope.$apply(function () {
-        return $timeout(function () {
+      !$scope.$$phase && $scope.$digest();
 
-          // show elements after data binging has been done
-          updates.inserted.forEach(function (w) {
-            return w.element.removeClass('ng-hide');
-          });
-          updates.prepended.forEach(function (w) {
-            return w.element.removeClass('ng-hide');
-          });
-
-          if (isInvalid(rid)) {
-            return;
-          }
-
-          updatePaddings(rid, updates);
-          enqueueFetch(rid);
-
-          if (!pending.length) {
-            adapter.calculateProperties();
-          }
-        });
+      updates.inserted.forEach(function (w) {
+        return w.element.removeClass('ng-hide');
       });
+      updates.prepended.forEach(function (w) {
+        return w.element.removeClass('ng-hide');
+      });
+
+      if (isInvalid(rid)) {
+        return;
+      }
+
+      updatePaddings(rid, updates);
+      enqueueFetch(rid);
+
+      if (!pending.length) {
+        adapter.calculateProperties();
+      }
     }
 
     function adjustBufferAfterFetch(rid) {
       var updates = updateDOM();
 
       // We need the item bindings to be processed before we can do adjustment
-      $scope.$apply(function () {
-        return $timeout(function () {
-          // show elements after data binging has been done
-          updates.inserted.forEach(function (w) {
-            return w.element.removeClass('ng-hide');
-          });
-          updates.prepended.forEach(function (w) {
-            return w.element.removeClass('ng-hide');
-          });
+      !$scope.$$phase && $scope.$digest();
 
-          viewport.adjustScrollTopAfterPrepend(updates);
-
-          if (isInvalid(rid)) {
-            return;
-          }
-
-          updatePaddings(rid, updates);
-          enqueueFetch(rid, updates);
-          pending.shift();
-
-          if (pending.length) fetch(rid);else {
-            adapter.loading(false);
-            bindEvents();
-            adapter.calculateProperties();
-          }
-        });
+      updates.inserted.forEach(function (w) {
+        return w.element.removeClass('ng-hide');
       });
+      updates.prepended.forEach(function (w) {
+        return w.element.removeClass('ng-hide');
+      });
+
+      viewport.adjustScrollTopAfterPrepend(updates);
+
+      if (isInvalid(rid)) {
+        return;
+      }
+
+      updatePaddings(rid, updates);
+      enqueueFetch(rid, updates);
+      pending.shift();
+
+      if (pending.length) fetch(rid);else {
+        adapter.loading(false);
+        bindEvents();
+        adapter.calculateProperties();
+      }
     }
 
     function fetch(rid) {
@@ -1582,7 +1573,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
           unbindEvents();
         } else {
           adapter.calculateProperties();
-          $scope.$apply();
+          !$scope.$$phase && $scope.$digest();
         }
       }
     }

@@ -104,16 +104,14 @@ angular.module('ui.scroll', [])
             Object.defineProperty(datasource, propName, {
               set: (value) => {
                 indexStore[propName] = value;
-                $timeout(() => {
-                  buffer[propUserName] = value;
-                  if (!pending.length) {
-                    let topPaddingHeightOld = viewport.topDataPos();
-                    viewport.adjustPadding();
-                    if (propName === 'minIndex') {
-                      viewport.adjustScrollTopAfterMinIndexSet(topPaddingHeightOld);
-                    }
+                buffer[propUserName] = value;
+                if (!pending.length) {
+                  let topPaddingHeightOld = viewport.topDataPos();
+                  viewport.adjustPadding();
+                  if (propName === 'minIndex') {
+                    viewport.adjustScrollTopAfterMinIndexSet(topPaddingHeightOld);
                   }
-                });
+                }
               },
               get: () => indexStore[propName]
             });
@@ -307,8 +305,8 @@ angular.module('ui.scroll', [])
             if (!updates || buffer.effectiveHeight(updates.inserted) > 0) {
               // this means that at least one item appended in the last batch has height > 0
               if (pending.push(true) === 1) {
-                fetch(rid);
                 adapter.loading(true);
+                fetch(rid);
               }
             }
           } else if (viewport.shouldLoadTop()) {
@@ -317,8 +315,8 @@ angular.module('ui.scroll', [])
               // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
               // BTW there will always be at least 1 element in the pending array because bottom is fetched first
               if (pending.push(false) === 1) {
-                fetch(rid);
                 adapter.loading(true);
+                fetch(rid);
               }
             }
           }
@@ -333,52 +331,49 @@ angular.module('ui.scroll', [])
           let updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
-          $scope.$applyAsync(() => $timeout(() => {
+          !$scope.$$phase && $scope.$digest();
 
-            // show elements after data binging has been done
-            updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
-            updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
+          updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
+          updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
 
-            if (isInvalid(rid)) {
-              return;
-            }
+          if (isInvalid(rid)) {
+            return;
+          }
 
-            updatePaddings(rid, updates);
-            enqueueFetch(rid);
+          updatePaddings(rid, updates);
+          enqueueFetch(rid);
 
-            if (!pending.length) {
-              adapter.calculateProperties();
-            }
-          }));
+          if (!pending.length) {
+            adapter.calculateProperties();
+          }
         }
 
         function adjustBufferAfterFetch(rid) {
           let updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
-          $scope.$applyAsync(() => $timeout(() => {
-            // show elements after data binging has been done
-            updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
-            updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
+          !$scope.$$phase && $scope.$digest();
 
-            viewport.adjustScrollTopAfterPrepend(updates);
+          updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
+          updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
 
-            if (isInvalid(rid)) {
-              return;
-            }
+          viewport.adjustScrollTopAfterPrepend(updates);
 
-            updatePaddings(rid, updates);
-            enqueueFetch(rid, updates);
-            pending.shift();
+          if (isInvalid(rid)) {
+            return;
+          }
 
-            if (pending.length)
-              fetch(rid);
-            else {
-              adapter.loading(false);
-              bindEvents();
-              adapter.calculateProperties();
-            }
-          }));
+          updatePaddings(rid, updates);
+          enqueueFetch(rid, updates);
+          pending.shift();
+
+          if (pending.length)
+            fetch(rid);
+          else {
+            adapter.loading(false);
+            bindEvents();
+            adapter.calculateProperties();
+          }
         }
 
         function fetch(rid) {
@@ -439,7 +434,7 @@ angular.module('ui.scroll', [])
               unbindEvents();
             } else {
               adapter.calculateProperties();
-              $scope.$apply();
+              !$scope.$$phase && $scope.$digest();
             }
           }
         }
