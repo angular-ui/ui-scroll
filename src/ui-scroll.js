@@ -333,7 +333,7 @@ angular.module('ui.scroll', [])
           let updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
-          $scope.$applyAsync(() => {
+          $scope.$applyAsync(() => $timeout(() => {
 
             // show elements after data binging has been done
             updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
@@ -349,14 +349,14 @@ angular.module('ui.scroll', [])
             if (!pending.length) {
               adapter.calculateProperties();
             }
-          });
+          }));
         }
 
         function adjustBufferAfterFetch(rid) {
           let updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
-          $scope.$applyAsync(() => {
+          $scope.$applyAsync(() => $timeout(() => {
             // show elements after data binging has been done
             updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
             updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
@@ -378,7 +378,7 @@ angular.module('ui.scroll', [])
               bindEvents();
               adapter.calculateProperties();
             }
-          });
+          }));
         }
 
         function fetch(rid) {
