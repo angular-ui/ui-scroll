@@ -15,7 +15,7 @@
     - [Examples](#examples)
     - [Install and connect](#install-and-connect)
 - [uiScroll directive](#uiscroll-directive)
-    - [Parametrs](#parametrs)
+    - [Parameters](#parameters)
     - [Datasource](#datasource)
     - [Adapter](#adapter)
 - [uiScrollViewport directive](#uiscrollviewport-directive)
@@ -142,8 +142,7 @@ Currently we have 2 regular modules which can be added to the angular-app you ar
    - [uiScrollTd directive](#uiscrollth-and-uiscrolltd-directives)
   
 Also there is one more additional module in a separate file
- - __ui.scroll.jqlite__ module
-It is empty since it was deprecated in v1.6.0.
+ - __ui.scroll.jqlite__ module (it is empty since it was deprecated in v1.6.0)
   
   
 -------------------
@@ -468,9 +467,13 @@ PR should include source code (./scr) changes, may include tests (./test) change
 
 ## Change log
 
+### v1.6.2
+ * Added bottomVisible, bottomVisibleElement and bottomVisibleScope properties to the Adapter.
+ * Fixed some issues [149](https://github.com/angular-ui/ui-scroll/issues/149), [150](https://github.com/angular-ui/ui-scroll/issues/150), [151](https://github.com/angular-ui/ui-scroll/issues/151), [158](https://github.com/angular-ui/ui-scroll/issues/158), [159](https://github.com/angular-ui/ui-scroll/issues/159), [160](https://github.com/angular-ui/ui-scroll/issues/160), [163](https://github.com/angular-ui/ui-scroll/issues/163) 
+
 ### v1.6.1
- * Refactored Adapter assignments logic
- * Fixed Chrome Scroll Anchoring enforced feature [bug](https://github.com/angular-ui/ui-scroll/issues/138)
+ * Refactored Adapter assignments logic.
+ * Fixed Chrome Scroll Anchoring enforced feature [bug](https://github.com/angular-ui/ui-scroll/issues/138).
 
 ### v1.6.0
  * Introduced ES6 modules in the source codes.
@@ -501,7 +504,7 @@ PR should include source code (./scr) changes, may include tests (./test) change
 ### v1.4.0
 * Migrated sources from CoffeeScript to ES6.
 * Optimized scroll events handling, removed odd $digest cycles.
-* Examples (demo) refactoring.
+* Refactored sample demos.
 
 ### v1.3.3
 * Implemented new signature of the Datasource get(descriptor, success) method.
@@ -512,7 +515,7 @@ PR should include source code (./scr) changes, may include tests (./test) change
 * Implemented the logic for adjustBuffer triggering during invisible items became visible.
 
 ### v1.3.1
-* Changed the logic of viewport scroll/padding recalculation (to solve the problem [#8](https://github.com/angular-ui/ui-scroll/issues/8)).
+* Changed the logic of viewport scroll/padding recalculation.
 * Splitted test specifications.
 * Updated dev-dependencies (package.json).
 * Implemented append/prepend methods on the adapter.

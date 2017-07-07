@@ -395,4 +395,30 @@ describe('uiScroll', function () {
 
 	});
 
+	describe('scopes wrapping', function () {
+		var scrollSettings = {
+			datasource: 'myGridDatasource',
+			viewportHeight: 120,
+			itemHeight: 20,
+			bufferSize: 3,
+			rowTemplate: '<td ng-repeat="col in columns" ui-scroll-td class="{{col}}">{{item[col]}}</td>'
+		};
+		var columns = ['col0', 'col1', 'col2', 'col3'];
+
+		it('should work', function () {
+			runGridTest(scrollSettings,
+				function(head, body) {
+					for(var i = 0; i < columns.length; i++) {
+						expect(getLastRowElement(body, i).innerHTML).toBe(columns[i]);
+					}
+				},
+				{
+					scope: {
+						columns: columns
+					}
+				}
+			);
+		});
+	});
+
 });
