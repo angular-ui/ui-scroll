@@ -333,7 +333,7 @@ angular.module('ui.scroll', [])
           let updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustment
-          $scope.$apply(() => $timeout(() => {
+          $scope.$applyAsync(() => {
 
             // show elements after data binging has been done
             updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
@@ -349,7 +349,7 @@ angular.module('ui.scroll', [])
             if (!pending.length) {
               adapter.calculateProperties();
             }
-          }));
+          });
         }
 
         function adjustBufferAfterFetch(rid) {
