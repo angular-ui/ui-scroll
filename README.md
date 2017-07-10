@@ -467,6 +467,9 @@ PR should include source code (./scr) changes, may include tests (./test) change
 
 ## Change log
 
+### v1.6.3
+ * Fixed digest already in progress issue.
+
 ### v1.6.2
  * Added bottomVisible, bottomVisibleElement and bottomVisibleScope properties to the Adapter.
  * Fixed some issues [149](https://github.com/angular-ui/ui-scroll/issues/149), [150](https://github.com/angular-ui/ui-scroll/issues/150), [151](https://github.com/angular-ui/ui-scroll/issues/151), [158](https://github.com/angular-ui/ui-scroll/issues/158), [159](https://github.com/angular-ui/ui-scroll/issues/159), [160](https://github.com/angular-ui/ui-scroll/issues/160), [163](https://github.com/angular-ui/ui-scroll/issues/163) 
