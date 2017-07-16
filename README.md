@@ -177,14 +177,22 @@ Some of the properties offered by the adapter can also be accessed directly from
 
 The `expression` can be any angular expression (assignable expression where so specified). All expressions are evaluated once at the time when the scroller is initialized. Changes in the expression value after scroller initialization will have no impact on the scroller behavior.
 
-The `assignable expressions` will be used by scroller to inject the requested value into the target scope.
-The target scope is being defined in accordance with standard Angular rules (nested scopes and controller As syntax should be taken into account):
-the scroller will traverse its parents (from the ui-scroll element's scope up to the $rootScope) to locate the target scope.
-If the viewport is presented (the element marked with the [uiScrollViewport](#uiscrollviewport-directive) directive),
-then the scope associated with the viewport will be a start point in the target scope locating.
-Angular $parse service is being used in `assignable expressions` implementation.
+#### Assignable expressions
 
-_Deprecated!_ The format `expression on controller` introduced in v1.5.0 (and deprecated in v1.6.1) can be used to explicitly target the scope associated with the specified controller as the target scope for the injection. In this format `expression` is any angular assignable expression, and `controller` is the name of controller constructor function as specified in the `ng-controller` directive.
+The `assignable expressions` will be used by scroller to inject the requested value into the target scope. The target scope locating is based on AngularJS $parse service. If the viewport is presented (the element marked with the uiScrollViewport directive), then the scope associated with the viewport will be a start point in the target scope locating. If not, the scope next to ui-scroll local scopes (ui-scroll parent scope) will be a start point.
+
+Please notice that property defined via `assignable expression` could be unavailable in case of nested scopes and non-explicit assignment. For example, if you want to have the Adapter on some controller's scope and there are intermediate scopes in between (obtained by ng-if or whatever), you should use Controller As syntax or explicitly define at least two-level object hierarchy on your controller:
+
+```
+<div ng-controller="MyController">
+  <div ng-if="show">
+    <div ui-scroll="item in datasource" adapter="container.adapter">
+```
+
+```
+.controller('MyController', function($scope) {
+  $scope.contaner = { adapter: {} };
+```
 
 ### Datasource
 
@@ -226,6 +234,8 @@ exactly `count` elements unless it hit eof/bof.
 ### Adapter
 
 The adapter object is an internal object created for every instance of the scroller. Properties and methods of the adapter can be used to manipulate and assess the scroller the adapter was created for.
+
+The adapter object is determined via ui-scroll attribute "adapter", which value is construed as [assignable expression](#assignable-expressions).
 
 Adapter object implements the following properties:
 
@@ -312,7 +322,7 @@ In the fashion similar to ngRepeat the following animations are supported:
 * .enter - when a new item is added to the list
 * .leave - when an item is removed from the list
 
-Animations are only supported for the updates made via applyUpdates method. Updates caused by scrolling are not going through animation transitions. Usual [rules](https://docs.angularjs.org/api/ngAnimate) of working with Angular animations apply. Look [here](http://rawgit.com/angular-ui/ui-scroll/master/demo/animation/animation.html) for an example of animations in the scroller
+Animations are only supported for the updates made via applyUpdates method. Updates caused by scrolling are not going through animation transitions. Usual [rules](https://docs.angularjs.org/api/ngAnimate) of working with AngularJS animations apply. Look [here](http://rawgit.com/angular-ui/ui-scroll/master/demo/animation/animation.html) for an example of animations in the scroller
 
 
 -------------------
