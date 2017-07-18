@@ -163,7 +163,9 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       }
       else {
         topPadding.height(0);
-        viewport.scrollTop(viewport.scrollTop() - paddingHeight);
+        if(buffer.bof === false) {
+          viewport.scrollTop(viewport.scrollTop() - paddingHeight);
+        }
       }
     },
 
