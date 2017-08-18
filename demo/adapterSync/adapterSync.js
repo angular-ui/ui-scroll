@@ -7,7 +7,7 @@ app.factory('Server', [
 
       firstIndex: 1,
 
-      lastIndex: 90,
+      lastIndex: 40,
 
       delay: 100,
 
@@ -113,7 +113,7 @@ app.controller('mainController', [
       get: function (index, count, success) {
         console.log('request by index = ' + index + ', count = ' + count);
         Server.request(index, count).then(function (result) {
-          if (result.items.length) {
+          if (result.items) {
             console.log('resolved ' + result.items.length + ' items');
           }
           success(result.items);

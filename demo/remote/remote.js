@@ -23,10 +23,6 @@ angular.module('application', ['ui.scroll'])
         }
       },
 
-      getFirst: function() {
-        return this.first;
-      },
-
       request: function(index, count) {
         var self = this;
         var deferred = $q.defer();

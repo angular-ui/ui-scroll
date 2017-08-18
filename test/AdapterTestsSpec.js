@@ -1185,4 +1185,70 @@ describe('uiScroll', function () {
 
   });
 
+  describe('adapter append/prepend clipping', function () {
+    var scrollSettings = {datasource: 'myOnePageDatasource', adapter: 'adapter', viewportHeight: 60, itemHeight: 20, bufferSize: 3, padding: 1};
+
+    it('should not clip after 1 small pack appended', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+
+          expect(scope.adapter.isEOF()).toBe(true);
+          scope.adapter.append(['item1*', 'item2*', 'item3*']);
+
+          expect(scope.adapter.isEOF()).toBe(true);
+          expect(viewport.children().length).toBe(2 + 3 + 3);
+          var lastRow = viewport.children()[viewport.children().length - 2];
+          expect(lastRow.innerHTML).toBe('6: item3*');
+        }
+      );
+    });
+
+    it('should clip 1 bottom item from the 1 big pack appended', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+
+          expect(scope.adapter.isEOF()).toBe(true);
+          scope.adapter.append(['item1*', 'item2*', 'item3*', 'item4*']);
+
+          expect(scope.adapter.isEOF()).toBe(false);
+
+          viewport.scrollTop(10000);
+          viewport.trigger('scroll');
+
+          expect(scope.adapter.isEOF()).toBe(true);
+
+          expect(viewport.children().length).toBe(2 + 3 + 3);
+          var lastRow = viewport.children()[viewport.children().length - 2];
+          expect(lastRow.innerHTML).toBe('6: item3*');
+        }
+      );
+    });
+
+    it('should clip 1 pack from top after 3 packs appended', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+
+          scope.adapter.append(['item1*', 'item2*', 'item3*', 'item4*']);
+          expect(viewport.children().length).toBe(2 + 3 + 3);
+          viewport.scrollTop(3 * 20);
+          viewport.trigger('scroll');
+
+          scope.adapter.append(['item4*', 'item5*', 'item6*', 'item7*']);
+          expect(viewport.children().length).toBe(2 + 3 + 3 + 3);
+          viewport.scrollTop(3 * 20 * 2);
+          viewport.trigger('scroll');
+
+          scope.adapter.append(['item7*', 'item8*', 'item9*', 'item10*']);
+          expect(viewport.children().length).toBe(2 + 3 + 3 + 3);
+
+          var firstRow = viewport.children()[1];
+          expect(firstRow.innerHTML).toBe('4: item1*');
+          var lastRow = viewport.children()[viewport.children().length - 2];
+          expect(lastRow.innerHTML).toBe('12: item9*');
+        }
+      );
+    });
+
+  });
+
 });
