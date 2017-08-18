@@ -139,11 +139,15 @@ class Adapter {
   append(newItems) {
     this.buffer.append(newItems);
     this.adjustBuffer();
+    this.viewport.clipTop();
+    this.viewport.clipBottom();
   }
 
   prepend(newItems) {
     this.buffer.prepend(newItems);
     this.adjustBuffer();
+    this.viewport.clipTop();
+    this.viewport.clipBottom();
   }
 
   calculateProperties() {
