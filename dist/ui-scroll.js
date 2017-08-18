@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.1 -- 2017-07-07T03:44:49.342Z
+ * Version: 1.7.0-rc.1 -- 2017-08-18T17:53:29.507Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -252,12 +252,16 @@ var Adapter = function () {
     value: function append(newItems) {
       this.buffer.append(newItems);
       this.adjustBuffer();
+      this.viewport.clipTop();
+      this.viewport.clipBottom();
     }
   }, {
     key: 'prepend',
     value: function prepend(newItems) {
       this.buffer.prepend(newItems);
       this.adjustBuffer();
+      this.viewport.clipTop();
+      this.viewport.clipBottom();
     }
   }, {
     key: 'calculateProperties',
