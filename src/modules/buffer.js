@@ -80,7 +80,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
         return 0;
       }
       let top = Number.MAX_VALUE;
-      let bottom = Number.MIN_VALUE;
+      let bottom = Number.NEGATIVE_INFINITY;
       elements.forEach((wrapper) => {
         if (wrapper.element[0].offsetParent) {
           // element style is not display:none
