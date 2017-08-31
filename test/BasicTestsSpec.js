@@ -848,4 +848,21 @@ describe('uiScroll', function () {
     });
   });
 
+  describe('effective height', function() {
+    var scrollSettings = {
+      datasource: 'myInfiniteDatasource',
+      topVisible: 'topVisible',
+      bufferSize: 3,
+      viewportHeight: 315
+    };
+
+    it('should break through negative value', function() {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          expect(scope.topVisible).toBe('item1');
+        }
+      );
+    });
+  });
+
 });
