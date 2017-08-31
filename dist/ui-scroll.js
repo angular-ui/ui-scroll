@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.1 -- 2017-08-18T17:53:29.507Z
+ * Version: 1.7.0-rc.1 -- 2017-08-31T20:30:09.174Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -429,7 +429,7 @@ function ScrollBuffer(elementRoutines, bufferSize) {
         return 0;
       }
       var top = Number.MAX_VALUE;
-      var bottom = Number.MIN_VALUE;
+      var bottom = Number.NEGATIVE_INFINITY;
       elements.forEach(function (wrapper) {
         if (wrapper.element[0].offsetParent) {
           // element style is not display:none
