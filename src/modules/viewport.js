@@ -86,7 +86,7 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
         buffer.eof = false;
         buffer.remove(buffer.length - overage, buffer.length);
         buffer.next -= overage;
-        viewport.adjustPadding();
+        viewport.adjustPaddings();
       }
     },
 
@@ -121,7 +121,7 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       }
     },
 
-    adjustPadding() {
+    adjustPaddings() {
       if (!buffer.length) {
         return;
       }
@@ -145,15 +145,20 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
     },
 
-    adjustScrollTopAfterMinIndexSet(topPaddingHeightOld) {
+    onAfterMinIndexSet(topPaddingHeightOld) {
       // additional scrollTop adjustment in case of datasource.minIndex external set
       if (buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser) {
         let diff = topPadding.height() - topPaddingHeightOld;
         viewport.scrollTop(viewport.scrollTop() + diff);
+        diff -= viewport.scrollTop();
+        if(diff > 0) {
+          bottomPadding.height(bottomPadding.height() + diff);
+          viewport.scrollTop(viewport.scrollTop() + diff);
+        }
       }
     },
 
-    adjustScrollTopAfterPrepend(updates) {
+    onAfterPrepend(updates) {
       if (!updates.prepended.length)
         return;
       const height = buffer.effectiveHeight(updates.prepended);
