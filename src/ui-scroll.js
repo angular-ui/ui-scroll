@@ -96,26 +96,26 @@ angular.module('ui.scroll', [])
           }
         }
 
-        let indexStore = {};
-
         function defineProperty(datasource, propName, propUserName) {
           let descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
-          if (!descriptor || (!descriptor.set && !descriptor.get)) {
-            Object.defineProperty(datasource, propName, {
-              set: (value) => {
-                indexStore[propName] = value;
-                buffer[propUserName] = value;
-                if (!pending.length) {
-                  let topPaddingHeightOld = viewport.topDataPos();
-                  viewport.adjustPadding();
-                  if (propName === 'minIndex') {
-                    viewport.adjustScrollTopAfterMinIndexSet(topPaddingHeightOld);
-                  }
-                }
-              },
-              get: () => indexStore[propName]
-            });
+          if (descriptor && (descriptor.set || descriptor.get)) {
+            return;
           }
+          let getter;
+          Object.defineProperty(datasource, propName, {
+            set: (value) => {
+              getter = value;
+              buffer[propUserName] = value;
+              if (!pending.length) {
+                let topPaddingHeightOld = viewport.topDataPos();
+                viewport.adjustPadding();
+                if (propName === 'minIndex') {
+                  viewport.adjustScrollTopAfterMinIndexSet(topPaddingHeightOld);
+                }
+              }
+            },
+            get: () => getter
+          });
         }
 
         defineProperty(datasource, 'minIndex', 'minIndexUser');
