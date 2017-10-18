@@ -124,9 +124,10 @@ angular.module('ui.scroll', [])
             set: (value) => {
               getter = value;
               buffer[propUserName] = value;
+              let topPaddingHeightOld = viewport.topDataPos();
               viewport.adjustPaddings();
               if (propName === 'minIndex') {
-                viewport.onAfterMinIndexSet(viewport.topDataPos());
+                viewport.onAfterMinIndexSet(topPaddingHeightOld);
               }
             },
             get: () => getter

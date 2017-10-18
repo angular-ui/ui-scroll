@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.2 -- 2017-10-18T03:22:50.458Z
+ * Version: 1.7.0-rc.2 -- 2017-10-18T14:14:42.723Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1255,9 +1255,10 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
         set: function set(value) {
           getter = value;
           buffer[propUserName] = value;
+          var topPaddingHeightOld = viewport.topDataPos();
           viewport.adjustPaddings();
           if (propName === 'minIndex') {
-            viewport.onAfterMinIndexSet(viewport.topDataPos());
+            viewport.onAfterMinIndexSet(topPaddingHeightOld);
           }
         },
         get: function get() {
