@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.2 -- 2017-10-18T14:14:42.723Z
+ * Version: 1.7.0-rc.2 -- 2017-10-20T00:12:44.031Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1093,6 +1093,10 @@ function Cache() {
 
 function Padding(template) {
   var result = void 0;
+
+  if (template.nodeType !== Node.ELEMENT_NODE) {
+    throw new Error('ui-scroll directive requires an Element node for templating the view');
+  }
 
   switch (template.tagName.toLowerCase()) {
     case 'dl':
