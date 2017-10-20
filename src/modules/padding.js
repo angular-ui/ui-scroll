@@ -41,6 +41,10 @@ function Cache() {
 export default function Padding(template) {
   let result;
 
+  if(template.nodeType !== Node.ELEMENT_NODE) {
+    throw new Error('ui-scroll directive requires an Element node for templating the view');
+  }
+
   switch (template.tagName.toLowerCase()) {
     case 'dl':
       throw new Error(`ui-scroll directive does not support <${template.tagName}> as a repeating tag: ${template.outerHTML}`);
