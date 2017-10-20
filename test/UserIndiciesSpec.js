@@ -62,7 +62,6 @@ describe('uiScroll main/max indicies', function() {
     });
 
     it('should work with maxIndex pre-set on datasource', function() {
-      var setMinIndex;
       inject(function(myInfiniteDatasource) {
         myInfiniteDatasource.maxIndex = userMaxIndex;
       });
@@ -77,7 +76,6 @@ describe('uiScroll main/max indicies', function() {
     });
 
     it('should work with minIndex pre-set on datasource', function() {
-      var setMinIndex;
       inject(function(myInfiniteDatasource) {
         myInfiniteDatasource.minIndex = userMinIndex;
       });
