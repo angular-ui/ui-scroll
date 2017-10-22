@@ -192,21 +192,22 @@ class Adapter {
       return;
     }
 
-    let keepIt;
-    let pos = (this.buffer.indexOf(wrapper)) + 1;
+    if (!newItems.reverse().some((newItem) => newItem === wrapper.item)) {
+      wrapper.op = 'remove';
+      if(newItems.length) {
+        wrapper._op = 'replace'; // to catch "first" edge case on remove
+      }
+    }
 
-    newItems.reverse().forEach((newItem) => {
+    let position = (this.buffer.indexOf(wrapper)) + 1;
+    newItems.forEach((newItem) => {
       if (newItem === wrapper.item) {
-        keepIt = true;
-        pos--;
+        position--;
       } else {
-        this.buffer.insert(pos, newItem);
+        // 3 parametr is to catch "first" edge case on insert
+        this.buffer.insert(position, newItem, position === 0);
       }
     });
-
-    if (!keepIt) {
-      wrapper.op = 'remove';
-    }
   }
 
 }

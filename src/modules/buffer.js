@@ -38,7 +38,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
      * for insert the number is the index for the buffer element the new one have to be inserted after
      * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
      */
-    insert(operation, item) {
+    insert(operation, item, isTop) {
       const wrapper = {
         item: item
       };
@@ -46,6 +46,12 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
       if (operation % 1 === 0) {// it is an insert
         wrapper.op = 'insert';
         buffer.splice(operation, 0, wrapper);
+        if(isTop) {
+          buffer.first--;
+        }
+        else {
+          buffer.next++;
+        }
       } else {
         wrapper.op = operation;
         switch (operation) {
@@ -70,7 +76,19 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
         return buffer.splice(arg1, arg2 - arg1);
       }
       // removes single item(wrapper) from the buffer
-      buffer.splice(buffer.indexOf(arg1), 1);
+      let removedIndex = buffer.indexOf(arg1);
+      buffer.splice(removedIndex, 1);
+      if(removedIndex === 0 && arg1._op !== 'replace') {
+        // move buffer.first only when deleting first item without replacing it
+        buffer.first++;
+      }
+      else {
+        buffer.next--;
+      }
+      if(!buffer.length) {
+        buffer.first = 1;
+        buffer.next = 1;
+      }
 
       return elementRoutines.removeElementAnimated(arg1);
     },
