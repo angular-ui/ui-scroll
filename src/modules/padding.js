@@ -16,16 +16,18 @@ function Cache() {
       cache.sort((a, b) => ((a.index < b.index) ? -1 : ((a.index > b.index) ? 1 : 0)));
     },
 
-    remove(item) {
+    remove(itemToRemove) {
       for (let i = cache.length - 1; i >= 0; i--) {
-        if (cache[i].index === item.scope.$index) {
+        if (cache[i].index === itemToRemove.scope.$index) {
           cache.splice(i, 1);
           break;
         }
       }
-      for (let i = cache.length - 1; i >= 0; i--) {
-        if (cache[i].index > item.scope.$index) {
-          cache[i].index--;
+      if(itemToRemove._op !== 'isTop') {
+        for (let i = cache.length - 1; i >= 0; i--) {
+          if (cache[i].index > itemToRemove.scope.$index) {
+            cache[i].index--;
+          }
         }
       }
     },
