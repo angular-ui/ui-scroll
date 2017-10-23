@@ -1,44 +1,43 @@
-function Cache() {
-  const cache = Object.create(Array.prototype);
-
-  angular.extend(cache, {
-    add(item) {
-      for (let i = cache.length - 1; i >= 0; i--) {
-        if (cache[i].index === item.scope.$index) {
-          cache[i].height = item.element.outerHeight();
-          return;
-        }
+const CacheFactory = {
+  add(item) {
+    for (let i = this.length - 1; i >= 0; i--) {
+      if (this[i].index === item.scope.$index) {
+        this[i].height = item.element.outerHeight();
+        return;
       }
-      cache.push({
-        index: item.scope.$index,
-        height: item.element.outerHeight()
-      });
-      cache.sort((a, b) => ((a.index < b.index) ? -1 : ((a.index > b.index) ? 1 : 0)));
-    },
-
-    remove(itemToRemove) {
-      for (let i = cache.length - 1; i >= 0; i--) {
-        if (cache[i].index === itemToRemove.scope.$index) {
-          cache.splice(i, 1);
-          break;
-        }
-      }
-      if(itemToRemove._op !== 'isTop') {
-        for (let i = cache.length - 1; i >= 0; i--) {
-          if (cache[i].index > itemToRemove.scope.$index) {
-            cache[i].index--;
-          }
-        }
-      }
-    },
-
-    clear() {
-      cache.length = 0;
     }
-  });
+    this.push({
+      index: item.scope.$index,
+      height: item.element.outerHeight()
+    });
+    this.sort((a, b) => ((a.index < b.index) ? -1 : ((a.index > b.index) ? 1 : 0)));
+  },
 
-  return cache;
+  remove(itemToRemove) {
+    for (let i = this.length - 1; i >= 0; i--) {
+      if (this[i].index === itemToRemove.scope.$index) {
+        this.splice(i, 1);
+        break;
+      }
+    }
+    if(itemToRemove._op !== 'isTop') {
+      for (let i = this.length - 1; i >= 0; i--) {
+        if (this[i].index > itemToRemove.scope.$index) {
+          this[i].index--;
+        }
+      }
+    }
+  },
+
+  clear() {
+    this.length = 0;
+  }
+};
+
+function Cache() {
+  return Object.assign(Object.create(Array.prototype), CacheFactory);
 }
+
 
 export default function Padding(template) {
   let result;
