@@ -76,10 +76,8 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
         return buffer.splice(arg1, arg2 - arg1);
       }
       // removes single item(wrapper) from the buffer
-      let removedIndex = buffer.indexOf(arg1);
-      buffer.splice(removedIndex, 1);
-      if(removedIndex === 0 && arg1._op !== 'replace') {
-        // move buffer.first only when deleting first item without replacing it
+      buffer.splice(buffer.indexOf(arg1), 1);
+      if(arg1._op === 'isTop') {
         buffer.first++;
       }
       else {
