@@ -70,16 +70,14 @@ app.factory('Server', [
       },
 
       prependItem: function (params) {
-        var prependedDataIndex = this.firstIndex-- - 1;
-        var newItem = this.generateItem(prependedDataIndex);
+        var newItem = this.generateItem(--this.firstIndex);
         newItem.content += params;
         this.data.unshift(newItem);
         return this.returnDeferredResult(newItem);
       },
 
       appendItem: function (params) {
-        var appendedDataIndex = this.lastIndex++ + 1;
-        var newItem = this.generateItem(appendedDataIndex);
+        var newItem = this.generateItem(++this.lastIndex);
         newItem.content += params;
         this.data.push(newItem);
         return this.returnDeferredResult(newItem);
@@ -90,9 +88,6 @@ app.factory('Server', [
         for (var i = 0; i < length; i++) {
           if (this.data[i].id === itemId) {
             this.data.splice(i, 1);
-            for (var j = i; j < length - 1; j++) {
-              this.data[j].index--;
-            }
             this.setIndicies();
             return this.returnDeferredResult(true);
           }
@@ -164,6 +159,7 @@ app.controller('mainController', [
       });
     };
 
+    // todo dhilt : need to implement it properly
     ctrl.removeAll = function () {
       ctrl.adapter.applyUpdates(function (item) {
         if (item.id) {
