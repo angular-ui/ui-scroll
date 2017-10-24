@@ -20,7 +20,7 @@
       <div class="viewport " ui-scroll-viewport>
         <div ui-scroll="item in datasource" buffer-size="10" adapter="adapter">
           <div class="item" ng-style="{'height': item.height + 'px'}">
-            {{"content # " + item.index + ' ' + item.height}}
+            {{"item #" + item.index + ' (h = ' + item.height + ')'}}
           </div>
         </div>
       </div>

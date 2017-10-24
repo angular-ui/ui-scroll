@@ -8,11 +8,9 @@ angular.module('application', ['ui.scroll'])
 
 .controller('MainCtrl', function($scope) {
   $scope.hello = 'Hello Main Controller!';
-  var counter = 0;
 
   var reloadListener = $scope.$on('DO_RELOAD', function() {
     if ($scope.adapter) {
-      counter = 0;
       $scope.adapter.reload();
     }
   });
@@ -21,17 +19,18 @@ angular.module('application', ['ui.scroll'])
     reloadListener();
   });
 
-  var min = -1000, max = 1000, delay = 0;
+  var min = -50, max = 100, delay = 0;
 
   $scope.datasource = {
     get: function(index, count, success) {
+      console.log('Getting ' + count + ' items started from ' + index + '...');
       setTimeout(function() {
         var result = [];
         var start = Math.max(min, index);
         var end = Math.min(index + count - 1, max);
         if (start <= end) {
           for (var i = start; i <= end; i++) {
-            height = 50 + (counter++ * 2);
+            height = 50 + (i + 1);
             result.push({ index: i, height: height });
           }
         }
