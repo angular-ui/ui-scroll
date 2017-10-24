@@ -34,7 +34,7 @@ class CacheProto {
   clear() {
     this.length = 0;
   }
-};
+}
 
 function Cache() {
   const instance = [];
