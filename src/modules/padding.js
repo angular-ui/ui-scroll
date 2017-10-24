@@ -1,4 +1,6 @@
-const CacheFactory = {
+// Can't just extend the Array, due to Babel does not support built-in classes extending
+// This solution was taken from https://stackoverflow.com/questions/46897414/es6-class-extends-array-workaround-for-es5-babel-transpile
+class CacheProto {
   add(item) {
     for (let i = this.length - 1; i >= 0; i--) {
       if (this[i].index === item.scope.$index) {
@@ -11,7 +13,7 @@ const CacheFactory = {
       height: item.element.outerHeight()
     });
     this.sort((a, b) => ((a.index < b.index) ? -1 : ((a.index > b.index) ? 1 : 0)));
-  },
+  }
 
   remove(itemToRemove) {
     for (let i = this.length - 1; i >= 0; i--) {
@@ -27,7 +29,7 @@ const CacheFactory = {
         }
       }
     }
-  },
+  }
 
   clear() {
     this.length = 0;
@@ -35,9 +37,15 @@ const CacheFactory = {
 };
 
 function Cache() {
-  return Object.assign(Object.create(Array.prototype), CacheFactory);
+  const instance = [];
+  instance.push.apply(instance, arguments);
+  Object.setPrototypeOf(instance, Cache.prototype);
+  return instance;
 }
-
+Cache.prototype = Object.create(Array.prototype);
+Object.getOwnPropertyNames(CacheProto.prototype).forEach(methodName =>
+  Cache.prototype[methodName] = CacheProto.prototype[methodName]
+);
 
 export default function Padding(template) {
   let result;
