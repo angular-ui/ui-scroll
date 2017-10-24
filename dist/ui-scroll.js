@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.2 -- 2017-09-29T16:03:15.269Z
+ * Version: 1.7.0-rc.2 -- 2017-10-20T00:12:44.031Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -938,7 +938,7 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
         buffer.eof = false;
         buffer.remove(buffer.length - overage, buffer.length);
         buffer.next -= overage;
-        viewport.adjustPadding();
+        viewport.adjustPaddings();
       }
     },
     shouldLoadTop: function shouldLoadTop() {
@@ -970,7 +970,7 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
         buffer.first += overage;
       }
     },
-    adjustPadding: function adjustPadding() {
+    adjustPaddings: function adjustPaddings() {
       if (!buffer.length) {
         return;
       }
@@ -999,14 +999,19 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       topPadding.height(topPaddingHeight + topPaddingHeightAdd);
       bottomPadding.height(bottomPaddingHeight + bottomPaddingHeightAdd);
     },
-    adjustScrollTopAfterMinIndexSet: function adjustScrollTopAfterMinIndexSet(topPaddingHeightOld) {
+    onAfterMinIndexSet: function onAfterMinIndexSet(topPaddingHeightOld) {
       // additional scrollTop adjustment in case of datasource.minIndex external set
       if (buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser) {
         var diff = topPadding.height() - topPaddingHeightOld;
         viewport.scrollTop(viewport.scrollTop() + diff);
+        diff -= viewport.scrollTop();
+        if (diff > 0) {
+          bottomPadding.height(bottomPadding.height() + diff);
+          viewport.scrollTop(viewport.scrollTop() + diff);
+        }
       }
     },
-    adjustScrollTopAfterPrepend: function adjustScrollTopAfterPrepend(updates) {
+    onAfterPrepend: function onAfterPrepend(updates) {
       if (!updates.prepended.length) return;
       var height = buffer.effectiveHeight(updates.prepended);
       var paddingHeight = topPadding.height() - height;
@@ -1088,6 +1093,10 @@ function Cache() {
 
 function Padding(template) {
   var result = void 0;
+
+  if (template.nodeType !== Node.ELEMENT_NODE) {
+    throw new Error('ui-scroll directive requires an Element node for templating the view');
+  }
 
   switch (template.tagName.toLowerCase()) {
     case 'dl':
@@ -1218,32 +1227,52 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       }
     }
 
-    var indexStore = {};
-
-    function defineProperty(datasource, propName, propUserName) {
-      var descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
-      if (!descriptor || !descriptor.set && !descriptor.get) {
-        Object.defineProperty(datasource, propName, {
-          set: function set(value) {
-            indexStore[propName] = value;
-            buffer[propUserName] = value;
-            if (!pending.length) {
-              var topPaddingHeightOld = viewport.topDataPos();
-              viewport.adjustPadding();
-              if (propName === 'minIndex') {
-                viewport.adjustScrollTopAfterMinIndexSet(topPaddingHeightOld);
-              }
-            }
-          },
-          get: function get() {
-            return indexStore[propName];
-          }
+    var onRenderHandlers = [];
+    function onRenderHandlersRunner() {
+      if (onRenderHandlers.length) {
+        angular.forEach(onRenderHandlers, function (handler) {
+          return handler();
+        });
+        onRenderHandlers = [];
+      }
+    }
+    function preDefineIndexProperty(datasource, propName) {
+      var getter = void 0;
+      // need to postpone min/maxIndexUser processing if the view is empty
+      if (datasource.hasOwnProperty(propName) && !buffer.length) {
+        getter = datasource[propName];
+        delete datasource[propName];
+        onRenderHandlers.push(function () {
+          return datasource[propName] = getter;
         });
       }
     }
 
-    defineProperty(datasource, 'minIndex', 'minIndexUser');
-    defineProperty(datasource, 'maxIndex', 'maxIndexUser');
+    function defineIndexProperty(datasource, propName, propUserName) {
+      var descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
+      if (descriptor && (descriptor.set || descriptor.get)) {
+        return;
+      }
+      var getter = void 0;
+      preDefineIndexProperty(datasource, propName);
+      Object.defineProperty(datasource, propName, {
+        set: function set(value) {
+          getter = value;
+          buffer[propUserName] = value;
+          var topPaddingHeightOld = viewport.topDataPos();
+          viewport.adjustPaddings();
+          if (propName === 'minIndex') {
+            viewport.onAfterMinIndexSet(topPaddingHeightOld);
+          }
+        },
+        get: function get() {
+          return getter;
+        }
+      });
+    }
+
+    defineIndexProperty(datasource, 'minIndex', 'minIndexUser');
+    defineIndexProperty(datasource, 'maxIndex', 'maxIndexUser');
 
     var fetchNext = datasource.get.length !== 2 ? function (success) {
       return datasource.get(buffer.next, bufferSize, success);
@@ -1426,11 +1455,11 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       // schedule another adjustBuffer after animation completion
       if (updates.animated.length) {
         $q.all(updates.animated).then(function () {
-          viewport.adjustPadding();
+          viewport.adjustPaddings();
           adjustBuffer(rid);
         });
       } else {
-        viewport.adjustPadding();
+        viewport.adjustPaddings();
       }
     }
 
@@ -1500,13 +1529,14 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
         return w.element.removeClass('ng-hide');
       });
 
-      viewport.adjustScrollTopAfterPrepend(updates);
+      viewport.onAfterPrepend(updates);
 
       if (isInvalid(rid)) {
         return;
       }
 
       updatePaddings(rid, updates);
+      onRenderHandlersRunner();
       enqueueFetch(rid, updates);
       pending.shift();
 

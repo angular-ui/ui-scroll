@@ -96,48 +96,66 @@ angular.module('ui.scroll', [])
           }
         }
 
-        let indexStore = {};
-
-        function defineProperty(datasource, propName, propUserName) {
-          let descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
-          if (!descriptor || (!descriptor.set && !descriptor.get)) {
-            Object.defineProperty(datasource, propName, {
-              set: (value) => {
-                indexStore[propName] = value;
-                buffer[propUserName] = value;
-                if (!pending.length) {
-                  let topPaddingHeightOld = viewport.topDataPos();
-                  viewport.adjustPadding();
-                  if (propName === 'minIndex') {
-                    viewport.adjustScrollTopAfterMinIndexSet(topPaddingHeightOld);
-                  }
-                }
-              },
-              get: () => indexStore[propName]
-            });
+        let onRenderHandlers = [];
+        function onRenderHandlersRunner() {
+          if(onRenderHandlers.length) {
+            angular.forEach(onRenderHandlers, (handler) => handler());
+            onRenderHandlers = [];
+          }
+        }
+        function preDefineIndexProperty(datasource, propName) {
+          let getter;
+          // need to postpone min/maxIndexUser processing if the view is empty
+          if(datasource.hasOwnProperty(propName) && !buffer.length) {
+            getter = datasource[propName];
+            delete datasource[propName];
+            onRenderHandlers.push(() => datasource[propName] = getter);
           }
         }
 
-        defineProperty(datasource, 'minIndex', 'minIndexUser');
-        defineProperty(datasource, 'maxIndex', 'maxIndexUser');
+        function defineIndexProperty(datasource, propName, propUserName) {
+          let descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
+          if (descriptor && (descriptor.set || descriptor.get)) {
+            return;
+          }
+          let getter;
+          preDefineIndexProperty(datasource, propName);
+          Object.defineProperty(datasource, propName, {
+            set: (value) => {
+              getter = value;
+              buffer[propUserName] = value;
+              let topPaddingHeightOld = viewport.topDataPos();
+              viewport.adjustPaddings();
+              if (propName === 'minIndex') {
+                viewport.onAfterMinIndexSet(topPaddingHeightOld);
+              }
+            },
+            get: () => getter
+          });
+        }
 
-        const fetchNext = (datasource.get.length !== 2) ? (success) => datasource.get(buffer.next, bufferSize, success)
-          : (success) => {
-          datasource.get({
-            index: buffer.next,
-            append: buffer.length ? buffer[buffer.length - 1].item : void 0,
-            count: bufferSize
-          }, success);
-        };
+        defineIndexProperty(datasource, 'minIndex', 'minIndexUser');
+        defineIndexProperty(datasource, 'maxIndex', 'maxIndexUser');
 
-        const fetchPrevious = (datasource.get.length !== 2) ? (success) => datasource.get(buffer.first - bufferSize, bufferSize, success)
-          : (success) => {
-          datasource.get({
-            index: buffer.first - bufferSize,
-            prepend: buffer.length ? buffer[0].item : void 0,
-            count: bufferSize
-          }, success);
-        };
+        const fetchNext = (datasource.get.length !== 2) ?
+          (success) => datasource.get(buffer.next, bufferSize, success) :
+          (success) => {
+            datasource.get({
+              index: buffer.next,
+              append: buffer.length ? buffer[buffer.length - 1].item : void 0,
+              count: bufferSize
+            }, success);
+          };
+
+        const fetchPrevious = (datasource.get.length !== 2) ?
+          (success) => datasource.get(buffer.first - bufferSize, bufferSize, success) :
+          (success) => {
+            datasource.get({
+              index: buffer.first - bufferSize,
+              prepend: buffer.length ? buffer[0].item : void 0,
+              count: bufferSize
+            }, success);
+          };
 
         /**
          * Build padding elements
@@ -292,11 +310,11 @@ angular.module('ui.scroll', [])
           // schedule another adjustBuffer after animation completion
           if (updates.animated.length) {
             $q.all(updates.animated).then(() => {
-              viewport.adjustPadding();
+              viewport.adjustPaddings();
               adjustBuffer(rid);
             });
           } else {
-            viewport.adjustPadding();
+            viewport.adjustPaddings();
           }
         }
 
@@ -357,13 +375,14 @@ angular.module('ui.scroll', [])
           updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
           updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
 
-          viewport.adjustScrollTopAfterPrepend(updates);
+          viewport.onAfterPrepend(updates);
 
           if (isInvalid(rid)) {
             return;
           }
 
           updatePaddings(rid, updates);
+          onRenderHandlersRunner();
           enqueueFetch(rid, updates);
           pending.shift();
 
