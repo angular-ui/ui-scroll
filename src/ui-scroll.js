@@ -340,19 +340,24 @@ angular.module('ui.scroll', [])
           }
         }
 
+        function processUpdates() {
+          const updates = updateDOM();
+
+          // We need the item bindings to be processed before we can do adjustments
+          !$scope.$$phase && $scope.$digest();
+
+          updates.inserted.forEach(w => elementRoutines.showElement(w));
+          updates.prepended.forEach(w => elementRoutines.showElement(w));
+          return updates;
+        }
+
         function adjustBuffer(rid) {
           if (!rid) { // dismiss pending requests
             pending = [];
             rid = ++ridActual;
           }
 
-          let updates = updateDOM();
-
-          // We need the item bindings to be processed before we can do adjustment
-          !$scope.$$phase && $scope.$digest();
-
-          updates.inserted.forEach(w => elementRoutines.showElement(w));
-          updates.prepended.forEach(w => elementRoutines.showElement(w));
+          const updates = processUpdates();
 
           if (isInvalid(rid)) {
             return;
@@ -367,13 +372,7 @@ angular.module('ui.scroll', [])
         }
 
         function adjustBufferAfterFetch(rid) {
-          let updates = updateDOM();
-
-          // We need the item bindings to be processed before we can do adjustment
-          !$scope.$$phase && $scope.$digest();
-
-          updates.inserted.forEach(w => elementRoutines.showElement(w));
-          updates.prepended.forEach(w => elementRoutines.showElement(w));
+          const updates = processUpdates();
 
           viewport.onAfterPrepend(updates);
 
