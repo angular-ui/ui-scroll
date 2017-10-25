@@ -234,7 +234,7 @@ angular.module('ui.scroll', [])
           if (!isElementVisible(wrapper)) {
             wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(() => visibilityWatcher(wrapper));
           }
-          wrapper.element.addClass('ng-hide'); // hide inserted elements before data binding
+          elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
         }
 
         function createElement(wrapper, insertAfter, insertElement) {
@@ -351,8 +351,8 @@ angular.module('ui.scroll', [])
           // We need the item bindings to be processed before we can do adjustment
           !$scope.$$phase && $scope.$digest();
 
-          updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
-          updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
+          updates.inserted.forEach(w => elementRoutines.showElement(w));
+          updates.prepended.forEach(w => elementRoutines.showElement(w));
 
           if (isInvalid(rid)) {
             return;
@@ -372,8 +372,8 @@ angular.module('ui.scroll', [])
           // We need the item bindings to be processed before we can do adjustment
           !$scope.$$phase && $scope.$digest();
 
-          updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
-          updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
+          updates.inserted.forEach(w => elementRoutines.showElement(w));
+          updates.prepended.forEach(w => elementRoutines.showElement(w));
 
           viewport.onAfterPrepend(updates);
 
