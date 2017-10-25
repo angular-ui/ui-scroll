@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.2 -- 2017-10-20T00:12:44.031Z
+ * Version: 1.7.0-rc.2 -- 2017-10-25T00:12:31.816Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -313,21 +313,24 @@ var Adapter = function () {
         return;
       }
 
-      var keepIt = void 0;
-      var pos = this.buffer.indexOf(wrapper) + 1;
+      var position = this.buffer.indexOf(wrapper);
+      if (!newItems.reverse().some(function (newItem) {
+        return newItem === wrapper.item;
+      })) {
+        wrapper.op = 'remove';
+        if (position === 0 && !newItems.length) {
+          wrapper._op = 'isTop'; // to catch "first" edge case on remove
+        }
+      }
 
-      newItems.reverse().forEach(function (newItem) {
+      newItems.forEach(function (newItem) {
         if (newItem === wrapper.item) {
-          keepIt = true;
-          pos--;
+          position--;
         } else {
-          _this3.buffer.insert(pos, newItem);
+          // 3 parameter (isTop) is to catch "first" edge case on insert
+          _this3.buffer.insert(position + 1, newItem, position === -1);
         }
       });
-
-      if (!keepIt) {
-        wrapper.op = 'remove';
-      }
     }
   }]);
 
@@ -386,7 +389,7 @@ function ScrollBuffer(elementRoutines, bufferSize) {
      * for insert the number is the index for the buffer element the new one have to be inserted after
      * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
      */
-    insert: function insert(operation, item) {
+    insert: function insert(operation, item, isTop) {
       var wrapper = {
         item: item
       };
@@ -395,6 +398,11 @@ function ScrollBuffer(elementRoutines, bufferSize) {
         // it is an insert
         wrapper.op = 'insert';
         buffer.splice(operation, 0, wrapper);
+        if (isTop) {
+          buffer.first--;
+        } else {
+          buffer.next++;
+        }
       } else {
         wrapper.op = operation;
         switch (operation) {
@@ -421,6 +429,15 @@ function ScrollBuffer(elementRoutines, bufferSize) {
       }
       // removes single item(wrapper) from the buffer
       buffer.splice(buffer.indexOf(arg1), 1);
+      if (arg1._op === 'isTop') {
+        buffer.first++;
+      } else {
+        buffer.next--;
+      }
+      if (!buffer.length) {
+        buffer.first = 1;
+        buffer.next = 1;
+      }
 
       return elementRoutines.removeElementAnimated(arg1);
     },
@@ -459,6 +476,16 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
+var hideClassToken = 'ng-ui-scroll-hide';
+
+function addCSSRule(sheet, selector, rules, index) {
+  if ('insertRule' in sheet) {
+    sheet.insertRule(selector + '{' + rules + '}', index);
+  } else if ('addRule' in sheet) {
+    sheet.addRule(selector, rules, index);
+  }
+}
+
 var ElementRoutines = function () {
   function ElementRoutines($injector, $q) {
     _classCallCheck(this, ElementRoutines);
@@ -466,9 +493,20 @@ var ElementRoutines = function () {
     this.$animate = $injector.has && $injector.has('$animate') ? $injector.get('$animate') : null;
     this.isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
     this.$q = $q;
+    addCSSRule(document.styleSheets[0], '.' + hideClassToken, 'display: none');
   }
 
   _createClass(ElementRoutines, [{
+    key: 'hideElement',
+    value: function hideElement(wrapper) {
+      wrapper.element.addClass(hideClassToken);
+    }
+  }, {
+    key: 'showElement',
+    value: function showElement(wrapper) {
+      wrapper.element.removeClass(hideClassToken);
+    }
+  }, {
     key: 'insertElement',
     value: function insertElement(newElement, previousElement) {
       previousElement.after(newElement);
@@ -1050,46 +1088,74 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = Padding;
-function Cache() {
-  var cache = Object.create(Array.prototype);
 
-  angular.extend(cache, {
-    add: function add(item) {
-      for (var i = cache.length - 1; i >= 0; i--) {
-        if (cache[i].index === item.scope.$index) {
-          cache[i].height = item.element.outerHeight();
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+exports.default = Padding;
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+// Can't just extend the Array, due to Babel does not support built-in classes extending
+// This solution was taken from https://stackoverflow.com/questions/46897414/es6-class-extends-array-workaround-for-es5-babel-transpile
+var CacheProto = function () {
+  function CacheProto() {
+    _classCallCheck(this, CacheProto);
+  }
+
+  _createClass(CacheProto, [{
+    key: 'add',
+    value: function add(item) {
+      for (var i = this.length - 1; i >= 0; i--) {
+        if (this[i].index === item.scope.$index) {
+          this[i].height = item.element.outerHeight();
           return;
         }
       }
-      cache.push({
+      this.push({
         index: item.scope.$index,
         height: item.element.outerHeight()
       });
-      cache.sort(function (a, b) {
+      this.sort(function (a, b) {
         return a.index < b.index ? -1 : a.index > b.index ? 1 : 0;
       });
-    },
-    remove: function remove(item) {
-      for (var i = cache.length - 1; i >= 0; i--) {
-        if (cache[i].index === item.scope.$index) {
-          cache.splice(i, 1);
+    }
+  }, {
+    key: 'remove',
+    value: function remove(itemToRemove) {
+      for (var i = this.length - 1; i >= 0; i--) {
+        if (this[i].index === itemToRemove.scope.$index) {
+          this.splice(i, 1);
           break;
         }
       }
-      for (var _i = cache.length - 1; _i >= 0; _i--) {
-        if (cache[_i].index > item.scope.$index) {
-          cache[_i].index--;
+      if (itemToRemove._op !== 'isTop') {
+        for (var _i = this.length - 1; _i >= 0; _i--) {
+          if (this[_i].index > itemToRemove.scope.$index) {
+            this[_i].index--;
+          }
         }
       }
-    },
-    clear: function clear() {
-      cache.length = 0;
     }
-  });
+  }, {
+    key: 'clear',
+    value: function clear() {
+      this.length = 0;
+    }
+  }]);
 
-  return cache;
+  return CacheProto;
+}();
+
+function Cache() {
+  var instance = [];
+  instance.push.apply(instance, arguments);
+  Object.setPrototypeOf(instance, Cache.prototype);
+  return instance;
 }
+Cache.prototype = Object.create(Array.prototype);
+Object.getOwnPropertyNames(CacheProto.prototype).forEach(function (methodName) {
+  return Cache.prototype[methodName] = CacheProto.prototype[methodName];
+});
 
 function Padding(template) {
   var result = void 0;
@@ -1375,7 +1441,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
           return visibilityWatcher(wrapper);
         });
       }
-      wrapper.element.addClass('ng-hide'); // hide inserted elements before data binding
+      elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
     }
 
     function createElement(wrapper, insertAfter, insertElement) {
@@ -1485,6 +1551,21 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       }
     }
 
+    function processUpdates() {
+      var updates = updateDOM();
+
+      // We need the item bindings to be processed before we can do adjustments
+      !$scope.$$phase && $scope.$digest();
+
+      updates.inserted.forEach(function (w) {
+        return elementRoutines.showElement(w);
+      });
+      updates.prepended.forEach(function (w) {
+        return elementRoutines.showElement(w);
+      });
+      return updates;
+    }
+
     function adjustBuffer(rid) {
       if (!rid) {
         // dismiss pending requests
@@ -1492,17 +1573,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
         rid = ++ridActual;
       }
 
-      var updates = updateDOM();
-
-      // We need the item bindings to be processed before we can do adjustment
-      !$scope.$$phase && $scope.$digest();
-
-      updates.inserted.forEach(function (w) {
-        return w.element.removeClass('ng-hide');
-      });
-      updates.prepended.forEach(function (w) {
-        return w.element.removeClass('ng-hide');
-      });
+      var updates = processUpdates();
 
       if (isInvalid(rid)) {
         return;
@@ -1517,17 +1588,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
     }
 
     function adjustBufferAfterFetch(rid) {
-      var updates = updateDOM();
-
-      // We need the item bindings to be processed before we can do adjustment
-      !$scope.$$phase && $scope.$digest();
-
-      updates.inserted.forEach(function (w) {
-        return w.element.removeClass('ng-hide');
-      });
-      updates.prepended.forEach(function (w) {
-        return w.element.removeClass('ng-hide');
-      });
+      var updates = processUpdates();
 
       viewport.onAfterPrepend(updates);
 
