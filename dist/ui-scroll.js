@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.2 -- 2017-10-20T00:12:44.031Z
+ * Version: 1.7.0-rc.2 -- 2017-10-26T19:50:50.017Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1495,7 +1495,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       var updates = updateDOM();
 
       // We need the item bindings to be processed before we can do adjustment
-      !$scope.$$phase && $scope.$digest();
+      !$scope.$$phase && !$scope.$root.$$phase && $scope.$digest();
 
       updates.inserted.forEach(function (w) {
         return w.element.removeClass('ng-hide');
@@ -1520,7 +1520,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       var updates = updateDOM();
 
       // We need the item bindings to be processed before we can do adjustment
-      !$scope.$$phase && $scope.$digest();
+      !$scope.$$phase && !$scope.$root.$$phase && $scope.$digest();
 
       updates.inserted.forEach(function (w) {
         return w.element.removeClass('ng-hide');
