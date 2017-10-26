@@ -185,11 +185,24 @@ app.controller('mainController', [
       const lastIndex = Server.lastIndex;
       const lastItem = Server.data.find(i => i.index === Server.lastIndex);
       if(!lastItem) {
-        retirn;
+        return;
       }
       Server.removeItemById(lastItem.id).then(function (result) {
         if (result) {
           ctrl.adapter.applyUpdates(lastIndex, []);
+        }
+      });
+    };
+
+    ctrl.removeFirst = function () {
+      const firstIndex = Server.firstIndex;
+      const firstItem = Server.data.find(i => i.index === Server.firstIndex);
+      if(!firstItem) {
+        return;
+      }
+      Server.removeItemById(firstItem.id).then(function (result) {
+        if (result) {
+          ctrl.adapter.applyUpdates(firstIndex, []);
         }
       });
     };
