@@ -344,7 +344,7 @@ angular.module('ui.scroll', [])
           const updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustments
-          !$scope.$$phase && $scope.$digest();
+          !$scope.$$phase && !$scope.$root.$$phase && $scope.$digest();
 
           updates.inserted.forEach(w => elementRoutines.showElement(w));
           updates.prepended.forEach(w => elementRoutines.showElement(w));
