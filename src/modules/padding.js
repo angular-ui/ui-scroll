@@ -15,16 +15,18 @@ class CacheProto {
     this.sort((a, b) => ((a.index < b.index) ? -1 : ((a.index > b.index) ? 1 : 0)));
   }
 
-  remove(itemToRemove) {
+  remove(argument) {
+    const index = argument % 1 === 0 ? argument : argument.scope.$index;
+    const isTop = argument % 1 === 0 ? false : argument._op === 'isTop';
     for (let i = this.length - 1; i >= 0; i--) {
-      if (this[i].index === itemToRemove.scope.$index) {
+      if (this[i].index === index) {
         this.splice(i, 1);
         break;
       }
     }
-    if(itemToRemove._op !== 'isTop') {
+    if(!isTop) {
       for (let i = this.length - 1; i >= 0; i--) {
-        if (this[i].index > itemToRemove.scope.$index) {
+        if (this[i].index > index) {
           this[i].index--;
         }
       }

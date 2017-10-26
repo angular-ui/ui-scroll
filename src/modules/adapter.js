@@ -148,9 +148,22 @@ class Adapter {
     if (index % 1 !== 0) { // checking if it is an integer
       throw new Error('applyUpdates - ' + index + ' is not a valid index');
     }
-    index -= this.buffer.first;
-    if ((index >= 0 && index < this.buffer.length)) {
-      this.applyUpdate(this.buffer[index], newItems);
+    const _index = index - this.buffer.first;
+    if (_index >= 0 && _index < this.buffer.length) {
+      this.applyUpdate(this.buffer[_index], newItems);
+    }
+    else if(index >= this.buffer.minIndex && index <= this.buffer.maxIndex) {
+      this.applyUpdateBuffer(index, newItems);
+    }
+  }
+
+  applyUpdateBuffer(index, newItems) {
+    if (!angular.isArray(newItems)) {
+      return;
+    }
+    // remove single item
+    if(!newItems.length) {
+      this.viewport.removeCacheItem(index, true)
     }
   }
 
@@ -158,8 +171,8 @@ class Adapter {
     if (!angular.isArray(newItems)) {
       return;
     }
-    let position = (this.buffer.indexOf(wrapper));
-    if (!newItems.reverse().some((newItem) => newItem === wrapper.item)) {
+    let position = this.buffer.indexOf(wrapper);
+    if (!newItems.reverse().some(newItem => newItem === wrapper.item)) {
       wrapper.op = 'remove';
       if(position === 0 && !newItems.length) {
         wrapper._op = 'isTop'; // to catch "first" edge case on remove
