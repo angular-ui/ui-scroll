@@ -163,7 +163,7 @@ class Adapter {
     }
     // remove single item
     if(!newItems.length) {
-      this.viewport.removeCacheItem(index, true)
+      this.viewport.removeCacheItem(index, true);
     }
   }
 

@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.2 -- 2017-10-25T00:12:31.816Z
+ * Version: 1.7.0-rc.3 -- 2017-10-26T21:41:42.292Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -221,33 +221,6 @@ var Adapter = function () {
       return !this.buffer.length;
     }
   }, {
-    key: 'applyUpdates',
-    value: function applyUpdates(arg1, arg2) {
-      var _this2 = this;
-
-      if (angular.isFunction(arg1)) {
-        // arg1 is the updater function, arg2 is ignored
-        this.buffer.slice(0).forEach(function (wrapper) {
-          // we need to do it on the buffer clone, because buffer content
-          // may change as we iterate through
-          _this2.applyUpdate(wrapper, arg1(wrapper.item, wrapper.scope, wrapper.element));
-        });
-      } else {
-        // arg1 is item index, arg2 is the newItems array
-        if (arg1 % 1 !== 0) {
-          // checking if it is an integer
-          throw new Error('applyUpdates - ' + arg1 + ' is not a valid index');
-        }
-
-        var index = arg1 - this.buffer.first;
-        if (index >= 0 && index < this.buffer.length) {
-          this.applyUpdate(this.buffer[index], arg2);
-        }
-      }
-
-      this.adjustBuffer();
-    }
-  }, {
     key: 'append',
     value: function append(newItems) {
       this.buffer.append(newItems);
@@ -262,6 +235,78 @@ var Adapter = function () {
       this.adjustBuffer();
       this.viewport.clipTop();
       this.viewport.clipBottom();
+    }
+  }, {
+    key: 'applyUpdates',
+    value: function applyUpdates(arg1, arg2) {
+      if (angular.isFunction(arg1)) {
+        this.applyUpdatesFunc(arg1);
+      } else {
+        this.applyUpdatesIndex(arg1, arg2);
+      }
+      this.adjustBuffer();
+    }
+  }, {
+    key: 'applyUpdatesFunc',
+    value: function applyUpdatesFunc(cb) {
+      var _this2 = this;
+
+      this.buffer.slice(0).forEach(function (wrapper) {
+        // we need to do it on the buffer clone, because buffer content
+        // may change as we iterate through
+        _this2.applyUpdate(wrapper, cb(wrapper.item, wrapper.scope, wrapper.element));
+      });
+    }
+  }, {
+    key: 'applyUpdatesIndex',
+    value: function applyUpdatesIndex(index, newItems) {
+      if (index % 1 !== 0) {
+        // checking if it is an integer
+        throw new Error('applyUpdates - ' + index + ' is not a valid index');
+      }
+      var _index = index - this.buffer.first;
+      if (_index >= 0 && _index < this.buffer.length) {
+        this.applyUpdate(this.buffer[_index], newItems);
+      } else if (index >= this.buffer.minIndex && index <= this.buffer.maxIndex) {
+        this.applyUpdateBuffer(index, newItems);
+      }
+    }
+  }, {
+    key: 'applyUpdateBuffer',
+    value: function applyUpdateBuffer(index, newItems) {
+      if (!angular.isArray(newItems)) {
+        return;
+      }
+      // remove single item
+      if (!newItems.length) {
+        this.viewport.removeCacheItem(index, true);
+      }
+    }
+  }, {
+    key: 'applyUpdate',
+    value: function applyUpdate(wrapper, newItems) {
+      var _this3 = this;
+
+      if (!angular.isArray(newItems)) {
+        return;
+      }
+      var position = this.buffer.indexOf(wrapper);
+      if (!newItems.reverse().some(function (newItem) {
+        return newItem === wrapper.item;
+      })) {
+        wrapper.op = 'remove';
+        if (position === 0 && !newItems.length) {
+          wrapper._op = 'isTop'; // to catch "first" edge case on remove
+        }
+      }
+      newItems.forEach(function (newItem) {
+        if (newItem === wrapper.item) {
+          position--;
+        } else {
+          // 3 parameter (isTop) is to catch "first" edge case on insert
+          _this3.buffer.insert(position + 1, newItem, position === -1);
+        }
+      });
     }
   }, {
     key: 'calculateProperties',
@@ -287,7 +332,6 @@ var Adapter = function () {
             this['topVisibleElement'] = item.element;
             this['topVisibleScope'] = item.scope;
           }
-
           if (!bottomDone && (top >= this.viewport.bottomVisiblePos() || i === length - 1 && this.isEOF())) {
             bottomDone = true;
             this['bottomVisible'] = item.item;
@@ -296,41 +340,12 @@ var Adapter = function () {
           }
           topHeight += itemHeight;
         }
-
         rowTop = itemTop;
 
         if (topDone && bottomDone) {
           break;
         }
       }
-    }
-  }, {
-    key: 'applyUpdate',
-    value: function applyUpdate(wrapper, newItems) {
-      var _this3 = this;
-
-      if (!angular.isArray(newItems)) {
-        return;
-      }
-
-      var position = this.buffer.indexOf(wrapper);
-      if (!newItems.reverse().some(function (newItem) {
-        return newItem === wrapper.item;
-      })) {
-        wrapper.op = 'remove';
-        if (position === 0 && !newItems.length) {
-          wrapper._op = 'isTop'; // to catch "first" edge case on remove
-        }
-      }
-
-      newItems.forEach(function (newItem) {
-        if (newItem === wrapper.item) {
-          position--;
-        } else {
-          // 3 parameter (isTop) is to catch "first" edge case on insert
-          _this3.buffer.insert(position + 1, newItem, position === -1);
-        }
-      });
     }
   }]);
 
@@ -1068,9 +1083,12 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       bottomPadding.height(0);
       bottomPadding.cache.clear();
     },
-    removeItem: function removeItem(item) {
+    removeCacheItem: function removeCacheItem(item) {
       topPadding.cache.remove(item);
       bottomPadding.cache.remove(item);
+    },
+    removeItem: function removeItem(item) {
+      this.removeCacheItem(item);
       return buffer.remove(item);
     }
   });
@@ -1121,16 +1139,18 @@ var CacheProto = function () {
     }
   }, {
     key: 'remove',
-    value: function remove(itemToRemove) {
+    value: function remove(argument) {
+      var index = argument % 1 === 0 ? argument : argument.scope.$index;
+      var isTop = argument % 1 === 0 ? false : argument._op === 'isTop';
       for (var i = this.length - 1; i >= 0; i--) {
-        if (this[i].index === itemToRemove.scope.$index) {
+        if (this[i].index === index) {
           this.splice(i, 1);
           break;
         }
       }
-      if (itemToRemove._op !== 'isTop') {
+      if (!isTop) {
         for (var _i = this.length - 1; _i >= 0; _i--) {
-          if (this[_i].index > itemToRemove.scope.$index) {
+          if (this[_i].index > index) {
             this[_i].index--;
           }
         }
@@ -1555,7 +1575,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       var updates = updateDOM();
 
       // We need the item bindings to be processed before we can do adjustments
-      !$scope.$$phase && $scope.$digest();
+      !$scope.$$phase && !$scope.$root.$$phase && $scope.$digest();
 
       updates.inserted.forEach(function (w) {
         return elementRoutines.showElement(w);
