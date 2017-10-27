@@ -82,12 +82,12 @@ describe('uiScroll', function() {
   });
 
   describe('basic setup (new datasource get signature)', function() {
-    var scrollSettings = { datasource: 'myNewEmptyDatasource' };
+    var scrollSettings = { datasource: 'myDescriptoEmptyDatasource' };
 
     it('should call get on the datasource 2 times ', function() {
       var spy;
-      inject(function(myNewEmptyDatasource) {
-        spy = spyOn(myNewEmptyDatasource, 'actualGet').and.callThrough();
+      inject(function(myDescriptoEmptyDatasource) {
+        spy = spyOn(myDescriptoEmptyDatasource, 'get').and.callThrough();
       });
       runTest(scrollSettings,
         function() {
