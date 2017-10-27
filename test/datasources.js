@@ -199,7 +199,7 @@ angular.module('ui.scroll.test.datasources', [])
             var datasource = {
                 data: [],
                 min: 1,
-                max: 20,
+                max: 30,
                 init: function() {
                     for (var i = this.min; i <= this.max; i++) {
                         this.data.push('item' + i);

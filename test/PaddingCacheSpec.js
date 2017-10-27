@@ -6,7 +6,7 @@ describe('uiScroll Paddings cache', function () {
   beforeEach(module('ui.scroll.test.datasources'));
 
   describe('applyUpdates tests\n', function () {
-    var itemsCount = 20;
+    var itemsCount = 30;
     var itemHeight = 100;
     var viewportHeight = 500;
     var MAX = 999999;
@@ -56,7 +56,7 @@ describe('uiScroll Paddings cache', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
 
-          scrollBottom(viewport, 2);
+          scrollBottom(viewport, 3);
           scrollTop(viewport);
 
           var initialBottomHeight = getBottomPaddingHeight(viewport);
@@ -64,7 +64,7 @@ describe('uiScroll Paddings cache', function () {
           scope.adapter.applyUpdates(itemsCount, []);
           expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
 
-          scrollBottom(viewport, 2);
+          scrollBottom(viewport, 3);
           expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight );
         }
       );
@@ -82,12 +82,39 @@ describe('uiScroll Paddings cache', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
 
-          scrollBottom(viewport, 2);
+          scrollBottom(viewport, 3);
 
           var initialTopHeight = getTopPaddingHeight(viewport);
           removeFirstItem();
           scope.adapter.applyUpdates(1, []);
           expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight);
+
+          scrollTop(viewport);
+          expect(getTopPaddingHeight(viewport)).toBe(0);
+        }
+      );
+    });
+
+    it('should delete first row and then second row when out of buffer', function () {
+      var removeFirstItem;
+      inject(function(myResponsiveDatasource) {
+        var datasource = myResponsiveDatasource;
+        removeFirstItem = function() {
+          datasource.data.shift();
+          datasource.min++;
+        };
+      });
+      runTest(scrollSettings,
+        function (viewport, scope) {
+
+          scrollBottom(viewport, 3);
+
+          var initialTopHeight = getTopPaddingHeight(viewport);
+          scope.adapter.applyUpdates(1, []);
+          removeFirstItem();
+          scope.adapter.applyUpdates(2, []);
+          removeFirstItem();
+          expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 2);
 
           scrollTop(viewport);
           expect(getTopPaddingHeight(viewport)).toBe(0);
