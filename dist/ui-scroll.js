@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.3 -- 2017-10-26T21:41:42.292Z
+ * Version: 1.7.0-rc.3 -- 2017-10-27T13:59:33.384Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -279,7 +279,13 @@ var Adapter = function () {
       }
       // remove single item
       if (!newItems.length) {
-        this.viewport.removeCacheItem(index, true);
+        var isTop = index === this.buffer.minIndex;
+        if (isTop) {
+          this.buffer.minIndex++;
+        } else {
+          this.buffer.maxIndex--;
+        }
+        this.viewport.removeCacheItem(index, isTop);
       }
     }
   }, {
@@ -1083,9 +1089,9 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       bottomPadding.height(0);
       bottomPadding.cache.clear();
     },
-    removeCacheItem: function removeCacheItem(item) {
-      topPadding.cache.remove(item);
-      bottomPadding.cache.remove(item);
+    removeCacheItem: function removeCacheItem(item, isTop) {
+      topPadding.cache.remove(item, isTop);
+      bottomPadding.cache.remove(item, isTop);
     },
     removeItem: function removeItem(item) {
       this.removeCacheItem(item);
@@ -1139,9 +1145,9 @@ var CacheProto = function () {
     }
   }, {
     key: 'remove',
-    value: function remove(argument) {
+    value: function remove(argument, _isTop) {
       var index = argument % 1 === 0 ? argument : argument.scope.$index;
-      var isTop = argument % 1 === 0 ? false : argument._op === 'isTop';
+      var isTop = argument % 1 === 0 ? _isTop : argument._op === 'isTop';
       for (var i = this.length - 1; i >= 0; i--) {
         if (this[i].index === index) {
           this.splice(i, 1);

@@ -5,11 +5,10 @@ describe('uiScroll Paddings cache', function () {
   beforeEach(module('ui.scroll'));
   beforeEach(module('ui.scroll.test.datasources'));
 
-  describe('applyUpdates tests\n', function () {
+  describe('applyUpdates out of buffer\n', function () {
     var itemsCount = 30;
     var itemHeight = 100;
     var viewportHeight = 500;
-    var MAX = 999999;
 
     var scrollSettings = {
       datasource: 'myResponsiveDatasource',
@@ -32,7 +31,7 @@ describe('uiScroll Paddings cache', function () {
 
     function scrollBottom(viewport, count = 1) {
       for (var i = 0; i < count; i++) {
-        viewport.scrollTop(MAX);
+        viewport.scrollTop(99999);
         viewport.trigger('scroll');
       }
     }
