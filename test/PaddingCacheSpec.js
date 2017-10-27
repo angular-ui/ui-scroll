@@ -6,11 +6,16 @@ describe('uiScroll Paddings cache', function () {
   beforeEach(module('ui.scroll.test.datasources'));
 
   describe('applyUpdates tests\n', function () {
+    var itemsCount = 20;
+    var itemHeight = 100;
+    var viewportHeight = 500;
+    var MAX = 999999;
+
     var scrollSettings = {
-      datasource: 'myMultipageDatasource',
+      datasource: 'myResponsiveDatasource',
       adapter: 'adapter',
-      itemHeight: 20,
-      viewportHeight: 100
+      itemHeight: itemHeight,
+      viewportHeight: viewportHeight
     };
 
     function getBottomPaddingHeight(viewport) {
@@ -25,40 +30,67 @@ describe('uiScroll Paddings cache', function () {
       return parseInt(angular.element(topPadding).css('height'), 10);
     }
 
-    var initialBottomHeight = 240;
+    function scrollBottom(viewport, count = 1) {
+      for (var i = 0; i < count; i++) {
+        viewport.scrollTop(MAX);
+        viewport.trigger('scroll');
+      }
+    }
+
+    function scrollTop(viewport, count = 1) {
+      for (var i = 0; i < count; i++) {
+        viewport.scrollTop(0);
+        viewport.trigger('scroll');
+      }
+    }
 
     it('should delete last row when out of buffer', function () {
+      var removeLastItem;
+      inject(function(myResponsiveDatasource) {
+        var datasource = myResponsiveDatasource;
+        removeLastItem = function() {
+          datasource.data.slice(-1, 1);
+          datasource.max--;
+        };
+      });
       runTest(scrollSettings,
         function (viewport, scope) {
 
-          viewport.scrollTop(1000);
-          viewport.trigger('scroll');
-          viewport.scrollTop(1000);
-          viewport.trigger('scroll');
-          viewport.scrollTop(0);
-          viewport.trigger('scroll');
+          scrollBottom(viewport, 2);
+          scrollTop(viewport);
 
-          expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight);
-          scope.adapter.applyUpdates(20, []);
-          expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - scrollSettings.itemHeight);
+          var initialBottomHeight = getBottomPaddingHeight(viewport);
+          removeLastItem();
+          scope.adapter.applyUpdates(itemsCount, []);
+          expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
 
+          scrollBottom(viewport, 2);
+          expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight );
         }
       );
     });
 
-    it('should delete first when row out of buffer', function () {
+    it('should delete first row when out of buffer', function () {
+      var removeFirstItem;
+      inject(function(myResponsiveDatasource) {
+        var datasource = myResponsiveDatasource;
+        removeFirstItem = function() {
+          datasource.data.shift();
+          datasource.min++;
+        };
+      });
       runTest(scrollSettings,
         function (viewport, scope) {
 
-          viewport.scrollTop(1000);
-          viewport.trigger('scroll');
-          viewport.scrollTop(1000);
-          viewport.trigger('scroll');
+          scrollBottom(viewport, 2);
 
-          // expect(getTopPaddingHeight(viewport)).toBe(initialBottomHeight);
-          // scope.adapter.applyUpdates(1, []);
-          // expect(getTopPaddingHeight(viewport)).toBe(initialBottomHeight - scrollSettings.itemHeight);
+          var initialTopHeight = getTopPaddingHeight(viewport);
+          removeFirstItem();
+          scope.adapter.applyUpdates(1, []);
+          expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight);
 
+          scrollTop(viewport);
+          expect(getTopPaddingHeight(viewport)).toBe(0);
         }
       );
     });
