@@ -163,7 +163,14 @@ class Adapter {
     }
     // remove single item
     if(!newItems.length) {
-      this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
+      var isTop = index === this.buffer.minIndex;
+      if(isTop) {
+        this.buffer.minIndex++;
+      }
+      else {
+        this.buffer.maxIndex--;
+      }
+      this.viewport.removeCacheItem(index, isTop);
     }
   }
 
