@@ -11,7 +11,7 @@ function createHtml(settings) {
   var extra = settings.extra || '';
   return '<div ui-scroll-viewport' + viewportStyle + '>' +
     (settings.wrapper ? settings.wrapper.start : '') +
-    '<div ui-scroll="item in ' + settings.datasource + '"' +
+    '<div class="item" ui-scroll="item in ' + settings.datasource + '"' +
     adapter +
     itemStyle + bufferSize + padding + isLoading + topVisible + disabled + extra + '>' +
     template +
