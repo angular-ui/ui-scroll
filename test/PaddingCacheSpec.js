@@ -69,6 +69,34 @@ describe('uiScroll Paddings cache', function () {
       );
     });
 
+    it('should delete last row and then the next after last, when out of buffer', function () {
+      var removeLastItem;
+      inject(function(myResponsiveDatasource) {
+        var datasource = myResponsiveDatasource;
+        removeLastItem = function() {
+          datasource.data.slice(-1, 1);
+          datasource.max--;
+        };
+      });
+      runTest(scrollSettings,
+        function (viewport, scope) {
+
+          scrollBottom(viewport, 3);
+          scrollTop(viewport);
+
+          var initialBottomHeight = getBottomPaddingHeight(viewport);
+          removeLastItem();
+          scope.adapter.applyUpdates(itemsCount, []);
+          removeLastItem();
+          scope.adapter.applyUpdates(itemsCount - 1, []);
+          expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight * 2);
+
+          scrollBottom(viewport, 3);
+          expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight * 2);
+        }
+      );
+    });
+
     it('should delete first row when out of buffer', function () {
       var removeFirstItem;
       inject(function(myResponsiveDatasource) {
@@ -94,7 +122,7 @@ describe('uiScroll Paddings cache', function () {
       );
     });
 
-    it('should delete first row and then second row when out of buffer', function () {
+    it('should delete first row and then the next after first, when out of buffer', function () {
       var removeFirstItem;
       inject(function(myResponsiveDatasource) {
         var datasource = myResponsiveDatasource;
@@ -109,10 +137,10 @@ describe('uiScroll Paddings cache', function () {
           scrollBottom(viewport, 3);
 
           var initialTopHeight = getTopPaddingHeight(viewport);
+          removeFirstItem();
           scope.adapter.applyUpdates(1, []);
           removeFirstItem();
           scope.adapter.applyUpdates(2, []);
-          removeFirstItem();
           expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 2);
 
           scrollTop(viewport);

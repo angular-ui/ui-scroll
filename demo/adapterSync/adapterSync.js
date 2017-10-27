@@ -83,13 +83,30 @@ app.factory('Server', [
         return this.returnDeferredResult(newItem);
       },
 
+      removeFirst: function () {
+        var firstItem = this.data.find(i => i.index === this.firstIndex);
+        if(!firstItem) {
+          return $q.reject();
+        }
+        return this.removeItemById(firstItem.id);
+      },
+
+      removeLast: function () {
+        var lastItem = this.data.find(i => i.index === this.lastIndex);
+        if(!lastItem) {
+          return $q.reject();
+        }
+        return this.removeItemById(lastItem.id);
+      },
+
       removeItemById: function (itemId) {
         var length = this.data.length;
         for (var i = 0; i < length; i++) {
           if (this.data[i].id === itemId) {
+            var indexRemoved = this.data[i].index;
             this.data.splice(i, 1);
             this.setIndicies();
-            return this.returnDeferredResult(true);
+            return this.returnDeferredResult(indexRemoved);
           }
         }
         return this.returnDeferredResult(false);
@@ -171,7 +188,7 @@ app.controller('mainController', [
 
     ctrl.remove = function (itemRemove) {
       Server.removeItemById(itemRemove.id).then(function (result) {
-        if (result) {
+        if (result !== false) {
           ctrl.adapter.applyUpdates(function (item) {
             if (item.id === itemRemove.id) {
               return [];
@@ -181,5 +198,20 @@ app.controller('mainController', [
       });
     };
 
+    ctrl.removeFirst = function () {
+      Server.removeFirst().then(function (indexRemoved) {
+        if (indexRemoved !== false) {
+          ctrl.adapter.applyUpdates(indexRemoved, []);
+        }
+      });
+    };
+
+    ctrl.removeLast = function () {
+      Server.removeLast().then(function (indexRemoved) {
+        if (indexRemoved !== false) {
+          ctrl.adapter.applyUpdates(indexRemoved, []);
+        }
+      });
+    };
   }
 ]);

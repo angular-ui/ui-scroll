@@ -145,32 +145,26 @@ class Adapter {
   }
 
   applyUpdatesIndex(index, newItems) {
-    if (index % 1 !== 0) { // checking if it is an integer
-      throw new Error('applyUpdates - ' + index + ' is not a valid index');
+    if (index % 1 !== 0) {
+      throw new Error('applyUpdates - ' + index + ' is not a valid index (should be an integer)');
     }
     const _index = index - this.buffer.first;
+    // apply updates only within buffer
     if (_index >= 0 && _index < this.buffer.length) {
       this.applyUpdate(this.buffer[_index], newItems);
     }
+    // out-of-buffer case: deletion may affect Paddings
     else if(index >= this.buffer.minIndex && index <= this.buffer.maxIndex) {
-      this.applyUpdateBuffer(index, newItems);
-    }
-  }
-
-  applyUpdateBuffer(index, newItems) {
-    if (!angular.isArray(newItems)) {
-      return;
-    }
-    // remove single item
-    if(!newItems.length) {
-      var isTop = index === this.buffer.minIndex;
-      if(isTop) {
-        this.buffer.minIndex++;
+      if(angular.isArray(newItems) && !newItems.length) {
+        var isTop = index === this.buffer.minIndex;
+        if(isTop) {
+          this.buffer.minIndex++;
+        }
+        else {
+          this.buffer.maxIndex--;
+        }
+        this.viewport.removeCacheItem(index, isTop);
       }
-      else {
-        this.buffer.maxIndex--;
-      }
-      this.viewport.removeCacheItem(index, isTop);
     }
   }
 

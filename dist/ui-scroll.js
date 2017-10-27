@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.4 -- 2017-10-27T14:36:39.214Z
+ * Version: 1.7.0-rc.4 -- 2017-10-27T16:00:08.995Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -261,32 +261,25 @@ var Adapter = function () {
     key: 'applyUpdatesIndex',
     value: function applyUpdatesIndex(index, newItems) {
       if (index % 1 !== 0) {
-        // checking if it is an integer
-        throw new Error('applyUpdates - ' + index + ' is not a valid index');
+        throw new Error('applyUpdates - ' + index + ' is not a valid index (should be an integer)');
       }
       var _index = index - this.buffer.first;
+      // apply updates only within buffer
       if (_index >= 0 && _index < this.buffer.length) {
         this.applyUpdate(this.buffer[_index], newItems);
-      } else if (index >= this.buffer.minIndex && index <= this.buffer.maxIndex) {
-        this.applyUpdateBuffer(index, newItems);
       }
-    }
-  }, {
-    key: 'applyUpdateBuffer',
-    value: function applyUpdateBuffer(index, newItems) {
-      if (!angular.isArray(newItems)) {
-        return;
-      }
-      // remove single item
-      if (!newItems.length) {
-        var isTop = index === this.buffer.minIndex;
-        if (isTop) {
-          this.buffer.minIndex++;
-        } else {
-          this.buffer.maxIndex--;
+      // out-of-buffer case: deletion may affect Paddings
+      else if (index >= this.buffer.minIndex && index <= this.buffer.maxIndex) {
+          if (angular.isArray(newItems) && !newItems.length) {
+            var isTop = index === this.buffer.minIndex;
+            if (isTop) {
+              this.buffer.minIndex++;
+            } else {
+              this.buffer.maxIndex--;
+            }
+            this.viewport.removeCacheItem(index, isTop);
+          }
         }
-        this.viewport.removeCacheItem(index, isTop);
-      }
     }
   }, {
     key: 'applyUpdate',
