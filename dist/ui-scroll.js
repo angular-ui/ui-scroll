@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.4 -- 2017-10-27T14:33:18.066Z
+ * Version: 1.7.0-rc.4 -- 2017-10-27T14:36:39.214Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1581,7 +1581,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       var updates = updateDOM();
 
       // We need the item bindings to be processed before we can do adjustments
-      !$scope.$$phase && !$scope.$root.$$phase && $scope.$digest();
+      !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
 
       updates.inserted.forEach(function (w) {
         return elementRoutines.showElement(w);
