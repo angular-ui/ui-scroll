@@ -104,6 +104,11 @@ app.factory('Server', [
         for (var i = 0; i < length; i++) {
           if (this.data[i].id === itemId) {
             var indexRemoved = this.data[i].index;
+            if(indexRemoved > this.firstIndex) {
+              for (var j = i; j < length; j++) {
+                this.data[j].index--;
+              }
+            }
             this.data.splice(i, 1);
             this.setIndicies();
             return this.returnDeferredResult(indexRemoved);
