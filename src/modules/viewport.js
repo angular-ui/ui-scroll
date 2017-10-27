@@ -182,9 +182,9 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       bottomPadding.cache.clear();
     },
 
-    removeCacheItem(item) {
-      topPadding.cache.remove(item);
-      bottomPadding.cache.remove(item);
+    removeCacheItem(item, isTop) {
+      topPadding.cache.remove(item, isTop);
+      bottomPadding.cache.remove(item, isTop);
     },
 
     removeItem(item) {
