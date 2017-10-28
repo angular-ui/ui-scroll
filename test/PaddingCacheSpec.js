@@ -68,10 +68,10 @@ describe('uiScroll Paddings cache', () => {
     }
   }
 
-  function checkRow(viewport, row, content) {
-    const children = viewport.children();
-    if(row < 0) { // from the end
-      row = children.length - 2 + row;
+  function checkRow(viewport, row, content, tail = false) {
+    var children = viewport.children();
+    if(tail) {
+      row = children.length - 1 - row;
     }
     const rowElement = children[row];
     expect(rowElement.innerHTML).toBe(content);
@@ -110,7 +110,7 @@ describe('uiScroll Paddings cache', () => {
 
           scrollBottom(viewport, MAX);
           expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight);
-          checkRow(viewport, -1, (itemsCount - 2) + ': item' + (itemsCount - 2));
+          checkRow(viewport, 1, (itemsCount - 1) + ': item' + (itemsCount - 1), true);
         }
       );
     });
@@ -135,7 +135,31 @@ describe('uiScroll Paddings cache', () => {
 
           scrollBottom(viewport, MAX);
           expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight * 2);
-          checkRow(viewport, -1, (itemsCount - 3) + ': item' + (itemsCount - 3));
+          checkRow(viewport, 1, (itemsCount - 2) + ': item' + (itemsCount - 2), true);
+        }
+      );
+    });
+
+    it('should delete pre-last row', function () {
+      var datasource;
+      inject(function(myResponsiveDatasource) {
+        datasource = myResponsiveDatasource;
+      });
+      runTest(scrollSettings,
+        function (viewport, scope) {
+
+          scrollBottom(viewport, MAX);
+          scrollTop(viewport);
+
+          var initialBottomHeight = getBottomPaddingHeight(viewport);
+          removeItem(datasource, datasource.max - 1);
+          scope.adapter.applyUpdates(itemsCount - 1, []);
+          expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
+
+          scrollBottom(viewport, MAX);
+          expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight);
+          checkRow(viewport, 1, (itemsCount - 1) + ': item' + itemsCount, true);
+          checkRow(viewport, 2, (itemsCount - 2) + ': item' + (itemsCount - 2), true);
         }
       );
     });
@@ -182,6 +206,29 @@ describe('uiScroll Paddings cache', () => {
           scrollTop(viewport);
           expect(getTopPaddingHeight(viewport)).toBe(0);
           checkRow(viewport, 1, '3: item3');
+        }
+      );
+    });
+
+    it('should delete second', function () {
+      var datasource;
+      inject(function(myResponsiveDatasource) {
+        datasource = myResponsiveDatasource;
+      });
+      runTest(scrollSettings,
+        function (viewport, scope) {
+
+          scrollBottom(viewport, MAX);
+
+          var initialTopHeight = getTopPaddingHeight(viewport);
+          removeItem(datasource, datasource.min  + 1);
+          scope.adapter.applyUpdates(2, []);
+          expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 1);
+
+          scrollTop(viewport);
+          expect(getTopPaddingHeight(viewport)).toBe(0);
+          checkRow(viewport, 1, '1: item1');
+          checkRow(viewport, 2, '2: item3');
         }
       );
     });
