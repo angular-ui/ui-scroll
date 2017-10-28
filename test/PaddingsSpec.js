@@ -282,33 +282,33 @@ describe('uiScroll Paddings spec.', () => {
       );
     });
 
-    // it('should append 3 rows via index-based applyUpdates when min/max indicies are set', () => {
-    //   runTest(Object.assign({}, scrollSettings, { startIndex: 28 }),
-    //     (viewport, scope) => {
-    //       const newItems = [
-    //         'item' + (datasource.max + 1),
-    //         'item' + (datasource.max + 2),
-    //         'item' + (datasource.max + 3)
-    //       ];
-    //       const oldMax = datasource.max;
-    //       const _scrollTop = viewport.scrollTop();
+    it('should append 3 rows via index-based applyUpdates when min/max indicies are set', () => {
+      runTest(Object.assign({}, scrollSettings, { startIndex: 28 }),
+        (viewport, scope) => {
+          const newItems = [
+            'item' + (datasource.max + 1),
+            'item' + (datasource.max + 2),
+            'item' + (datasource.max + 3)
+          ];
+          const oldMax = datasource.max;
 
-    //       datasource.minIndex = datasource.min;
-    //       datasource.maxIndex = datasource.max;
+          datasource.minIndex = datasource.min;
+          datasource.maxIndex = datasource.max;
+          const _scrollTop = viewport.scrollTop();
 
-    //       insertItems(datasource, datasource.max, newItems);
-    //       scope.adapter.applyUpdates(oldMax, ['item' + oldMax, ...newItems]);
+          insertItems(datasource, datasource.max, newItems);
+          scope.adapter.applyUpdates(oldMax, ['item' + oldMax, ...newItems]);
 
-    //       scrollBottom(viewport);
-    //       expect(viewport.scrollTop()).toBe(_scrollTop + newItems.length * itemHeight);
+          scrollBottom(viewport);
+          expect(viewport.scrollTop()).toBe(_scrollTop + newItems.length * itemHeight);
 
-    //       checkRow(viewport, 1, (datasource.max - 0) + ': ' + newItems[2], true);
-    //       checkRow(viewport, 2, (datasource.max - 1) + ': ' + newItems[1], true);
-    //       checkRow(viewport, 3, (datasource.max - 2) + ': ' + newItems[0], true);
-    //       checkRow(viewport, 4, oldMax + ': item' + oldMax, true);
-    //     }
-    //   );
-    // });
+          checkRow(viewport, 1, (datasource.max - 0) + ': ' + newItems[2], true);
+          checkRow(viewport, 2, (datasource.max - 1) + ': ' + newItems[1], true);
+          checkRow(viewport, 3, (datasource.max - 2) + ': ' + newItems[0], true);
+          checkRow(viewport, 4, oldMax + ': item' + oldMax, true);
+        }
+      );
+    });
 
   });
 
