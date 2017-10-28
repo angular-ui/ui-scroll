@@ -126,13 +126,27 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
         return;
       }
 
-      // precise heights calculation, items that were in buffer once
-      let topPaddingHeight = topPadding.cache.reduce((summ, item) => summ + (item.index < buffer.first ? item.height : 0), 0);
-      let bottomPaddingHeight = bottomPadding.cache.reduce((summ, item) => summ + (item.index >= buffer.next ? item.height : 0), 0);
+      // precise heights calculation based on items that are in buffer or that were in buffer once
+      const visibleItemsHeight = buffer.reduce((summ, item) => summ + item.element.outerHeight(true), 0);
 
-      // average item height based on buffer data
-      let visibleItemsHeight = buffer.reduce((summ, item) => summ + item.element.outerHeight(true), 0);
-      let averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
+      let topPaddingHeight = 0, topCount = 0;
+      topPadding.cache.forEach(item => {
+        if(item.index < buffer.first) {
+          topPaddingHeight += item.height;
+          topCount++;
+        }
+      });
+
+      let bottomPaddingHeight = 0, bottomCount = 0;
+      bottomPadding.cache.forEach(item => {
+        if(item.index >= buffer.next) {
+          bottomPaddingHeight += item.height;
+          bottomCount++;
+        }
+      });
+
+      const totalHeight = visibleItemsHeight + topPaddingHeight + bottomPaddingHeight;
+      const averageItemHeight = totalHeight / (topCount + bottomCount + buffer.length);
 
       // average heights calculation, items that have never been reached
       let adjustTopPadding = buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser;
