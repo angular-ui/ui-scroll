@@ -1,9 +1,15 @@
 /*global describe, beforeEach, module, it, expect, runTest */
-describe('uiScroll Paddings cache', () => {
+describe('uiScroll Paddings spec.', () => {
   'use strict';
 
+  let datasource;
   beforeEach(module('ui.scroll'));
   beforeEach(module('ui.scroll.test.datasources'));
+  beforeEach(
+    inject(function(myResponsiveDatasource) {
+      datasource = myResponsiveDatasource;
+    })
+  );
 
   const itemsCount = 30;
   const itemHeight = 100;
@@ -60,9 +66,9 @@ describe('uiScroll Paddings cache', () => {
 
   function insertItems(datasource, index, items = []) {
     if(index >= datasource.min && index <= datasource.max && items.length) {
-      const index = datasource.data.indexOf(datasource.data[index - datasource.min]);
-      if(index > -1) {
-        datasource.data.splice(index, 0, items);
+      const indexToInsert = datasource.data.indexOf(datasource.data[index - datasource.min]);
+      if(indexToInsert > -1) {
+        datasource.data.splice(indexToInsert, 0, items);
         datasource.max += items.length;
       }
     }
@@ -77,11 +83,7 @@ describe('uiScroll Paddings cache', () => {
     expect(rowElement.innerHTML).toBe(content);
   }
 
-  it('should set up properly', () => {
-    let datasource;
-    inject(function(myResponsiveDatasource) {
-      datasource = myResponsiveDatasource;
-    });
+  it('\nshould set up properly', () => {
     runTest(scrollSettings,
       () => {
         expect(datasource.min).toBe(1);
@@ -90,13 +92,9 @@ describe('uiScroll Paddings cache', () => {
     );
   });
 
-  describe('removing outside the buffer via indexed-based applyUpdates\n', () => {
+  describe('Removing outside the buffer via indexed-based applyUpdates\n', () => {
 
     it('should delete last row', () => {
-      let datasource;
-      inject(function(myResponsiveDatasource) {
-        datasource = myResponsiveDatasource;
-      });
       runTest(scrollSettings,
         (viewport, scope) => {
 
@@ -116,10 +114,6 @@ describe('uiScroll Paddings cache', () => {
     });
 
     it('should delete last row and then the next after last', () => {
-      let datasource;
-      inject(function(myResponsiveDatasource) {
-        datasource = myResponsiveDatasource;
-      });
       runTest(scrollSettings,
         (viewport, scope) => {
 
@@ -140,18 +134,14 @@ describe('uiScroll Paddings cache', () => {
       );
     });
 
-    it('should delete pre-last row', function () {
-      var datasource;
-      inject(function(myResponsiveDatasource) {
-        datasource = myResponsiveDatasource;
-      });
+    it('should delete pre-last row', () => {
       runTest(scrollSettings,
-        function (viewport, scope) {
+        (viewport, scope) => {
 
           scrollBottom(viewport, MAX);
           scrollTop(viewport);
 
-          var initialBottomHeight = getBottomPaddingHeight(viewport);
+          const initialBottomHeight = getBottomPaddingHeight(viewport);
           removeItem(datasource, datasource.max - 1);
           scope.adapter.applyUpdates(itemsCount - 1, []);
           expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
@@ -165,10 +155,6 @@ describe('uiScroll Paddings cache', () => {
     });
 
     it('should delete first row', () => {
-      let datasource;
-      inject(function(myResponsiveDatasource) {
-        datasource = myResponsiveDatasource;
-      });
       runTest(scrollSettings,
         (viewport, scope) => {
 
@@ -187,10 +173,6 @@ describe('uiScroll Paddings cache', () => {
     });
 
     it('should delete first row and then the next after first', () => {
-      let datasource;
-      inject(function(myResponsiveDatasource) {
-        datasource = myResponsiveDatasource;
-      });
       runTest(scrollSettings,
         (viewport, scope) => {
 
@@ -210,17 +192,13 @@ describe('uiScroll Paddings cache', () => {
       );
     });
 
-    it('should delete second', function () {
-      var datasource;
-      inject(function(myResponsiveDatasource) {
-        datasource = myResponsiveDatasource;
-      });
+    it('should delete second', () => {
       runTest(scrollSettings,
-        function (viewport, scope) {
+        (viewport, scope) => {
 
           scrollBottom(viewport, MAX);
 
-          var initialTopHeight = getTopPaddingHeight(viewport);
+          const initialTopHeight = getTopPaddingHeight(viewport);
           removeItem(datasource, datasource.min  + 1);
           scope.adapter.applyUpdates(2, []);
           expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 1);
@@ -232,16 +210,11 @@ describe('uiScroll Paddings cache', () => {
         }
       );
     });
-
   });
 
-  describe('removing inside the buffer\n', () => {
+  describe('Removing inside the buffer\n', () => {
 
     it('should delete second row via index-based applyUpdates', () => {
-      let datasource;
-      inject(function(myResponsiveDatasource) {
-        datasource = myResponsiveDatasource;
-      });
       runTest(scrollSettings,
         (viewport, scope) => {
 
@@ -262,10 +235,6 @@ describe('uiScroll Paddings cache', () => {
     });
 
     it('should delete second row via function-based applyUpdates', () => {
-      let datasource;
-      inject(function(myResponsiveDatasource) {
-        datasource = myResponsiveDatasource;
-      });
       runTest(scrollSettings,
         (viewport, scope) => {
 
@@ -284,7 +253,6 @@ describe('uiScroll Paddings cache', () => {
         }
       );
     });
-
   });
 
 });
