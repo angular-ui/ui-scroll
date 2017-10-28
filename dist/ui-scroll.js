@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.4 -- 2017-10-27T16:00:08.995Z
+ * Version: 1.7.0-rc.4 -- 2017-10-28T17:17:41.326Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1027,19 +1027,31 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
         return;
       }
 
-      // precise heights calculation, items that were in buffer once
-      var topPaddingHeight = topPadding.cache.reduce(function (summ, item) {
-        return summ + (item.index < buffer.first ? item.height : 0);
-      }, 0);
-      var bottomPaddingHeight = bottomPadding.cache.reduce(function (summ, item) {
-        return summ + (item.index >= buffer.next ? item.height : 0);
-      }, 0);
-
-      // average item height based on buffer data
+      // precise heights calculation based on items that are in buffer or that were in buffer once
       var visibleItemsHeight = buffer.reduce(function (summ, item) {
         return summ + item.element.outerHeight(true);
       }, 0);
-      var averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
+
+      var topPaddingHeight = 0,
+          topCount = 0;
+      topPadding.cache.forEach(function (item) {
+        if (item.index < buffer.first) {
+          topPaddingHeight += item.height;
+          topCount++;
+        }
+      });
+
+      var bottomPaddingHeight = 0,
+          bottomCount = 0;
+      bottomPadding.cache.forEach(function (item) {
+        if (item.index >= buffer.next) {
+          bottomPaddingHeight += item.height;
+          bottomCount++;
+        }
+      });
+
+      var totalHeight = visibleItemsHeight + topPaddingHeight + bottomPaddingHeight;
+      var averageItemHeight = totalHeight / (topCount + bottomCount + buffer.length);
 
       // average heights calculation, items that have never been reached
       var adjustTopPadding = buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser;
