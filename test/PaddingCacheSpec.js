@@ -1,16 +1,16 @@
 /*global describe, beforeEach, module, it, expect, runTest */
-describe('uiScroll Paddings cache', function () {
+describe('uiScroll Paddings cache', () => {
   'use strict';
 
   beforeEach(module('ui.scroll'));
   beforeEach(module('ui.scroll.test.datasources'));
 
-  var itemsCount = 30;
-  var itemHeight = 100;
-  var viewportHeight = 500;
-  var MAX = 3; // maximum scrolling interations to reach out the EOF/BOF
+  const itemsCount = 30;
+  const itemHeight = 100;
+  const viewportHeight = 500;
+  const MAX = 3; // maximum scrolling interations to reach out the EOF/BOF
 
-  var scrollSettings = {
+  const scrollSettings = {
     datasource: 'myResponsiveDatasource',
     adapter: 'adapter',
     itemHeight: itemHeight,
@@ -18,14 +18,14 @@ describe('uiScroll Paddings cache', function () {
   };
 
   function getBottomPaddingHeight(viewport) {
-    var viewportChildren = viewport.children();
-    var bottomPadding = viewportChildren[viewportChildren.length - 1];
+    const viewportChildren = viewport.children();
+    const bottomPadding = viewportChildren[viewportChildren.length - 1];
     return parseInt(angular.element(bottomPadding).css('height'), 10);
   }
 
   function getTopPaddingHeight(viewport) {
-    var viewportChildren = viewport.children();
-    var topPadding = viewportChildren[0];
+    const viewportChildren = viewport.children();
+    const topPadding = viewportChildren[0];
     return parseInt(angular.element(topPadding).css('height'), 10);
   }
 
@@ -45,53 +45,65 @@ describe('uiScroll Paddings cache', function () {
 
   function removeItem(datasource, index) {
     if(index >= datasource.min && index <= datasource.max) {
-      var indexRemoved = datasource.data.indexOf(datasource.data[index - datasource.min]);
-      datasource.data.splice(indexRemoved, 1);
-      if(index === datasource.min) {
-        datasource.min++;
+      const indexRemoved = datasource.data.indexOf(datasource.data[index - datasource.min]);
+      if(indexRemoved > -1) {
+        datasource.data.splice(indexRemoved, 1);
+        if(index === datasource.min) {
+          datasource.min++;
+        }
+        else {
+          datasource.max--;
+        } 
       }
-      else {
-        datasource.max--;
+    }
+  }
+
+  function insertItems(datasource, index, items = []) {
+    if(index >= datasource.min && index <= datasource.max && items.length) {
+      const index = datasource.data.indexOf(datasource.data[index - datasource.min]);
+      if(index > -1) {
+        datasource.data.splice(index, 0, items);
+        datasource.max += items.length;
       }
     }
   }
 
   function checkRow(viewport, row, content) {
-    var children = viewport.children();
+    const children = viewport.children();
     if(row < 0) { // from the end
       row = children.length - 2 + row;
     }
-    var rowElement = children[row];
+    const rowElement = children[row];
     expect(rowElement.innerHTML).toBe(content);
   }
 
-  it('should set up properly', function () {
-    var datasource;
+  it('should set up properly', () => {
+    let datasource;
     inject(function(myResponsiveDatasource) {
       datasource = myResponsiveDatasource;
     });
     runTest(scrollSettings,
-      function () {
+      () => {
         expect(datasource.min).toBe(1);
         expect(datasource.max).toBe(itemsCount);
       }
     );
   });
 
-  describe('removing outside the buffer via indexed-based applyUpdates\n', function () {
+  describe('removing outside the buffer via indexed-based applyUpdates\n', () => {
 
-    it('should delete last row', function () {
-      var datasource;
+    it('should delete last row', () => {
+      let datasource;
       inject(function(myResponsiveDatasource) {
         datasource = myResponsiveDatasource;
       });
       runTest(scrollSettings,
-        function (viewport, scope) {
+        (viewport, scope) => {
 
           scrollBottom(viewport, MAX);
           scrollTop(viewport);
 
-          var initialBottomHeight = getBottomPaddingHeight(viewport);
+          const initialBottomHeight = getBottomPaddingHeight(viewport);
           removeItem(datasource, datasource.max);
           scope.adapter.applyUpdates(itemsCount, []);
           expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
@@ -103,18 +115,18 @@ describe('uiScroll Paddings cache', function () {
       );
     });
 
-    it('should delete last row and then the next after last', function () {
-      var datasource;
+    it('should delete last row and then the next after last', () => {
+      let datasource;
       inject(function(myResponsiveDatasource) {
         datasource = myResponsiveDatasource;
       });
       runTest(scrollSettings,
-        function (viewport, scope) {
+        (viewport, scope) => {
 
           scrollBottom(viewport, MAX);
           scrollTop(viewport);
 
-          var initialBottomHeight = getBottomPaddingHeight(viewport);
+          const initialBottomHeight = getBottomPaddingHeight(viewport);
           removeItem(datasource, datasource.max);
           scope.adapter.applyUpdates(itemsCount, []);
           removeItem(datasource, datasource.max);
@@ -128,17 +140,17 @@ describe('uiScroll Paddings cache', function () {
       );
     });
 
-    it('should delete first row', function () {
-      var datasource;
+    it('should delete first row', () => {
+      let datasource;
       inject(function(myResponsiveDatasource) {
         datasource = myResponsiveDatasource;
       });
       runTest(scrollSettings,
-        function (viewport, scope) {
+        (viewport, scope) => {
 
           scrollBottom(viewport, MAX);
 
-          var initialTopHeight = getTopPaddingHeight(viewport);
+          const initialTopHeight = getTopPaddingHeight(viewport);
           removeItem(datasource, datasource.min);
           scope.adapter.applyUpdates(1, []);
           expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight);
@@ -150,17 +162,17 @@ describe('uiScroll Paddings cache', function () {
       );
     });
 
-    it('should delete first row and then the next after first', function () {
-      var datasource;
+    it('should delete first row and then the next after first', () => {
+      let datasource;
       inject(function(myResponsiveDatasource) {
         datasource = myResponsiveDatasource;
       });
       runTest(scrollSettings,
-        function (viewport, scope) {
+        (viewport, scope) => {
 
           scrollBottom(viewport, MAX);
 
-          var initialTopHeight = getTopPaddingHeight(viewport);
+          const initialTopHeight = getTopPaddingHeight(viewport);
           removeItem(datasource, datasource.min);
           scope.adapter.applyUpdates(1, []);
           removeItem(datasource, datasource.min);
@@ -176,15 +188,15 @@ describe('uiScroll Paddings cache', function () {
 
   });
 
-  describe('removing inside the buffer\n', function () {
+  describe('removing inside the buffer\n', () => {
 
-    it('should delete second row via index-based applyUpdates', function () {
-      var datasource;
+    it('should delete second row via index-based applyUpdates', () => {
+      let datasource;
       inject(function(myResponsiveDatasource) {
         datasource = myResponsiveDatasource;
       });
       runTest(scrollSettings,
-        function (viewport, scope) {
+        (viewport, scope) => {
 
           removeItem(datasource, datasource.min + 1);
           scope.adapter.applyUpdates(2, []);
@@ -202,20 +214,16 @@ describe('uiScroll Paddings cache', function () {
       );
     });
 
-    it('should delete second row via function-based applyUpdates', function () {
-      var datasource;
+    it('should delete second row via function-based applyUpdates', () => {
+      let datasource;
       inject(function(myResponsiveDatasource) {
         datasource = myResponsiveDatasource;
       });
       runTest(scrollSettings,
-        function (viewport, scope) {
+        (viewport, scope) => {
 
           removeItem(datasource, datasource.min + 1);
-          scope.adapter.applyUpdates(function(item) {
-            if(item === 'item2') {
-              return [];
-            }
-          });
+          scope.adapter.applyUpdates(item => item === 'item2' ? [] : null);
 
           checkRow(viewport, 1, '1: item1');
           checkRow(viewport, 2, '2: item3');

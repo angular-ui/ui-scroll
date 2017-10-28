@@ -8,12 +8,13 @@ function createHtml(settings) {
   var disabled = settings.disabled ? ' disabled="' + settings.disabled + '"' : '';
   var adapter = settings.adapter ? ' adapter="' + settings.adapter + '"' : '';
   var template = settings.template ? settings.template : '{{$index}}: {{item}}';
+  var startIndex = settings.startIndex ? ' start-index="' + settings.startIndex + '"' : '';
   var extra = settings.extra || '';
   return '<div ui-scroll-viewport' + viewportStyle + '>' +
     (settings.wrapper ? settings.wrapper.start : '') +
     '<div class="item" ui-scroll="item in ' + settings.datasource + '"' +
     adapter +
-    itemStyle + bufferSize + padding + isLoading + topVisible + disabled + extra + '>' +
+    itemStyle + bufferSize + padding + isLoading + topVisible + disabled + startIndex + extra + '>' +
     template +
     '</div>' +
     (settings.wrapper ? settings.wrapper.end : '') +
