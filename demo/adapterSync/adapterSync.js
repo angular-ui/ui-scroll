@@ -13,6 +13,8 @@ app.factory('Server', [
 
       data: [],
 
+      absIndex: 1,
+
       generateId: function () {
         var d = '-';
         function S4() {
@@ -21,11 +23,11 @@ app.factory('Server', [
         return (S4() + S4() + d + S4() + d + S4() + d + S4() + d + S4() + S4() + S4());
       },
 
-      generateItem: function (number) {
+      generateItem: function (index) {
         return {
-          index: number,
+          index: index,
           id: this.generateId(),
-          content: 'Item #' + number
+          content: 'Item #' + this.absIndex++
         }
       },
 
@@ -68,16 +70,14 @@ app.factory('Server', [
       },
 
       prependItem: function (params) {
-        var prependedDataIndex = this.firstIndex-- - 1;
-        var newItem = this.generateItem(prependedDataIndex);
+        var newItem = this.generateItem(--this.firstIndex);
         newItem.content += params;
         this.data.unshift(newItem);
         return this.returnDeferredResult(newItem);
       },
 
       appendItem: function (params) {
-        var appendedDataIndex = this.lastIndex++ + 1;
-        var newItem = this.generateItem(appendedDataIndex);
+        var newItem = this.generateItem(++this.lastIndex);
         newItem.content += params;
         this.data.push(newItem);
         return this.returnDeferredResult(newItem);
@@ -88,13 +88,29 @@ app.factory('Server', [
         for (var i = 0; i < length; i++) {
           if (this.data[i].id === itemId) {
             this.data.splice(i, 1);
-            for (var j = i; j < length - 1; j++) {
-              this.data[j].index--;
-            }
+            this.setIndicies();
             return this.returnDeferredResult(true);
           }
         }
         return this.returnDeferredResult(false);
+      },
+
+      setIndicies: function() {
+        if(!this.data.length) {
+          this.firstIndex = 1;
+          this.lastIndex = 1;
+          return;
+        }
+        this.firstIndex = this.data[0].index;
+        this.lastIndex = this.data[0].index;
+        for (var i = this.data.length - 1; i >= 0; i--) {
+          if(this.data[i].index > this.lastIndex) {
+            this.lastIndex = this.data[i].index;
+          }
+          if(this.data[i].index < this.firstIndex) {
+            this.firstIndex = this.data[i].index;
+          }
+        }
       }
     };
 
@@ -109,7 +125,9 @@ app.factory('Server', [
 app.controller('mainController', [
   '$scope', 'Server', function ($scope, Server) {
 
-    $scope.datasource = {
+    var ctrl = this;
+
+    ctrl.datasource = {
       get: function (index, count, success) {
         console.log('request by index = ' + index + ', count = ' + count);
         Server.request(index, count).then(function (result) {
@@ -121,34 +139,40 @@ app.controller('mainController', [
       }
     };
 
-    $scope.prepend = function () {
+    $scope.$watch('adapter', (prev, next) => {
+      console.log('The adapter has been initialized');
+    });
+
+    ctrl.prepend = function () {
       Server.prependItem(' ***').then(function (newItem) {
-        if ($scope.adapter.isBOF()) {
-          $scope.adapter.prepend([newItem]);
+        if (ctrl.adapter.isBOF()) {
+          ctrl.adapter.prepend([newItem]);
         }
       });
     };
 
-    $scope.append = function () {
+    ctrl.append = function () {
       Server.appendItem(' ***').then(function (newItem) {
-        if ($scope.adapter.isEOF()) {
-          $scope.adapter.append([newItem]);
+        if (ctrl.adapter.isEOF()) {
+          ctrl.adapter.append([newItem]);
         }
       });
     };
 
-    /*$scope.removeAll = function () {
-      $scope.adapter.applyUpdates(function (item) {
+    // todo dhilt : need to implement it properly
+    ctrl.removeAll = function () {
+      ctrl.adapter.applyUpdates(function (item) {
         if (item.id) {
+          Server.removeItemById(item.id);
           return [];
         }
       });
-    };*/
+    };
 
-    $scope.remove = function (itemRemove) {
+    ctrl.remove = function (itemRemove) {
       Server.removeItemById(itemRemove.id).then(function (result) {
         if (result) {
-          $scope.adapter.applyUpdates(function (item) {
+          ctrl.adapter.applyUpdates(function (item) {
             if (item.id === itemRemove.id) {
               return [];
             }

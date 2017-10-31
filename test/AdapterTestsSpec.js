@@ -173,15 +173,15 @@ describe('uiScroll', function () {
 
           var row2 = viewport.children()[1];
           expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('1: two');
+          expect(row2.innerHTML).toBe('2: two');
 
           var row3 = viewport.children()[2];
           expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('2: three');
+          expect(row3.innerHTML).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: two');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: three');
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('2: two');
+          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('3: three');
         }
       );
     });
@@ -257,35 +257,36 @@ describe('uiScroll', function () {
 
           var row0 = viewport.children()[1];
           expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('1: before one');
+          expect(row0.innerHTML).toBe('0: before one');
 
           var row1 = viewport.children()[2];
           expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: one');
+          expect(row1.innerHTML).toBe('1: one');
 
           var row2 = viewport.children()[3];
           expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('3: two');
+          expect(row2.innerHTML).toBe('2: two');
 
           var row3 = viewport.children()[4];
           expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('4: three');
+          expect(row3.innerHTML).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: before one');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('0: before one');
+          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('3: three');
         }
       );
     });
 
     it('should insert a new element after selected (first) row', function () {
+      var scrollSettings = {datasource: 'myObjectDatasource', adapter: 'adapter', template: '{{$index}}: {{item.text}}'};
       runTest(scrollSettings,
         function (viewport, scope) {
 
           scope.adapter.applyUpdates(
             function (item) {
-              if (item === 'one')
-                return [item, 'after one'];
+              if (item.text === 'one')
+                return [item, {text: 'after one'}];
             }
           );
 
@@ -535,15 +536,15 @@ describe('uiScroll', function () {
 
           var row2 = viewport.children()[1];
           expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('1: two');
+          expect(row2.innerHTML).toBe('2: two');
 
           var row3 = viewport.children()[2];
           expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('2: three');
+          expect(row3.innerHTML).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: two');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: three');
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('2: two');
+          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('3: three');
         }
       );
     });
@@ -604,23 +605,23 @@ describe('uiScroll', function () {
 
           var row0 = viewport.children()[1];
           expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('1: before one');
+          expect(row0.innerHTML).toBe('0: before one');
 
           var row1 = viewport.children()[2];
           expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: one');
+          expect(row1.innerHTML).toBe('1: one');
 
           var row2 = viewport.children()[3];
           expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('3: two');
+          expect(row2.innerHTML).toBe('2: two');
 
           var row3 = viewport.children()[4];
           expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('4: three');
+          expect(row3.innerHTML).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: before one');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('0: before one');
+          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('3: three');
         }
       );
     });
@@ -816,35 +817,35 @@ describe('uiScroll', function () {
 
           row1 = viewport.children()[1];
           expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one *1 before 1');
+          expect(row1.innerHTML).toBe('-1: one *1 before 1');
 
           row1 = viewport.children()[2];
           expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: one *1 before 2');
+          expect(row1.innerHTML).toBe('0: one *1 before 2');
 
           row1 = viewport.children()[3];
           expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('3: one *1');
+          expect(row1.innerHTML).toBe('1: one *1');
 
           row1 = viewport.children()[4];
           expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('4: one *1 after 1');
+          expect(row1.innerHTML).toBe('2: one *1 after 1');
 
           row1 = viewport.children()[5];
           expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('5: one *1 after 2');
+          expect(row1.innerHTML).toBe('3: one *1 after 2');
 
           row2 = viewport.children()[6];
           expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('6: two');
+          expect(row2.innerHTML).toBe('4: two');
 
           row3 = viewport.children()[7];
           expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('7: three');
+          expect(row3.innerHTML).toBe('5: three');
 
           expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one *1 before 1');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('7: three');
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: one *1 before 1');
+          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('5: three');
         }
       );
     });

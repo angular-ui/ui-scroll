@@ -113,29 +113,6 @@ class Adapter {
     return !this.buffer.length;
   }
 
-  applyUpdates(arg1, arg2) {
-    if (angular.isFunction(arg1)) {
-      // arg1 is the updater function, arg2 is ignored
-      this.buffer.slice(0).forEach((wrapper) => {
-        // we need to do it on the buffer clone, because buffer content
-        // may change as we iterate through
-        this.applyUpdate(wrapper, arg1(wrapper.item, wrapper.scope, wrapper.element));
-      });
-    } else {
-      // arg1 is item index, arg2 is the newItems array
-      if (arg1 % 1 !== 0) {// checking if it is an integer
-        throw new Error('applyUpdates - ' + arg1 + ' is not a valid index');
-      }
-
-      const index = arg1 - this.buffer.first;
-      if ((index >= 0 && index < this.buffer.length)) {
-        this.applyUpdate(this.buffer[index], arg2);
-      }
-    }
-
-    this.adjustBuffer();
-  }
-
   append(newItems) {
     this.buffer.append(newItems);
     this.adjustBuffer();
@@ -148,6 +125,54 @@ class Adapter {
     this.adjustBuffer();
     this.viewport.clipTop();
     this.viewport.clipBottom();
+  }
+
+  applyUpdates(arg1, arg2) {
+    if (angular.isFunction(arg1)) {
+      this.applyUpdatesFunc(arg1);
+    } else {
+      this.applyUpdatesIndex(arg1, arg2);
+    }
+    this.adjustBuffer();
+  }
+
+  applyUpdatesFunc(cb) {
+    this.buffer.slice(0).forEach((wrapper) => {
+      // we need to do it on the buffer clone, because buffer content
+      // may change as we iterate through
+      this.applyUpdate(wrapper, cb(wrapper.item, wrapper.scope, wrapper.element));
+    });
+  }
+
+  applyUpdatesIndex(index, newItems) {
+    if (index % 1 !== 0) { // checking if it is an integer
+      throw new Error('applyUpdates - ' + index + ' is not a valid index');
+    }
+    index -= this.buffer.first;
+    if ((index >= 0 && index < this.buffer.length)) {
+      this.applyUpdate(this.buffer[index], newItems);
+    }
+  }
+
+  applyUpdate(wrapper, newItems) {
+    if (!angular.isArray(newItems)) {
+      return;
+    }
+    let position = (this.buffer.indexOf(wrapper));
+    if (!newItems.reverse().some((newItem) => newItem === wrapper.item)) {
+      wrapper.op = 'remove';
+      if(position === 0 && !newItems.length) {
+        wrapper._op = 'isTop'; // to catch "first" edge case on remove
+      }
+    }
+    newItems.forEach((newItem) => {
+      if (newItem === wrapper.item) {
+        position--;
+      } else {
+        // 3 parameter (isTop) is to catch "first" edge case on insert
+        this.buffer.insert(position + 1, newItem, position === -1);
+      }
+    });
   }
 
   calculateProperties() {
@@ -169,7 +194,6 @@ class Adapter {
           this['topVisibleElement'] = item.element;
           this['topVisibleScope'] = item.scope;
         }
-
         if (!bottomDone && (top >= this.viewport.bottomVisiblePos() || (i === length - 1 && this.isEOF()))) {
           bottomDone = true;
           this['bottomVisible'] = item.item;
@@ -178,34 +202,11 @@ class Adapter {
         }
         topHeight += itemHeight;
       }
-
       rowTop = itemTop;
 
       if (topDone && bottomDone) {
         break;
       }
-    }
-  }
-
-  applyUpdate(wrapper, newItems) {
-    if (!angular.isArray(newItems)) {
-      return;
-    }
-
-    let keepIt;
-    let pos = (this.buffer.indexOf(wrapper)) + 1;
-
-    newItems.reverse().forEach((newItem) => {
-      if (newItem === wrapper.item) {
-        keepIt = true;
-        pos--;
-      } else {
-        this.buffer.insert(pos, newItem);
-      }
-    });
-
-    if (!keepIt) {
-      wrapper.op = 'remove';
     }
   }
 

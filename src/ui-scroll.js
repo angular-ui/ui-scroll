@@ -234,7 +234,7 @@ angular.module('ui.scroll', [])
           if (!isElementVisible(wrapper)) {
             wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(() => visibilityWatcher(wrapper));
           }
-          wrapper.element.addClass('ng-hide'); // hide inserted elements before data binding
+          elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
         }
 
         function createElement(wrapper, insertAfter, insertElement) {
@@ -340,19 +340,24 @@ angular.module('ui.scroll', [])
           }
         }
 
+        function processUpdates() {
+          const updates = updateDOM();
+
+          // We need the item bindings to be processed before we can do adjustments
+          !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+
+          updates.inserted.forEach(w => elementRoutines.showElement(w));
+          updates.prepended.forEach(w => elementRoutines.showElement(w));
+          return updates;
+        }
+
         function adjustBuffer(rid) {
           if (!rid) { // dismiss pending requests
             pending = [];
             rid = ++ridActual;
           }
 
-          let updates = updateDOM();
-
-          // We need the item bindings to be processed before we can do adjustment
-          !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
-
-          updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
-          updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
+          const updates = processUpdates();
 
           if (isInvalid(rid)) {
             return;
@@ -367,13 +372,7 @@ angular.module('ui.scroll', [])
         }
 
         function adjustBufferAfterFetch(rid) {
-          let updates = updateDOM();
-
-          // We need the item bindings to be processed before we can do adjustment
-          !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
-
-          updates.inserted.forEach(w => w.element.removeClass('ng-hide'));
-          updates.prepended.forEach(w => w.element.removeClass('ng-hide'));
+          const updates = processUpdates();
 
           viewport.onAfterPrepend(updates);
 
