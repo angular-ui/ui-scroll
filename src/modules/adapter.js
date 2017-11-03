@@ -1,25 +1,3 @@
-function getCtrlOnData(attr, element) {
-  let onSyntax = attr.match(/^(.+)(\s+on\s+)(.+)?/);
-  if (onSyntax && onSyntax.length === 4) {
-    window.console.log('Angular ui-scroll adapter assignment warning. "Controller On" syntax has been deprecated since ui-scroll v1.6.1.');
-    let ctrl = onSyntax[3];
-    let tail = onSyntax[1];
-    let candidate = element;
-    while (candidate.length) {
-      let candidateScope = candidate.scope(); // doesn't work when debugInfoEnabled flag = true
-      let candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
-      if (candidateName && candidateName[1] === ctrl) {
-        return {
-          target: candidateScope,
-          source: tail
-        };
-      }
-      candidate = candidate.parent();
-    }
-    throw new Error('Angular ui-scroll adapter assignment error. Failed to locate target controller "' + ctrl + '" to inject "' + tail + '"');
-  }
-}
-
 class Adapter {
 
   constructor(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope) {
@@ -43,18 +21,11 @@ class Adapter {
     if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
       return;
     }
-    let ctrlOnData = getCtrlOnData(adapterAttr, element);
     let adapterOnScope;
 
     try {
-      if (ctrlOnData) { // "Controller On", deprecated since v1.6.1
-        $parse(ctrlOnData.source).assign(ctrlOnData.target, {});
-        adapterOnScope = $parse(ctrlOnData.source)(ctrlOnData.target);
-      }
-      else {
-        $parse(adapterAttr).assign(this.startScope, {});
-        adapterOnScope = $parse(adapterAttr)(this.startScope);
-      }
+      $parse(adapterAttr).assign(this.startScope, {});
+      adapterOnScope = $parse(adapterAttr)(this.startScope);
     }
     catch (error) {
       error.message = `Angular ui-scroll Adapter assignment exception.\n` +

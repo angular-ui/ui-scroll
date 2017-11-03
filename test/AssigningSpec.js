@@ -139,36 +139,6 @@ describe('uiScroll', function () {
             executeTest(template, 'MyBottomController', 'ctrl');
         });
 
-        it('should work for "on" syntax (viewport)', function () {
-            var template =
-'<div ng-controller="MyTopController">' +
-    '<div ng-controller="MyInnerController" ng-if="name">' +
-        '<div ng-controller="MyBottomController" ng-if="name">' +
-            '<div ui-scroll-viewport style="height: 200px" ng-if="name">' +
-                '<div ui-scroll="item in myMultipageDatasource" adapter="adapter on MyInnerController">' +
-                    '{{$index}}: {{item}}' +
-                '</div>' +
-            '</div>' +
-        '</div>' +
-    '</div>' +
-'</div>';
-            executeTest(template, 'MyInnerController');
-        });
-
-        it('should work for "on" syntax (no viewport)', function () {
-            var template =
-'<div ng-controller="MyTopController">' +
-    '<div ng-controller="MyInnerController" ng-if="name">' +
-        '<div ng-controller="MyBottomController" ng-if="name">' +
-            '<div ui-scroll="item in myMultipageDatasource" adapter="adapter on MyInnerController">' +
-                '{{$index}}: {{item}}' +
-            '</div>' +
-        '</div>' +
-    '</div>' +
-'</div>';
-            executeTest(template, 'MyInnerController');
-        });
-
         it('should work for "Controller As" syntax (viewport)', function () {
             var template =
 '<div ng-controller="MyTopController">' +
