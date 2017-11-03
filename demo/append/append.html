@@ -5,6 +5,7 @@
 	<title>Append and prepend</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
 	<script src="../../dist/ui-scroll.js"></script>
+  <script src="server.js"></script>
 	<script src="append.js"></script>
 	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
 </head>
@@ -19,29 +20,19 @@
 	<div class="description">
 		<p>
 			This sample demonstrates an ability to append and prepend new items to the initial data set via adapter.
-			New appended and prepended items have to be synced and stored on the server side.
-			For this purpose a special Server factory was implemented to emulate the remote.
-			Three public methods are supported by this Server factory:<br/>
-		<ul>
-			<li>
-				<em>appendItem(params)</em> to add one new item (based on params) to the end of the remote data set,
-			</li>
-			<li>
-				<em>prependItem(params)</em> to add one new item (based on params) in the beginning of the remote data
-				set,
-			</li>
-			<li>
-				<em>request(index, count)</em> just to fetch a bunch of items for the viewport.
-			</li>
-		</ul>
-		The initial data set consists of 50 items and can be extended unlimitedly.
+			New appended and prepended items have to be synced with the real data source.
+			For this purpose a special Server module was implemented to emulate the remote.
+      The Server hides all indicies magic, so the front-end controller logic (ui-scroll datasource implementation) looks very simple.
 		</p>
 		<p>
-			Then we have <em>adapter.append()</em> and <em>adapter.prepend()</em> methods to provide an injection of
-			just created item to the viewport. Note that in this demo new items would not be appended to the viewport if
-			the EOF (end of file) is not reached. Also new items would not be prepended to the viewport if the BOF
-			(begin of file) is not reached. This is very important to build proper UI. Follow the sources of the demo!
+      Two methods are implemented on the controller's scope: prepend and append.
+      They work with two Server methods: prependItem and appendItem.
+      The additional point is that new items would not be appended to the viewport if the EOF (end of file) is not reached.
+      Also new items would not be prepended to the viewport if the BOF (begin of file) is not reached.
 		</p>
+    <p>
+      For more complex and powerful sample you may follow <a href="../adapterSync/adapterSync.html">this</a> demo.
+    </p>
 	</div>
 
 	<div class="actions">

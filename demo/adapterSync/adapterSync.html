@@ -39,12 +39,12 @@
   <div class="description">
     <p>
       This demo had been created to show Adapter 'append', 'prepend' and 'applyUpdates' methods in action.
-      The main point here is that all changes made on the front end have to be synced and stored on the back end.
+      The main point here is that all changes made on the front end have to be synced with the back end.
       For this purpose a special Server module was introduced to emulate the remote server.
       The following public methods are implemented by this Server factory:<br/>
     <ul>
       <li>
-        <b>request(index, count)</b> just to fetch a bunch of items for the viewport;
+        <b>request(index, count)</b> just to fetch a bunch of items for the viewport (used by ui-scroll datasource.get);
       </li>
       <li>
         <b>appendItem(params)</b> to add one new item (based on params) to the end of the remote data set;
@@ -71,9 +71,8 @@
       The implementation of the Server factory is not trivial, it is based on indicies variations.
       Also you may see that new items would not be appended (via 'Append one item' or
       'Insert some after index' buttons) to the viewport immediately if the EOF (end of file) is not reached.
-      The same is true for prepend operation ('Prepend one item'): BOF (begin of file) must be reached,
-      otherwise your new item will be rendered only after scrolling to the very top...
-      This is important to build proper UI.
+      The same is true for prepend operations ('Prepend one item'): BOF (begin of file) must be reached,
+      otherwise your new items will be rendered only after scrolling to the very top...
     </p>
   </div>
 

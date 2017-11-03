@@ -135,7 +135,7 @@ angular.module('server', []).factory('Server',
         return this.returnDeferredResult(null);
       },
 
-      setIndicies: function() {
+      setIndicies: function () {
         if(!this.data.length) {
           this.firstIndex = 1;
           this.lastIndex = 1;
@@ -157,6 +157,5 @@ angular.module('server', []).factory('Server',
     ServerFactory.init();
 
     return ServerFactory;
-
   }
 ]);
