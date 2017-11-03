@@ -43,12 +43,12 @@ describe('uiScroll', function () {
     });
 
     describe('datasource with 3 elements and buffersize 3 (new get signature)', function() {
-        var scrollSettings = { datasource: 'myNewOnePageDatasource', bufferSize: 3 };
+        var scrollSettings = { datasource: 'myDescriptorOnePageDatasource', bufferSize: 3 };
 
         it('should call get on the datasource 3 times ', function () {
             var spy;
-            inject(function (myNewOnePageDatasource) {
-                spy = spyOn(myNewOnePageDatasource, 'actualGet').and.callThrough();
+            inject(function (myDescriptorOnePageDatasource) {
+                spy = spyOn(myDescriptorOnePageDatasource, 'get').and.callThrough();
                 runTest(scrollSettings,
                     function () {
                         expect(spy.calls.all().length).toBe(3);

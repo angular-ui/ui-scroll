@@ -44,13 +44,13 @@ module.exports = function (grunt) {
     },
     karma: {
       options: {
-        configFile: './test/karma.conf.js',
+        configFile: './test/config/karma.conf.js',
         runnerPort: 9100
       },
       default: {},
       compressed: {
         options: {
-          files: require('./test/karma.conf.files.js').compressedFiles,
+          files: require('./test/config/karma.conf.files.js').compressedFiles,
           port: 9876,
           autoWatch: false,
           keepalive: false,

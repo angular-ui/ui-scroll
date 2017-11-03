@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.4 -- 2017-10-27T14:37:56.031Z
+ * Version: 1.7.0-rc.4 -- 2017-11-02T15:45:21.930Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -261,13 +261,25 @@ var Adapter = function () {
     key: 'applyUpdatesIndex',
     value: function applyUpdatesIndex(index, newItems) {
       if (index % 1 !== 0) {
-        // checking if it is an integer
-        throw new Error('applyUpdates - ' + index + ' is not a valid index');
+        throw new Error('applyUpdates - ' + index + ' is not a valid index (should be an integer)');
       }
-      index -= this.buffer.first;
-      if (index >= 0 && index < this.buffer.length) {
-        this.applyUpdate(this.buffer[index], newItems);
+      var _index = index - this.buffer.first;
+      // apply updates only within buffer
+      if (_index >= 0 && _index < this.buffer.length) {
+        this.applyUpdate(this.buffer[_index], newItems);
       }
+      // out-of-buffer case: deletion may affect Paddings
+      else if (index >= this.buffer.minIndex && index <= this.buffer.maxIndex) {
+          if (angular.isArray(newItems) && !newItems.length) {
+            var isTop = index === this.buffer.minIndex;
+            if (isTop) {
+              this.buffer.minIndex++;
+            } else {
+              this.buffer.maxIndex--;
+            }
+            this.viewport.removeCacheItem(index, isTop);
+          }
+        }
     }
   }, {
     key: 'applyUpdate',
@@ -1015,19 +1027,31 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
         return;
       }
 
-      // precise heights calculation, items that were in buffer once
-      var topPaddingHeight = topPadding.cache.reduce(function (summ, item) {
-        return summ + (item.index < buffer.first ? item.height : 0);
-      }, 0);
-      var bottomPaddingHeight = bottomPadding.cache.reduce(function (summ, item) {
-        return summ + (item.index >= buffer.next ? item.height : 0);
-      }, 0);
-
-      // average item height based on buffer data
+      // precise heights calculation based on items that are in buffer or that were in buffer once
       var visibleItemsHeight = buffer.reduce(function (summ, item) {
         return summ + item.element.outerHeight(true);
       }, 0);
-      var averageItemHeight = (visibleItemsHeight + topPaddingHeight + bottomPaddingHeight) / (buffer.maxIndex - buffer.minIndex + 1);
+
+      var topPaddingHeight = 0,
+          topCount = 0;
+      topPadding.cache.forEach(function (item) {
+        if (item.index < buffer.first) {
+          topPaddingHeight += item.height;
+          topCount++;
+        }
+      });
+
+      var bottomPaddingHeight = 0,
+          bottomCount = 0;
+      bottomPadding.cache.forEach(function (item) {
+        if (item.index >= buffer.next) {
+          bottomPaddingHeight += item.height;
+          bottomCount++;
+        }
+      });
+
+      var totalHeight = visibleItemsHeight + topPaddingHeight + bottomPaddingHeight;
+      var averageItemHeight = totalHeight / (topCount + bottomCount + buffer.length);
 
       // average heights calculation, items that have never been reached
       var adjustTopPadding = buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser;
@@ -1070,9 +1094,12 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       bottomPadding.height(0);
       bottomPadding.cache.clear();
     },
+    removeCacheItem: function removeCacheItem(item, isTop) {
+      topPadding.cache.remove(item, isTop);
+      bottomPadding.cache.remove(item, isTop);
+    },
     removeItem: function removeItem(item) {
-      topPadding.cache.remove(item);
-      bottomPadding.cache.remove(item);
+      this.removeCacheItem(item);
       return buffer.remove(item);
     }
   });
@@ -1123,16 +1150,18 @@ var CacheProto = function () {
     }
   }, {
     key: 'remove',
-    value: function remove(itemToRemove) {
+    value: function remove(argument, _isTop) {
+      var index = argument % 1 === 0 ? argument : argument.scope.$index;
+      var isTop = argument % 1 === 0 ? _isTop : argument._op === 'isTop';
       for (var i = this.length - 1; i >= 0; i--) {
-        if (this[i].index === itemToRemove.scope.$index) {
+        if (this[i].index === index) {
           this.splice(i, 1);
           break;
         }
       }
-      if (itemToRemove._op !== 'isTop') {
+      if (!isTop) {
         for (var _i = this.length - 1; _i >= 0; _i--) {
-          if (this[_i].index > itemToRemove.scope.$index) {
+          if (this[_i].index > index) {
             this[_i].index--;
           }
         }

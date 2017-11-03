@@ -145,12 +145,26 @@ class Adapter {
   }
 
   applyUpdatesIndex(index, newItems) {
-    if (index % 1 !== 0) { // checking if it is an integer
-      throw new Error('applyUpdates - ' + index + ' is not a valid index');
+    if (index % 1 !== 0) {
+      throw new Error('applyUpdates - ' + index + ' is not a valid index (should be an integer)');
     }
-    index -= this.buffer.first;
-    if ((index >= 0 && index < this.buffer.length)) {
-      this.applyUpdate(this.buffer[index], newItems);
+    const _index = index - this.buffer.first;
+    // apply updates only within buffer
+    if (_index >= 0 && _index < this.buffer.length) {
+      this.applyUpdate(this.buffer[_index], newItems);
+    }
+    // out-of-buffer case: deletion may affect Paddings
+    else if(index >= this.buffer.minIndex && index <= this.buffer.maxIndex) {
+      if(angular.isArray(newItems) && !newItems.length) {
+        var isTop = index === this.buffer.minIndex;
+        if(isTop) {
+          this.buffer.minIndex++;
+        }
+        else {
+          this.buffer.maxIndex--;
+        }
+        this.viewport.removeCacheItem(index, isTop);
+      }
     }
   }
 
@@ -158,8 +172,8 @@ class Adapter {
     if (!angular.isArray(newItems)) {
       return;
     }
-    let position = (this.buffer.indexOf(wrapper));
-    if (!newItems.reverse().some((newItem) => newItem === wrapper.item)) {
+    let position = this.buffer.indexOf(wrapper);
+    if (!newItems.reverse().some(newItem => newItem === wrapper.item)) {
       wrapper.op = 'remove';
       if(position === 0 && !newItems.length) {
         wrapper._op = 'isTop'; // to catch "first" edge case on remove
