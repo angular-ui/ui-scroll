@@ -104,7 +104,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
     },
 
     decrementMinIndex() {
-      if(buffer.maxIndex-- === buffer.maxIndexUser) {
+      if(buffer.maxIndex-- <= buffer.maxIndexUser) {
         buffer.maxIndexUser--;
       }
     },

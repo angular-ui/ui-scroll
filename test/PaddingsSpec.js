@@ -250,7 +250,7 @@ describe('uiScroll Paddings spec.', () => {
               outside && expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 1);
 
               !outside && scrollBottom(viewport, MAX);
-              //expect(getBottomPaddingHeight(viewport)).toBe(0); // todo dhilt : needs to be fixed
+              expect(getBottomPaddingHeight(viewport)).toBe(0); // todo dhilt : needs to be fixed
 
               scrollTop(viewport);
               expect(getTopPaddingHeight(viewport)).toBe(0);
