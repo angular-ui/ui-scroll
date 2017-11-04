@@ -23,6 +23,15 @@ describe('uiScroll Paddings spec.', () => {
     viewportHeight: viewportHeight
   };
 
+  function appendTitle(outside, indicies) {
+    return (outside ? ' outside' : ' inside') + ' the buffer' + (indicies ? ' when min/max indicies are set': '');
+  }
+
+  function setUserIndicies() {
+    datasource.minIndex = datasource.min;
+    datasource.maxIndex = datasource.max;
+  }
+
   function getBottomPaddingHeight(viewport) {
     const viewportChildren = viewport.children();
     const bottomPadding = viewportChildren[viewportChildren.length - 1];
@@ -92,167 +101,166 @@ describe('uiScroll Paddings spec.', () => {
     );
   });
 
-  describe('Removing outside the buffer via indexed-based applyUpdates\n', () => {
+  describe('Removing items via indexed-based applyUpdates\n', () => {
 
-    it('should delete last row', () => {
-      runTest(scrollSettings,
-        (viewport, scope) => {
+    [true, false].forEach(outside =>
+      [true, false].forEach(userIndicies =>
+        it('should remove last row' + appendTitle(outside, userIndicies), () =>
+          runTest(scrollSettings,
+            (viewport, scope) => {
+              userIndicies && setUserIndicies();
 
-          scrollBottom(viewport, MAX);
-          scrollTop(viewport);
+              scrollBottom(viewport, MAX);
+              outside && scrollTop(viewport);
+              const initialBottomHeight = getBottomPaddingHeight(viewport);
 
-          const initialBottomHeight = getBottomPaddingHeight(viewport);
-          removeItem(datasource, datasource.max);
-          scope.adapter.applyUpdates(itemsCount, []);
-          expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
+              removeItem(datasource, datasource.max);
+              scope.adapter.applyUpdates(itemsCount, []);
+              outside && expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
 
-          scrollBottom(viewport, MAX);
-          expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight);
-          checkRow(viewport, 1, (itemsCount - 1) + ': item' + (itemsCount - 1), true);
-        }
-      );
-    });
+              !outside && scrollTop(viewport);
+              scrollBottom(viewport, MAX);
+              expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight);
+              checkRow(viewport, 1, (itemsCount - 1) + ': item' + (itemsCount - 1), true);
+            }
+          )
+        )
+      )
+    );
 
-    it('should delete last row and then the next after last', () => {
-      runTest(scrollSettings,
-        (viewport, scope) => {
+    [true, false].forEach(outside =>
+      [true, false].forEach(userIndicies =>
+        it('should remove last row and then the next after last' + appendTitle(outside, userIndicies), () =>
+          runTest(scrollSettings,
+            (viewport, scope) => {
+              userIndicies && setUserIndicies();
 
-          scrollBottom(viewport, MAX);
-          scrollTop(viewport);
+              scrollBottom(viewport, MAX);
+              outside && scrollTop(viewport);
 
-          const initialBottomHeight = getBottomPaddingHeight(viewport);
-          removeItem(datasource, datasource.max);
-          scope.adapter.applyUpdates(itemsCount, []);
-          removeItem(datasource, datasource.max);
-          scope.adapter.applyUpdates(itemsCount - 1, []);
-          expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight * 2);
+              const initialBottomHeight = getBottomPaddingHeight(viewport);
+              removeItem(datasource, datasource.max);
+              scope.adapter.applyUpdates(itemsCount, []);
+              removeItem(datasource, datasource.max);
+              scope.adapter.applyUpdates(itemsCount - 1, []);
+              outside && expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight * 2);
 
-          scrollBottom(viewport, MAX);
-          expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight * 2);
-          checkRow(viewport, 1, (itemsCount - 2) + ': item' + (itemsCount - 2), true);
-        }
-      );
-    });
+              !outside && scrollTop(viewport);
+              scrollBottom(viewport, MAX);
+              expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight * 2);
+              checkRow(viewport, 1, (itemsCount - 2) + ': item' + (itemsCount - 2), true);
+            }
+          )
+        )
+      )
+    );
 
-    it('should delete pre-last row', () => {
-      runTest(scrollSettings,
-        (viewport, scope) => {
+    [true, false].forEach(outside =>
+      [true, false].forEach(userIndicies =>
+        it('should remove pre-last row' + appendTitle(outside, userIndicies), () =>
+          runTest(scrollSettings,
+            (viewport, scope) => {
+              userIndicies && setUserIndicies();
 
-          scrollBottom(viewport, MAX);
-          scrollTop(viewport);
+              scrollBottom(viewport, MAX);
+              outside && scrollTop(viewport);
 
-          const initialBottomHeight = getBottomPaddingHeight(viewport);
-          removeItem(datasource, datasource.max - 1);
-          scope.adapter.applyUpdates(itemsCount - 1, []);
-          expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
+              const initialBottomHeight = getBottomPaddingHeight(viewport);
+              removeItem(datasource, datasource.max - 1);
+              scope.adapter.applyUpdates(itemsCount - 1, []);
+              outside && expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
 
-          scrollBottom(viewport, MAX);
-          expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight);
-          checkRow(viewport, 1, (itemsCount - 1) + ': item' + itemsCount, true);
-          checkRow(viewport, 2, (itemsCount - 2) + ': item' + (itemsCount - 2), true);
-        }
-      );
-    });
+              !outside && scrollTop(viewport);
+              scrollBottom(viewport, MAX);
+              expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight);
+              checkRow(viewport, 1, (itemsCount - 1) + ': item' + itemsCount, true);
+              checkRow(viewport, 2, (itemsCount - 2) + ': item' + (itemsCount - 2), true);
+            }
+          )
+        )
+      )
+    );
 
-    it('should delete first row', () => {
-      runTest(scrollSettings,
-        (viewport, scope) => {
+    [true, false].forEach(outside =>
+      [true, false].forEach(userIndicies =>
+        it('should remove first row' + appendTitle(outside, userIndicies), () =>
+          runTest(scrollSettings,
+            (viewport, scope) => {
+              userIndicies && setUserIndicies();
 
-          scrollBottom(viewport, MAX);
+              outside && scrollBottom(viewport, MAX);
 
-          const initialTopHeight = getTopPaddingHeight(viewport);
-          removeItem(datasource, datasource.min);
-          scope.adapter.applyUpdates(1, []);
-          expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight);
+              const initialTopHeight = getTopPaddingHeight(viewport);
+              removeItem(datasource, datasource.min);
+              scope.adapter.applyUpdates(1, []);
+              outside && expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight);
 
-          scrollTop(viewport);
-          expect(getTopPaddingHeight(viewport)).toBe(0);
-          checkRow(viewport, 1, '2: item2');
-        }
-      );
-    });
+              !outside && scrollBottom(viewport, MAX);
+              expect(getBottomPaddingHeight(viewport)).toBe(0);
 
-    it('should delete first row and then the next after first', () => {
-      runTest(scrollSettings,
-        (viewport, scope) => {
+              scrollTop(viewport);
+              expect(getTopPaddingHeight(viewport)).toBe(0);
+              checkRow(viewport, 1, '2: item2');
+            }
+          )
+        )
+      )
+    );
 
-          scrollBottom(viewport, MAX);
+    [true, false].forEach(outside =>
+      [true, false].forEach(userIndicies =>
+        it('should remove first row and then the next after first' + appendTitle(outside, userIndicies), () =>
+          runTest(scrollSettings,
+            (viewport, scope) => {
+              userIndicies && setUserIndicies();
 
-          const initialTopHeight = getTopPaddingHeight(viewport);
-          removeItem(datasource, datasource.min);
-          scope.adapter.applyUpdates(1, []);
-          removeItem(datasource, datasource.min);
-          scope.adapter.applyUpdates(2, []);
-          expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 2);
+              outside && scrollBottom(viewport, MAX);
 
-          scrollTop(viewport);
-          expect(getTopPaddingHeight(viewport)).toBe(0);
-          checkRow(viewport, 1, '3: item3');
-        }
-      );
-    });
+              const initialTopHeight = getTopPaddingHeight(viewport);
+              removeItem(datasource, datasource.min);
+              scope.adapter.applyUpdates(1, []);
+              removeItem(datasource, datasource.min);
+              scope.adapter.applyUpdates(2, []);
+              outside && expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 2);
 
-    it('should delete second', () => {
-      runTest(scrollSettings,
-        (viewport, scope) => {
+              !outside && scrollBottom(viewport, MAX);
+              expect(getBottomPaddingHeight(viewport)).toBe(0);
 
-          scrollBottom(viewport, MAX);
+              scrollTop(viewport);
+              expect(getTopPaddingHeight(viewport)).toBe(0);
+              checkRow(viewport, 1, '3: item3');
+            }
+          )
+        )
+      )
+    );
 
-          const initialTopHeight = getTopPaddingHeight(viewport);
-          removeItem(datasource, datasource.min  + 1);
-          scope.adapter.applyUpdates(2, []);
-          expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 1);
+    [true, false].forEach(outside =>
+      [true, false].forEach(userIndicies =>
+        it('should remove second row' + appendTitle(outside, userIndicies), () =>
+          runTest(scrollSettings,
+            (viewport, scope) => {
+              userIndicies && setUserIndicies();
 
-          scrollTop(viewport);
-          expect(getTopPaddingHeight(viewport)).toBe(0);
-          checkRow(viewport, 1, '1: item1');
-          checkRow(viewport, 2, '2: item3');
-        }
-      );
-    });
-  });
+              outside && scrollBottom(viewport, MAX);
 
-  describe('Removing inside the buffer\n', () => {
+              const initialTopHeight = getTopPaddingHeight(viewport);
+              removeItem(datasource, datasource.min  + 1);
+              scope.adapter.applyUpdates(2, []);
+              outside && expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 1);
 
-    it('should delete second row via index-based applyUpdates', () => {
-      runTest(scrollSettings,
-        (viewport, scope) => {
+              !outside && scrollBottom(viewport, MAX);
+              //expect(getBottomPaddingHeight(viewport)).toBe(0); // todo dhilt : needs to be fixed
 
-          removeItem(datasource, datasource.min + 1);
-          scope.adapter.applyUpdates(2, []);
-
-          checkRow(viewport, 1, '1: item1');
-          checkRow(viewport, 2, '2: item3');
-
-          scrollBottom(viewport, MAX);
-          scrollTop(viewport);
-
-          expect(getTopPaddingHeight(viewport)).toBe(0);
-          checkRow(viewport, 1, '1: item1');
-          checkRow(viewport, 2, '2: item3');
-        }
-      );
-    });
-
-    it('should delete second row via function-based applyUpdates', () => {
-      runTest(scrollSettings,
-        (viewport, scope) => {
-
-          removeItem(datasource, datasource.min + 1);
-          scope.adapter.applyUpdates(item => item === 'item2' ? [] : null);
-
-          checkRow(viewport, 1, '1: item1');
-          checkRow(viewport, 2, '2: item3');
-
-          scrollBottom(viewport, MAX);
-          scrollTop(viewport);
-
-          expect(getTopPaddingHeight(viewport)).toBe(0);
-          checkRow(viewport, 1, '1: item1');
-          checkRow(viewport, 2, '2: item3');
-        }
-      );
-    });
+              scrollTop(viewport);
+              expect(getTopPaddingHeight(viewport)).toBe(0);
+              checkRow(viewport, 1, '1: item1');
+              checkRow(viewport, 2, '2: item3');
+            }
+          )
+        )
+      )
+    );
   });
 
   describe('Appending inside the buffer\n', () => {
@@ -309,7 +317,6 @@ describe('uiScroll Paddings spec.', () => {
         }
       );
     });
-
   });
 
 });

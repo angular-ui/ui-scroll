@@ -78,9 +78,15 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
       // removes single item(wrapper) from the buffer
       buffer.splice(buffer.indexOf(arg1), 1);
       if(arg1._op === 'isTop') {
+        if(buffer.first === buffer.minIndex) {
+          this.incrementMinIndex();
+        }
         buffer.first++;
       }
       else {
+        if(buffer.next === buffer.maxIndex + 1) {
+          this.decrementMinIndex();
+        }
         buffer.next--;
       }
       if(!buffer.length) {
@@ -89,6 +95,18 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
       }
 
       return elementRoutines.removeElementAnimated(arg1);
+    },
+
+    incrementMinIndex() {
+      if(buffer.minIndex++ === buffer.minIndexUser) {
+        buffer.minIndexUser++;
+      }
+    },
+
+    decrementMinIndex() {
+      if(buffer.maxIndex-- === buffer.maxIndexUser) {
+        buffer.maxIndexUser--;
+      }
     },
 
     effectiveHeight(elements) {
