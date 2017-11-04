@@ -158,10 +158,10 @@ class Adapter {
       if(angular.isArray(newItems) && !newItems.length) {
         var isTop = index === this.buffer.minIndex;
         if(isTop) {
-          this.buffer.minIndex++;
+          this.buffer.incrementMinIndex();
         }
         else {
-          this.buffer.maxIndex--;
+          this.buffer.decrementMinIndex();
         }
         this.viewport.removeCacheItem(index, isTop);
       }
