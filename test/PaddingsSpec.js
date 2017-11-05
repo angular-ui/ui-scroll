@@ -325,19 +325,20 @@ describe('uiScroll Paddings spec.', () => {
 
 
   describe('Removing items via indexed-based applyUpdates when neither BOF nor EOF are reached\n', () => {
+    const _scrollSettings = Object.assign({}, scrollSettings, { startIndex: 12 });
 
     [true, false].forEach(userIndicies =>
-      it('should remove first row' + appendTitle(true, userIndicies), () =>
-        runTest(Object.assign({}, scrollSettings, { startIndex: 12 }),
+      it('should remove first buffered row' + appendTitle(true, userIndicies), () =>
+        runTest(_scrollSettings,
           (viewport, scope) => {
             userIndicies && setUserIndicies();
 
             removeItem(datasource, 2);
             scope.adapter.applyUpdates(2, []);
 
-            scrollBottom(viewport);
+            scrollBottom(viewport, MAX);
             expect(getBottomPaddingHeight(viewport)).toBe(0);
-            checkRowBack(viewport, 1, '29: item30');
+            checkRowBack(viewport, 1, (itemsCount - 1) + ': item' + itemsCount);
 
             scrollTop(viewport);
             expect(getTopPaddingHeight(viewport)).toBe(0);
@@ -349,8 +350,8 @@ describe('uiScroll Paddings spec.', () => {
     );
 
     [true, false].forEach(userIndicies =>
-      it('should remove last row' + appendTitle(true, userIndicies), () =>
-        runTest(Object.assign({}, scrollSettings, { startIndex: 12 }),
+      it('should remove last buffered row' + appendTitle(true, userIndicies), () =>
+        runTest(_scrollSettings,
           (viewport, scope) => {
             userIndicies && setUserIndicies();
 
@@ -359,10 +360,54 @@ describe('uiScroll Paddings spec.', () => {
 
             scrollBottom(viewport);
             expect(getBottomPaddingHeight(viewport)).toBe(0);
-            checkRowBack(viewport, 1, '29: item30');
+            checkRowBack(viewport, 1, (itemsCount - 1) + ': item' + itemsCount);
 
             scrollTop(viewport);
             expect(getTopPaddingHeight(viewport)).toBe(0);
+          }
+        )
+      )
+    );
+
+    [true, false].forEach(userIndicies =>
+      it('should remove absolute first row' + appendTitle(true, userIndicies), () =>
+        runTest(_scrollSettings,
+          (viewport, scope) => {
+            userIndicies && setUserIndicies();
+
+            removeItem(datasource, 1);
+            scope.adapter.applyUpdates(1, []);
+
+            scrollBottom(viewport, MAX);
+            expect(getBottomPaddingHeight(viewport)).toBe(0);
+            checkRowBack(viewport, 1, itemsCount + ': item' + itemsCount);
+
+            scrollTop(viewport);
+            expect(getTopPaddingHeight(viewport)).toBe(0);
+            checkRow(viewport, 1, '2: item2');
+            checkRow(viewport, 2, '3: item3');
+          }
+        )
+      )
+    );
+
+    [true, false].forEach(userIndicies =>
+      it('should remove absolute last row' + appendTitle(true, userIndicies), () =>
+        runTest(_scrollSettings,
+          (viewport, scope) => {
+            userIndicies && setUserIndicies();
+
+            removeItem(datasource, itemsCount);
+            scope.adapter.applyUpdates(itemsCount, []);
+
+            scrollBottom(viewport, MAX);
+            expect(getBottomPaddingHeight(viewport)).toBe(0);
+            checkRowBack(viewport, 1, (itemsCount - 1) + ': item' + (itemsCount - 1));
+
+            scrollTop(viewport);
+            expect(getTopPaddingHeight(viewport)).toBe(0);
+            checkRow(viewport, 1, '1: item1');
+            checkRow(viewport, 2, '2: item2');
           }
         )
       )
