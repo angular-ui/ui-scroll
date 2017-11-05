@@ -92,6 +92,10 @@ describe('uiScroll Paddings spec.', () => {
     expect(rowElement.innerHTML).toBe(content);
   }
 
+  function checkRowBack(viewport, row, content) {
+    checkRow(viewport, row, content, true);
+  }
+
   it('\nshould set up properly', () => {
     runTest(scrollSettings,
       () => {
@@ -121,7 +125,7 @@ describe('uiScroll Paddings spec.', () => {
               !outside && scrollTop(viewport);
               scrollBottom(viewport, MAX);
               expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight);
-              checkRow(viewport, 1, (itemsCount - 1) + ': item' + (itemsCount - 1), true);
+              checkRowBack(viewport, 1, (itemsCount - 1) + ': item' + (itemsCount - 1));
             }
           )
         )
@@ -148,7 +152,7 @@ describe('uiScroll Paddings spec.', () => {
               !outside && scrollTop(viewport);
               scrollBottom(viewport, MAX);
               expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight * 2);
-              checkRow(viewport, 1, (itemsCount - 2) + ': item' + (itemsCount - 2), true);
+              checkRowBack(viewport, 1, (itemsCount - 2) + ': item' + (itemsCount - 2));
             }
           )
         )
@@ -173,8 +177,8 @@ describe('uiScroll Paddings spec.', () => {
               !outside && scrollTop(viewport);
               scrollBottom(viewport, MAX);
               expect(viewport.scrollTop()).toBe(itemsCount * itemHeight - viewportHeight - itemHeight);
-              checkRow(viewport, 1, (itemsCount - 1) + ': item' + itemsCount, true);
-              checkRow(viewport, 2, (itemsCount - 2) + ': item' + (itemsCount - 2), true);
+              checkRowBack(viewport, 1, (itemsCount - 1) + ': item' + itemsCount);
+              checkRowBack(viewport, 2, (itemsCount - 2) + ': item' + (itemsCount - 2));
             }
           )
         )
@@ -250,7 +254,7 @@ describe('uiScroll Paddings spec.', () => {
               outside && expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 1);
 
               !outside && scrollBottom(viewport, MAX);
-              expect(getBottomPaddingHeight(viewport)).toBe(0); // todo dhilt : needs to be fixed
+              expect(getBottomPaddingHeight(viewport)).toBe(0);
 
               scrollTop(viewport);
               expect(getTopPaddingHeight(viewport)).toBe(0);
@@ -282,10 +286,10 @@ describe('uiScroll Paddings spec.', () => {
           scrollBottom(viewport);
           expect(viewport.scrollTop()).toBe(_scrollTop + newItems.length * itemHeight);
 
-          checkRow(viewport, 1, (datasource.max - 0) + ': ' + newItems[2], true);
-          checkRow(viewport, 2, (datasource.max - 1) + ': ' + newItems[1], true);
-          checkRow(viewport, 3, (datasource.max - 2) + ': ' + newItems[0], true);
-          checkRow(viewport, 4, oldMax + ': item' + oldMax, true);
+          checkRowBack(viewport, 1, (datasource.max - 0) + ': ' + newItems[2]);
+          checkRowBack(viewport, 2, (datasource.max - 1) + ': ' + newItems[1]);
+          checkRowBack(viewport, 3, (datasource.max - 2) + ': ' + newItems[0]);
+          checkRowBack(viewport, 4, oldMax + ': item' + oldMax);
         }
       );
     });
@@ -310,13 +314,59 @@ describe('uiScroll Paddings spec.', () => {
           scrollBottom(viewport);
           expect(viewport.scrollTop()).toBe(_scrollTop + newItems.length * itemHeight);
 
-          checkRow(viewport, 1, (datasource.max - 0) + ': ' + newItems[2], true);
-          checkRow(viewport, 2, (datasource.max - 1) + ': ' + newItems[1], true);
-          checkRow(viewport, 3, (datasource.max - 2) + ': ' + newItems[0], true);
-          checkRow(viewport, 4, oldMax + ': item' + oldMax, true);
+          checkRowBack(viewport, 1, (datasource.max - 0) + ': ' + newItems[2]);
+          checkRowBack(viewport, 2, (datasource.max - 1) + ': ' + newItems[1]);
+          checkRowBack(viewport, 3, (datasource.max - 2) + ': ' + newItems[0]);
+          checkRowBack(viewport, 4, oldMax + ': item' + oldMax);
         }
       );
     });
+  });
+
+
+  describe('Removing items via indexed-based applyUpdates when neither BOF nor EOF are reached\n', () => {
+
+    [true, false].forEach(userIndicies =>
+      it('should remove first row' + appendTitle(true, userIndicies), () =>
+        runTest(Object.assign({}, scrollSettings, { startIndex: 12 }),
+          (viewport, scope) => {
+            userIndicies && setUserIndicies();
+
+            removeItem(datasource, 2);
+            scope.adapter.applyUpdates(2, []);
+
+            scrollBottom(viewport);
+            expect(getBottomPaddingHeight(viewport)).toBe(0);
+            checkRowBack(viewport, 1, '29: item30');
+
+            scrollTop(viewport);
+            expect(getTopPaddingHeight(viewport)).toBe(0);
+            checkRow(viewport, 1, '1: item1');
+            checkRow(viewport, 2, '2: item3');
+          }
+        )
+      )
+    );
+
+    [true, false].forEach(userIndicies =>
+      it('should remove last row' + appendTitle(true, userIndicies), () =>
+        runTest(Object.assign({}, scrollSettings, { startIndex: 12 }),
+          (viewport, scope) => {
+            userIndicies && setUserIndicies();
+
+            removeItem(datasource, 19);
+            scope.adapter.applyUpdates(19, []);
+
+            scrollBottom(viewport);
+            expect(getBottomPaddingHeight(viewport)).toBe(0);
+            checkRowBack(viewport, 1, '29: item30');
+
+            scrollTop(viewport);
+            expect(getTopPaddingHeight(viewport)).toBe(0);
+          }
+        )
+      )
+    );
   });
 
 });
