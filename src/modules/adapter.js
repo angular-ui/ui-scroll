@@ -1,6 +1,6 @@
 class Adapter {
 
-  constructor(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope) {
+  constructor(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope) {
     this.viewport = viewport;
     this.buffer = buffer;
     this.adjustBuffer = adjustBuffer;
@@ -13,11 +13,11 @@ class Adapter {
     this.startScope = viewportScope.$parent ? viewportScope : $scope;
 
     this.publicContext = {};
-    this.assignAdapter($attr.adapter, $parse, element);
+    this.assignAdapter($attr.adapter, $parse);
     this.generatePublicContext($attr, $parse);
   }
 
-  assignAdapter(adapterAttr, $parse, element) {
+  assignAdapter(adapterAttr, $parse) {
     if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
       return;
     }
