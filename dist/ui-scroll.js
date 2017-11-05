@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.4 -- 2017-11-02T15:45:21.930Z
+ * Version: 1.7.0-rc.4 -- 2017-11-05T15:04:45.259Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -87,30 +87,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-function getCtrlOnData(attr, element) {
-  var onSyntax = attr.match(/^(.+)(\s+on\s+)(.+)?/);
-  if (onSyntax && onSyntax.length === 4) {
-    window.console.log('Angular ui-scroll adapter assignment warning. "Controller On" syntax has been deprecated since ui-scroll v1.6.1.');
-    var ctrl = onSyntax[3];
-    var tail = onSyntax[1];
-    var candidate = element;
-    while (candidate.length) {
-      var candidateScope = candidate.scope(); // doesn't work when debugInfoEnabled flag = true
-      var candidateName = (candidate.attr('ng-controller') || '').match(/(\w(?:\w|\d)*)(?:\s+as\s+(\w(?:\w|\d)*))?/);
-      if (candidateName && candidateName[1] === ctrl) {
-        return {
-          target: candidateScope,
-          source: tail
-        };
-      }
-      candidate = candidate.parent();
-    }
-    throw new Error('Angular ui-scroll adapter assignment error. Failed to locate target controller "' + ctrl + '" to inject "' + tail + '"');
-  }
-}
-
 var Adapter = function () {
-  function Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope) {
+  function Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope) {
     _classCallCheck(this, Adapter);
 
     this.viewport = viewport;
@@ -125,28 +103,21 @@ var Adapter = function () {
     this.startScope = viewportScope.$parent ? viewportScope : $scope;
 
     this.publicContext = {};
-    this.assignAdapter($attr.adapter, $parse, element);
+    this.assignAdapter($attr.adapter, $parse);
     this.generatePublicContext($attr, $parse);
   }
 
   _createClass(Adapter, [{
     key: 'assignAdapter',
-    value: function assignAdapter(adapterAttr, $parse, element) {
+    value: function assignAdapter(adapterAttr, $parse) {
       if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
         return;
       }
-      var ctrlOnData = getCtrlOnData(adapterAttr, element);
       var adapterOnScope = void 0;
 
       try {
-        if (ctrlOnData) {
-          // "Controller On", deprecated since v1.6.1
-          $parse(ctrlOnData.source).assign(ctrlOnData.target, {});
-          adapterOnScope = $parse(ctrlOnData.source)(ctrlOnData.target);
-        } else {
-          $parse(adapterAttr).assign(this.startScope, {});
-          adapterOnScope = $parse(adapterAttr)(this.startScope);
-        }
+        $parse(adapterAttr).assign(this.startScope, {});
+        adapterOnScope = $parse(adapterAttr)(this.startScope);
       } catch (error) {
         error.message = 'Angular ui-scroll Adapter assignment exception.\n' + ('Can\'t parse "' + adapterAttr + '" expression.\n') + error.message;
         throw error;
@@ -264,20 +235,20 @@ var Adapter = function () {
         throw new Error('applyUpdates - ' + index + ' is not a valid index (should be an integer)');
       }
       var _index = index - this.buffer.first;
+
       // apply updates only within buffer
       if (_index >= 0 && _index < this.buffer.length) {
         this.applyUpdate(this.buffer[_index], newItems);
       }
       // out-of-buffer case: deletion may affect Paddings
-      else if (index >= this.buffer.minIndex && index <= this.buffer.maxIndex) {
+      else if (index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
           if (angular.isArray(newItems) && !newItems.length) {
-            var isTop = index === this.buffer.minIndex;
-            if (isTop) {
-              this.buffer.minIndex++;
+            this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
+            if (index === this.buffer.getAbsMinIndex()) {
+              this.buffer.incrementMinIndex();
             } else {
-              this.buffer.maxIndex--;
+              this.buffer.decrementMaxIndex();
             }
-            this.viewport.removeCacheItem(index, isTop);
           }
         }
     }
@@ -443,6 +414,11 @@ function ScrollBuffer(elementRoutines, bufferSize) {
       }
       // removes single item(wrapper) from the buffer
       buffer.splice(buffer.indexOf(arg1), 1);
+      if (arg1._op === 'isTop' && buffer.first === this.getAbsMinIndex()) {
+        this.incrementMinIndex();
+      } else {
+        this.decrementMaxIndex();
+      }
       if (arg1._op === 'isTop') {
         buffer.first++;
       } else {
@@ -454,6 +430,36 @@ function ScrollBuffer(elementRoutines, bufferSize) {
       }
 
       return elementRoutines.removeElementAnimated(arg1);
+    },
+    incrementMinIndex: function incrementMinIndex() {
+      if (buffer.minIndexUser !== null) {
+        if (buffer.minIndex > buffer.minIndexUser) {
+          buffer.minIndexUser++;
+          return;
+        }
+        if (buffer.minIndex === buffer.minIndexUser) {
+          buffer.minIndexUser++;
+        }
+      }
+      buffer.minIndex++;
+    },
+    decrementMaxIndex: function decrementMaxIndex() {
+      if (buffer.maxIndexUser !== null && buffer.maxIndex <= buffer.maxIndexUser) {
+        buffer.maxIndexUser--;
+      }
+      buffer.maxIndex--;
+    },
+    getAbsMinIndex: function getAbsMinIndex() {
+      if (buffer.minIndexUser !== null) {
+        return Math.min(buffer.minIndexUser, buffer.minIndex);
+      }
+      return buffer.minIndex;
+    },
+    getAbsMaxIndex: function getAbsMaxIndex() {
+      if (buffer.maxIndexUser !== null) {
+        return Math.max(buffer.maxIndexUser, buffer.maxIndex);
+      }
+      return buffer.maxIndex;
     },
     effectiveHeight: function effectiveHeight(elements) {
       if (!elements.length) {
@@ -1307,7 +1313,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
     var elementRoutines = new _elementRoutines2.default($injector, $q);
     var buffer = new _buffer2.default(elementRoutines, bufferSize);
     var viewport = new _viewport2.default(elementRoutines, buffer, element, viewportController, $rootScope, padding);
-    var adapter = new _adapter2.default(viewport, buffer, adjustBuffer, reload, $attr, $parse, element, $scope);
+    var adapter = new _adapter2.default(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope);
 
     if (viewportController) {
       viewportController.adapter = adapter;
