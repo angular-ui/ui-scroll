@@ -128,14 +128,13 @@ class Adapter {
     // out-of-buffer case: deletion may affect Paddings
     else if(index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
       if(angular.isArray(newItems) && !newItems.length) {
-        var isTop = index === this.buffer.minIndex;
-        if(isTop) {
+        this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
+        if(index === this.buffer.getAbsMinIndex()) {
           this.buffer.incrementMinIndex();
         }
         else {
           this.buffer.decrementMaxIndex();
         }
-        this.viewport.removeCacheItem(index, isTop);
       }
     }
   }

@@ -98,8 +98,14 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
     },
 
     incrementMinIndex() {
-      if(buffer.minIndexUser !== null && buffer.minIndex === buffer.minIndexUser) {
-        buffer.minIndexUser++;
+      if(buffer.minIndexUser !== null) {
+        if(buffer.minIndex > buffer.minIndexUser) {
+          buffer.minIndexUser++;
+          return;
+        }
+        if(buffer.minIndex === buffer.minIndexUser) {
+          buffer.minIndexUser++;
+        }
       }
       buffer.minIndex++;
     },
