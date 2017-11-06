@@ -27,12 +27,18 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       bottomPadding = new Padding(template);
       element.before(topPadding.element);
       element.after(bottomPadding.element);
+      topPadding.height(0);
+      bottomPadding.height(0);
     },
 
     applyContainerStyle() {
-      if (container && container !== viewport) {
+      if (!container) {
+        return true;
+      }
+      if(container !== viewport) {
         viewport.css('height', window.getComputedStyle(container[0]).height);
       }
+      return viewport.height() > 0;
     },
 
     bottomDataPos() {
