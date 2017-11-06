@@ -25,8 +25,8 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     createPaddingElements(template) {
       topPadding = new Padding(template);
       bottomPadding = new Padding(template);
-      element.before(topPadding);
-      element.after(bottomPadding);
+      element.before(topPadding.element);
+      element.after(bottomPadding.element);
     },
 
     applyContainerStyle() {
@@ -54,11 +54,11 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     },
 
     insertElement(e, sibling) {
-      return elementRoutines.insertElement(e, sibling || topPadding);
+      return elementRoutines.insertElement(e, sibling || topPadding.element);
     },
 
     insertElementAnimated(e, sibling) {
-      return elementRoutines.insertElementAnimated(e, sibling || topPadding);
+      return elementRoutines.insertElementAnimated(e, sibling || topPadding.element);
     },
 
     shouldLoadBottom() {

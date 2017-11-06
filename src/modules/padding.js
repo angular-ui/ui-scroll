@@ -49,28 +49,36 @@ Object.getOwnPropertyNames(CacheProto.prototype).forEach(methodName =>
   Cache.prototype[methodName] = CacheProto.prototype[methodName]
 );
 
-export default function Padding(template) {
-  let result;
-
+function generateElement(template) {
   if(template.nodeType !== Node.ELEMENT_NODE) {
     throw new Error('ui-scroll directive requires an Element node for templating the view');
   }
-
+  let element;
   switch (template.tagName.toLowerCase()) {
     case 'dl':
       throw new Error(`ui-scroll directive does not support <${template.tagName}> as a repeating tag: ${template.outerHTML}`);
     case 'tr':
       let table = angular.element('<table><tr><td><div></div></td></tr></table>');
-      result = table.find('tr');
+      element = table.find('tr');
       break;
     case 'li':
-      result = angular.element('<li></li>');
+      element = angular.element('<li></li>');
       break;
     default:
-      result = angular.element('<div></div>');
+      element = angular.element('<div></div>');
+  }
+  return element;
+}
+
+class Padding {
+  constructor(template) {
+    this.element = generateElement(template);
+    this.cache = new Cache();
   }
 
-  result.cache = new Cache();
-
-  return result;
+  height() {
+    return this.element.height.apply(this.element, arguments);
+  }
 }
+
+export default Padding;
