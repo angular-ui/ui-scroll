@@ -71,7 +71,6 @@ function runTest(scrollSettings, run, options = {}) {
     var compile = function() {
       $compile(scroller)(scope);
       scope.$apply();
-      $timeout.flush();
     };
 
     if (typeof options.catch === 'function') {
