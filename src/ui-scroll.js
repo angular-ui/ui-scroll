@@ -69,7 +69,7 @@ angular.module('ui.scroll', [])
         const PADDING_MIN = 0.3;
         const PADDING_DEFAULT = 0.5;
         const MAX_VIEWPORT_DELAY = 500;
-        const VIEWPORT_POLLING_INTERVAL = 75;
+        const VIEWPORT_POLLING_INTERVAL = 50;
 
         let datasource = null;
         const itemName = match[1];
@@ -170,6 +170,7 @@ angular.module('ui.scroll', [])
                 reload();
               }
               if(tryCount * VIEWPORT_POLLING_INTERVAL >= MAX_VIEWPORT_DELAY) {
+                $interval.cancel(timer);
                 throw Error(`ui-scroll directive requires a viewport with non-zero height in ${MAX_VIEWPORT_DELAY}ms`);
               }
             }, VIEWPORT_POLLING_INTERVAL);
