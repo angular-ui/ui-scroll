@@ -42,13 +42,14 @@ export default class JQLiteExtras {
         ]
       }[direction];
 
+      const isValueDefined = typeof value !== 'undefined';
       if (isWindow(elem)) {
-        if (angular.isDefined(value)) {
+        if (isValueDefined) {
           return elem.scrollTo(self[preserve].call(self), value);
         }
         return (prop in elem) ? elem[prop] : elem.document.documentElement[method];
       } else {
-        if (angular.isDefined(value)) {
+        if (isValueDefined) {
           elem[method] = value;
         }
         return elem[method];
@@ -197,8 +198,8 @@ export default class JQLiteExtras {
       height (value){
         var self;
         self = this;
-        if (angular.isDefined(value)) {
-          if (angular.isNumber(value)) {
+        if (typeof value !== 'undefined') {
+          if (Number.isInteger(value)) {
             value = value + 'px';
           }
           return css.call(self, 'height', value);

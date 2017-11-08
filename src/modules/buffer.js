@@ -1,7 +1,7 @@
 export default function ScrollBuffer(elementRoutines, bufferSize) {
   const buffer = Object.create(Array.prototype);
 
-  angular.extend(buffer, {
+  Object.assign(buffer, {
     size: bufferSize,
 
     reset(startIndex) {
@@ -67,12 +67,11 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
 
     // removes elements from buffer
     remove(arg1, arg2) {
-      if (angular.isNumber(arg1)) {
+      if (Number.isInteger(arg1)) {
         // removes items from arg1 (including) through arg2 (excluding)
         for (let i = arg1; i < arg2; i++) {
           elementRoutines.removeElement(buffer[i]);
         }
-
         return buffer.splice(arg1, arg2 - arg1);
       }
       // removes single item(wrapper) from the buffer
