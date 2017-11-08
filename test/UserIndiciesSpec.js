@@ -110,20 +110,20 @@ describe('uiScroll user min/max indicies.', () => {
       );
     });
 
-    // it('should persist user minIndex after reload', () => {
-    //   inject(function(myInfiniteDatasource) {
-    //     myInfiniteDatasource.minIndex = userMinIndex;
-    //   });
-    //   runTest(scrollSettings,
-    //     (viewport, scope) => {
-    //       scope.adapter.reload();
-    //       const topPaddingElement = angular.element(viewport.children()[0]);
-    //       const virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
-    //       expect(topPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
-    //       expect(viewport.scrollTop()).toBe(itemHeight * ((-1) * userMinIndex + 1));
-    //     }
-    //   );
-    // });
+    it('should persist user minIndex after reload', () => {
+      inject(function(myInfiniteDatasource) {
+        myInfiniteDatasource.minIndex = userMinIndex;
+      });
+      runTest(scrollSettings,
+        (viewport, scope) => {
+          scope.adapter.reload();
+          const topPaddingElement = angular.element(viewport.children()[0]);
+          const virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
+          expect(topPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
+          expect(viewport.scrollTop()).toBe(itemHeight * ((-1) * userMinIndex + 1));
+        }
+      );
+    });
 
   });
 

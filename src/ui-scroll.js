@@ -111,7 +111,9 @@ angular.module('ui.scroll', [])
           // need to postpone min/maxIndexUser processing if the view is empty
           if(datasource.hasOwnProperty(propName) && !buffer.length) {
             getter = datasource[propName];
-            onRenderHandlers.push(() => datasource[propName] = getter);
+            if(Number.isInteger(getter)) {
+              onRenderHandlers.push(() => datasource[propName] = getter);
+            }
           }
         }
 
