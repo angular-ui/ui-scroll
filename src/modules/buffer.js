@@ -1,4 +1,4 @@
-export default function ScrollBuffer(elementRoutines, bufferSize) {
+export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
   const buffer = Object.create(Array.prototype);
 
   Object.assign(buffer, {
@@ -147,6 +147,8 @@ export default function ScrollBuffer(elementRoutines, bufferSize) {
     }
 
   });
+
+  buffer.reset(startIndex);
 
   return buffer;
 }

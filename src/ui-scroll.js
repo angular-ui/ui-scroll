@@ -82,7 +82,7 @@ angular.module('ui.scroll', [])
         let pending = [];
 
         const elementRoutines = new ElementRoutines($injector, $q);
-        const buffer = new ScrollBuffer(elementRoutines, bufferSize);
+        const buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex);
         const viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
         const adapter = new Adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
 
@@ -106,12 +106,11 @@ angular.module('ui.scroll', [])
           onRenderHandlers.forEach(handler => handler());
           onRenderHandlers = [];
         }
-        function persistDatasourceIndex(datasource, propName, doNotDelete) {
+        function persistDatasourceIndex(datasource, propName) {
           let getter;
           // need to postpone min/maxIndexUser processing if the view is empty
           if(datasource.hasOwnProperty(propName) && !buffer.length) {
             getter = datasource[propName];
-            delete datasource[propName];
             onRenderHandlers.push(() => datasource[propName] = getter);
           }
         }
@@ -167,7 +166,7 @@ angular.module('ui.scroll', [])
               tryCount++;
               if(viewport.applyContainerStyle()) {
                 $interval.cancel(timer);
-                reload();
+                doAdjust();
               }
               if(tryCount * VIEWPORT_POLLING_INTERVAL >= MAX_VIEWPORT_DELAY) {
                 $interval.cancel(timer);
@@ -176,7 +175,7 @@ angular.module('ui.scroll', [])
             }, VIEWPORT_POLLING_INTERVAL);
           }
           else {
-            reload();
+            doAdjust();
           }
         };
 
@@ -228,6 +227,8 @@ angular.module('ui.scroll', [])
             startIndex = arguments[0];
           }
           buffer.reset(startIndex);
+          persistDatasourceIndex(datasource, 'minIndex');
+          persistDatasourceIndex(datasource, 'maxIndex');
           doAdjust();
         }
 
