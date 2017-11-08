@@ -2,16 +2,22 @@
 describe('uiScroll user min/max indicies.', () => {
   'use strict';
 
+  let datasource;
   beforeEach(module('ui.scroll'));
   beforeEach(module('ui.scroll.test.datasources'));
+  beforeEach(
+    inject(function(myInfiniteDatasource) {
+      datasource = myInfiniteDatasource;
+    })
+  );
 
-  var viewportHeight = 120;
-  var itemHeight = 20;
-  var bufferSize = 3;
-  var userMinIndex = -99; // for 100 items
-  var userMaxIndex = 100;
+  const viewportHeight = 120;
+  const itemHeight = 20;
+  const bufferSize = 3;
+  const userMinIndex = -99; // for 100 items
+  const userMaxIndex = 100;
 
-  var scrollSettings = {
+  const scrollSettings = {
     datasource: 'myInfiniteDatasource',
     viewportHeight: viewportHeight,
     itemHeight: itemHeight,
@@ -21,52 +27,42 @@ describe('uiScroll user min/max indicies.', () => {
 
   describe('Setting\n', () => {
 
-    it('should calculate bottom padding element\'s height after user max index is set', () => {
-      let setMaxIndex;
-      inject(function(myInfiniteDatasource) {
-        setMaxIndex = () =>myInfiniteDatasource.maxIndex = userMaxIndex;
-      });
+    it('should calculate bottom padding element\'s height after user max index is set', () =>
       runTest(scrollSettings,
         (viewport) => {
           const bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
           expect(viewport.scrollTop()).toBe(itemHeight * bufferSize);
 
-          setMaxIndex();
+          datasource.maxIndex = userMaxIndex;
 
           const virtualItemsAmount = userMaxIndex - (viewportHeight / itemHeight) - bufferSize;
           expect(bottomPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
           expect(viewport.scrollTop()).toBe(itemHeight * bufferSize);
         }
-      );
-    });
+      )
+    );
 
-    it('should calculate top padding element\'s height after user min index is set', () => {
-      let setMinIndex;
-      inject(function(myInfiniteDatasource) {
-        setMinIndex = () => myInfiniteDatasource.minIndex = userMinIndex;
-      });
+    it('should calculate top padding element\'s height after user min index is set', () =>
       runTest(scrollSettings,
         (viewport) => {
           const topPaddingElement = angular.element(viewport.children()[0]);
           expect(viewport.scrollTop()).toBe(itemHeight * bufferSize);
 
-          setMinIndex();
+          datasource.minIndex = userMinIndex;
 
           const virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
           expect(topPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
           expect(viewport.scrollTop()).toBe(itemHeight * ((-1) * userMinIndex + 1));
         }
-      );
-    });
+      )
+    );
 
   });
 
   describe('Pre-setting\n', () => {
 
     it('should work with maxIndex pre-set on datasource', () => {
-      inject(function(myInfiniteDatasource) {
-        myInfiniteDatasource.maxIndex = userMaxIndex;
-      });
+      datasource.maxIndex = userMaxIndex;
       runTest(scrollSettings,
         (viewport) => {
           const bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
@@ -78,9 +74,7 @@ describe('uiScroll user min/max indicies.', () => {
     });
 
     it('should work with minIndex pre-set on datasource', () => {
-      inject(function(myInfiniteDatasource) {
-        myInfiniteDatasource.minIndex = userMinIndex;
-      });
+      datasource.minIndex = userMinIndex;
       runTest(scrollSettings,
         (viewport) => {
           const topPaddingElement = angular.element(viewport.children()[0]);
@@ -96,9 +90,7 @@ describe('uiScroll user min/max indicies.', () => {
   describe('Reload\n', () => {
 
     it('should persist user maxIndex after reload', () => {
-      inject(function(myInfiniteDatasource) {
-        myInfiniteDatasource.maxIndex = userMaxIndex;
-      });
+      datasource.maxIndex = userMaxIndex;
       runTest(scrollSettings,
         (viewport, scope) => {
           scope.adapter.reload();
@@ -111,9 +103,7 @@ describe('uiScroll user min/max indicies.', () => {
     });
 
     it('should persist user minIndex after reload', () => {
-      inject(function(myInfiniteDatasource) {
-        myInfiniteDatasource.minIndex = userMinIndex;
-      });
+      datasource.minIndex = userMinIndex;
       runTest(scrollSettings,
         (viewport, scope) => {
           scope.adapter.reload();
