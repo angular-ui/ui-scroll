@@ -5,11 +5,13 @@ describe('uiScroll user min/max indicies.', () => {
   let datasource;
   beforeEach(module('ui.scroll'));
   beforeEach(module('ui.scroll.test.datasources'));
-  beforeEach(
-    inject(function(myInfiniteDatasource) {
-      datasource = myInfiniteDatasource;
-    })
-  );
+
+  const injectDatasource = (datasourceToken) =>
+    beforeEach(
+      inject([datasourceToken, function(_datasource) {
+        datasource = _datasource;
+      }])
+    );
 
   const viewportHeight = 120;
   const itemHeight = 20;
@@ -26,6 +28,7 @@ describe('uiScroll user min/max indicies.', () => {
   };
 
   describe('Setting\n', () => {
+    injectDatasource('myInfiniteDatasource');
 
     it('should calculate bottom padding element\'s height after user max index is set', () =>
       runTest(scrollSettings,
@@ -60,6 +63,7 @@ describe('uiScroll user min/max indicies.', () => {
   });
 
   describe('Pre-setting\n', () => {
+    injectDatasource('myInfiniteDatasource');
 
     it('should work with maxIndex pre-set on datasource', () => {
       datasource.maxIndex = userMaxIndex;
@@ -88,10 +92,15 @@ describe('uiScroll user min/max indicies.', () => {
   });
 
   describe('Reload\n', () => {
+    injectDatasource('myResponsiveDatasource');
+    beforeEach(() => {
+      datasource.min = userMinIndex;
+      datasource.max = userMaxIndex;
+    });
 
     it('should persist user maxIndex after reload', () => {
       datasource.maxIndex = userMaxIndex;
-      runTest(scrollSettings,
+      runTest(Object.assign({}, scrollSettings, { datasource: 'myResponsiveDatasource' }),
         (viewport, scope) => {
           scope.adapter.reload();
           const bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
@@ -104,13 +113,39 @@ describe('uiScroll user min/max indicies.', () => {
 
     it('should persist user minIndex after reload', () => {
       datasource.minIndex = userMinIndex;
-      runTest(scrollSettings,
+      runTest(Object.assign({}, scrollSettings, { datasource: 'myResponsiveDatasource' }),
         (viewport, scope) => {
           scope.adapter.reload();
           const topPaddingElement = angular.element(viewport.children()[0]);
           const virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
           expect(topPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
           expect(viewport.scrollTop()).toBe(itemHeight * ((-1) * userMinIndex + 1));
+        }
+      );
+    });
+
+    it('should apply new user minIndex and maxIndex after reload', () => {
+      const startIndex = 10;
+      const add = 50;
+      const minIndexNew = userMinIndex - add;
+      const maxIndexNew = userMaxIndex + add;
+      datasource.minIndex = userMinIndex;
+      datasource.maxIndex = userMaxIndex;
+      runTest(Object.assign({}, scrollSettings, { datasource: 'myResponsiveDatasource', startIndex }),
+        (viewport, scope) => {
+          const _scrollTop = viewport.scrollTop();
+
+          scope.adapter.reload(startIndex);
+          datasource.min = minIndexNew;
+          datasource.max = maxIndexNew;
+          datasource.minIndex = minIndexNew;
+          datasource.maxIndex = maxIndexNew;
+
+          const topPaddingElement = angular.element(viewport.children()[0]);
+          const bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
+          expect(topPaddingElement.height()).toBe(itemHeight * ((-1) * minIndexNew + startIndex - bufferSize));
+          expect(bottomPaddingElement.height()).toBe(itemHeight * (maxIndexNew - startIndex + 1 - (viewportHeight / itemHeight) - bufferSize));
+          expect(viewport.scrollTop()).toBe(_scrollTop + itemHeight * add);
         }
       );
     });
