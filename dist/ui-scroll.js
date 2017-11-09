@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.4 -- 2017-11-08T05:58:51.979Z
+ * Version: 1.7.0-rc.4 -- 2017-11-09T02:11:48.835Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1367,7 +1367,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
     function persistDatasourceIndex(datasource, propName) {
       var getter = void 0;
       // need to postpone min/maxIndexUser processing if the view is empty
-      if (datasource.hasOwnProperty(propName) && !buffer.length) {
+      if (Number.isInteger(datasource[propName])) {
         getter = datasource[propName];
         if (Number.isInteger(getter)) {
           onRenderHandlers.push(function () {
@@ -1387,6 +1387,10 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       Object.defineProperty(datasource, propName, {
         set: function set(value) {
           getter = value;
+          if (pending.length && !buffer.length) {
+            persistDatasourceIndex(datasource, propName);
+            return;
+          }
           buffer[propUserName] = value;
           var topPaddingHeightOld = viewport.topDataPos();
           viewport.adjustPaddings();

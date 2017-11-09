@@ -1,4 +1,4 @@
-/*global describe, beforeEach, module, inject, it, expect, runTest */
+/*global describe, beforeEach, module, inject, it, expect, runTest, Helper */
 describe('uiScroll user min/max indicies.', () => {
   'use strict';
 
