@@ -174,6 +174,11 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
         if(diff > 0) {
           bottomPadding.height(bottomPadding.height() + diff);
           viewport.scrollTop(viewport.scrollTop() + diff);
+          diff -= viewport.scrollTop();
+          if(diff > 0) {
+            bottomPadding.height(bottomPadding.height() + diff);
+            viewport.scrollTop(viewport.scrollTop() + diff);
+          }
         }
       }
     },

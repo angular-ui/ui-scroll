@@ -30,7 +30,7 @@ describe('uiScroll user min/max indicies.', () => {
   describe('Setting\n', () => {
     injectDatasource('myInfiniteDatasource');
 
-    it('should calculate bottom padding element\'s height after user max index is set', () =>
+    it('should set up bottom padding element\'s height after user max index is set', () =>
       runTest(scrollSettings,
         (viewport) => {
           expect(viewport.scrollTop()).toBe(itemHeight * bufferSize);
@@ -44,7 +44,7 @@ describe('uiScroll user min/max indicies.', () => {
       )
     );
 
-    it('should calculate top padding element\'s height after user min index is set', () =>
+    it('should set up top padding element\'s height after user min index is set', () =>
       runTest(scrollSettings,
         (viewport) => {
           expect(viewport.scrollTop()).toBe(itemHeight * bufferSize);
@@ -81,6 +81,21 @@ describe('uiScroll user min/max indicies.', () => {
           const virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
           expect(Helper.getTopPadding(viewport)).toBe(itemHeight * virtualItemsAmount);
           expect(viewport.scrollTop()).toBe(itemHeight * ((-1) * userMinIndex + 1));
+        }
+      );
+    });
+
+    it('should work when the viewport is big enough to include more than 1 pack of item', () => {
+      const viewportHeight = 450;
+      const _topItemsCount = Math.round(viewportHeight * 0.5 / itemHeight);
+      const _topPackCount = Math.ceil(_topItemsCount / bufferSize);
+      const _minIndex = (-1) * _topPackCount * bufferSize + 1
+      datasource.minIndex = _minIndex;
+      datasource.maxIndex = userMaxIndex;
+      runTest(Object.assign({}, scrollSettings, { viewportHeight }),
+        (viewport) => {
+          expect(Helper.getTopPadding(viewport)).toBe(0);
+          expect(viewport.scrollTop()).toBe(_topPackCount * bufferSize * itemHeight);
         }
       );
     });
