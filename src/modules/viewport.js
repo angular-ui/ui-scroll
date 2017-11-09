@@ -170,15 +170,9 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       if (buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser) {
         let diff = topPadding.height() - topPaddingHeightOld;
         viewport.scrollTop(viewport.scrollTop() + diff);
-        diff -= viewport.scrollTop();
-        if(diff > 0) {
+        while((diff -= viewport.scrollTop()) > 0) {
           bottomPadding.height(bottomPadding.height() + diff);
           viewport.scrollTop(viewport.scrollTop() + diff);
-          diff -= viewport.scrollTop();
-          if(diff > 0) {
-            bottomPadding.height(bottomPadding.height() + diff);
-            viewport.scrollTop(viewport.scrollTop() + diff);
-          }
         }
       }
     },

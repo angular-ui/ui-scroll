@@ -89,7 +89,22 @@ describe('uiScroll user min/max indicies.', () => {
       const viewportHeight = 450;
       const _topItemsCount = Math.round(viewportHeight * 0.5 / itemHeight);
       const _topPackCount = Math.ceil(_topItemsCount / bufferSize);
-      const _minIndex = (-1) * _topPackCount * bufferSize + 1
+      const _minIndex = (-1) * _topPackCount * bufferSize + 1; // one additinal adjustment should occur
+      datasource.minIndex = _minIndex;
+      datasource.maxIndex = userMaxIndex;
+      runTest(Object.assign({}, scrollSettings, { viewportHeight }),
+        (viewport) => {
+          expect(Helper.getTopPadding(viewport)).toBe(0);
+          expect(viewport.scrollTop()).toBe(_topPackCount * bufferSize * itemHeight);
+        }
+      );
+    });
+
+    it('should work when the viewport is big enough to include more than 1 pack of item', () => {
+      const viewportHeight = 450;
+      const _topItemsCount = Math.round(viewportHeight * 0.5 / itemHeight);
+      const _topPackCount = Math.ceil(_topItemsCount / bufferSize);
+      let _minIndex = -1; // ~9 additinal adjustments should occur
       datasource.minIndex = _minIndex;
       datasource.maxIndex = userMaxIndex;
       runTest(Object.assign({}, scrollSettings, { viewportHeight }),
