@@ -53,11 +53,11 @@ describe('uiScroll', function() {
 
           var topPadding = viewport.children()[0];
           expect(topPadding.tagName.toLowerCase()).toBe('div');
-          expect(angular.element(topPadding).css('height')).toBe('0px');
+          expect(Helper.getTopPadding(viewport)).toBe(0);
 
           var bottomPadding = viewport.children()[1];
           expect(bottomPadding.tagName.toLowerCase()).toBe('div');
-          expect(angular.element(bottomPadding).css('height')).toBe('0px');
+          expect(Helper.getBottomPadding(viewport)).toBe(0);
         }
       );
     });

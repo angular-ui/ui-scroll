@@ -33,13 +33,12 @@ describe('uiScroll user min/max indicies.', () => {
     it('should calculate bottom padding element\'s height after user max index is set', () =>
       runTest(scrollSettings,
         (viewport) => {
-          const bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
           expect(viewport.scrollTop()).toBe(itemHeight * bufferSize);
 
           datasource.maxIndex = userMaxIndex;
 
           const virtualItemsAmount = userMaxIndex - (viewportHeight / itemHeight) - bufferSize;
-          expect(bottomPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
+          expect(Helper.getBottomPadding(viewport)).toBe(itemHeight * virtualItemsAmount);
           expect(viewport.scrollTop()).toBe(itemHeight * bufferSize);
         }
       )
@@ -48,13 +47,12 @@ describe('uiScroll user min/max indicies.', () => {
     it('should calculate top padding element\'s height after user min index is set', () =>
       runTest(scrollSettings,
         (viewport) => {
-          const topPaddingElement = angular.element(viewport.children()[0]);
           expect(viewport.scrollTop()).toBe(itemHeight * bufferSize);
 
           datasource.minIndex = userMinIndex;
 
           const virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
-          expect(topPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
+          expect(Helper.getTopPadding(viewport)).toBe(itemHeight * virtualItemsAmount);
           expect(viewport.scrollTop()).toBe(itemHeight * ((-1) * userMinIndex + 1));
         }
       )
@@ -69,9 +67,8 @@ describe('uiScroll user min/max indicies.', () => {
       datasource.maxIndex = userMaxIndex;
       runTest(scrollSettings,
         (viewport) => {
-          const bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
           const virtualItemsAmount = userMaxIndex - (viewportHeight / itemHeight) - bufferSize;
-          expect(bottomPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
+          expect(Helper.getBottomPadding(viewport)).toBe(itemHeight * virtualItemsAmount);
           expect(viewport.scrollTop()).toBe(itemHeight * bufferSize);
         }
       );
@@ -81,9 +78,8 @@ describe('uiScroll user min/max indicies.', () => {
       datasource.minIndex = userMinIndex;
       runTest(scrollSettings,
         (viewport) => {
-          const topPaddingElement = angular.element(viewport.children()[0]);
           const virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
-          expect(topPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
+          expect(Helper.getTopPadding(viewport)).toBe(itemHeight * virtualItemsAmount);
           expect(viewport.scrollTop()).toBe(itemHeight * ((-1) * userMinIndex + 1));
         }
       );
@@ -103,9 +99,8 @@ describe('uiScroll user min/max indicies.', () => {
       runTest(Object.assign({}, scrollSettings, { datasource: 'myResponsiveDatasource' }),
         (viewport, scope) => {
           scope.adapter.reload();
-          const bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
           const virtualItemsAmount = userMaxIndex - (viewportHeight / itemHeight) - bufferSize;
-          expect(bottomPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
+          expect(Helper.getBottomPadding(viewport)).toBe(itemHeight * virtualItemsAmount);
           expect(viewport.scrollTop()).toBe(itemHeight * bufferSize);
         }
       );
@@ -116,9 +111,8 @@ describe('uiScroll user min/max indicies.', () => {
       runTest(Object.assign({}, scrollSettings, { datasource: 'myResponsiveDatasource' }),
         (viewport, scope) => {
           scope.adapter.reload();
-          const topPaddingElement = angular.element(viewport.children()[0]);
           const virtualItemsAmount = (-1) * userMinIndex - bufferSize + 1;
-          expect(topPaddingElement.height()).toBe(itemHeight * virtualItemsAmount);
+          expect(Helper.getTopPadding(viewport)).toBe(itemHeight * virtualItemsAmount);
           expect(viewport.scrollTop()).toBe(itemHeight * ((-1) * userMinIndex + 1));
         }
       );
@@ -141,10 +135,8 @@ describe('uiScroll user min/max indicies.', () => {
           datasource.minIndex = minIndexNew;
           datasource.maxIndex = maxIndexNew;
 
-          const topPaddingElement = angular.element(viewport.children()[0]);
-          const bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
-          expect(topPaddingElement.height()).toBe(itemHeight * ((-1) * minIndexNew + startIndex - bufferSize));
-          expect(bottomPaddingElement.height()).toBe(itemHeight * (maxIndexNew - startIndex + 1 - (viewportHeight / itemHeight) - bufferSize));
+          expect(Helper.getTopPadding(viewport)).toBe(itemHeight * ((-1) * minIndexNew + startIndex - bufferSize));
+          expect(Helper.getBottomPadding(viewport)).toBe(itemHeight * (maxIndexNew - startIndex + 1 - (viewportHeight / itemHeight) - bufferSize));
           expect(viewport.scrollTop()).toBe(_scrollTop + itemHeight * add);
         }
       );
