@@ -78,7 +78,7 @@ angular.module('ui.scroll', [])
         const bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
         const padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT));
         let startIndex = parseNumericAttr($attr.startIndex, 1);
-        let ridActual = 0;// current data revision id
+        let ridActual = 0; // current data revision id
         let pending = [];
 
         const elementRoutines = new ElementRoutines($injector, $q);
@@ -109,7 +109,7 @@ angular.module('ui.scroll', [])
         function persistDatasourceIndex(datasource, propName) {
           let getter;
           // need to postpone min/maxIndexUser processing if the view is empty
-          if(datasource.hasOwnProperty(propName) && !buffer.length) {
+          if(Number.isInteger(datasource[propName])) {
             getter = datasource[propName];
             if(Number.isInteger(getter)) {
               onRenderHandlers.push(() => datasource[propName] = getter);
@@ -127,6 +127,10 @@ angular.module('ui.scroll', [])
           Object.defineProperty(datasource, propName, {
             set: (value) => {
               getter = value;
+              if(pending.length && !buffer.length) {
+                persistDatasourceIndex(datasource, propName);
+                return;
+              }
               buffer[propUserName] = value;
               const topPaddingHeightOld = viewport.topDataPos();
               viewport.adjustPaddings();
