@@ -39,9 +39,10 @@ angular.module('ui.scroll', [])
     '$injector',
     '$rootScope',
     '$timeout',
+    '$interval',
     '$q',
     '$parse',
-    function (console, $injector, $rootScope, $timeout, $q, $parse) {
+    function (console, $injector, $rootScope, $timeout, $interval, $q, $parse) {
 
       return {
         require: ['?^uiScrollViewport'],
@@ -59,7 +60,7 @@ angular.module('ui.scroll', [])
         }
 
         function parseNumericAttr(value, defaultValue) {
-          let result = $parse(value)($scope);
+          const result = $parse(value)($scope);
           return isNaN(result) ? defaultValue : result;
         }
 
@@ -67,6 +68,8 @@ angular.module('ui.scroll', [])
         const BUFFER_DEFAULT = 10;
         const PADDING_MIN = 0.3;
         const PADDING_DEFAULT = 0.5;
+        const MAX_VIEWPORT_DELAY = 500;
+        const VIEWPORT_POLLING_INTERVAL = 50;
 
         let datasource = null;
         const itemName = match[1];
@@ -78,16 +81,16 @@ angular.module('ui.scroll', [])
         let ridActual = 0;// current data revision id
         let pending = [];
 
-        let elementRoutines = new ElementRoutines($injector, $q);
-        let buffer = new ScrollBuffer(elementRoutines, bufferSize);
-        let viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
-        let adapter = new Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope);
+        const elementRoutines = new ElementRoutines($injector, $q);
+        const buffer = new ScrollBuffer(elementRoutines, bufferSize);
+        const viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
+        const adapter = new Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope);
 
         if (viewportController) {
           viewportController.adapter = adapter;
         }
 
-        let isDatasourceValid = () => angular.isObject(datasource) && angular.isFunction(datasource.get);
+        const isDatasourceValid = () => angular.isObject(datasource) && angular.isFunction(datasource.get);
         datasource = $parse(datasourceName)($scope); // try to get datasource on scope
         if (!isDatasourceValid()) {
           datasource = $injector.get(datasourceName); // try to inject datasource as service
@@ -114,7 +117,7 @@ angular.module('ui.scroll', [])
         }
 
         function defineIndexProperty(datasource, propName, propUserName) {
-          let descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
+          const descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
           if (descriptor && (descriptor.set || descriptor.get)) {
             return;
           }
@@ -124,7 +127,7 @@ angular.module('ui.scroll', [])
             set: (value) => {
               getter = value;
               buffer[propUserName] = value;
-              let topPaddingHeightOld = viewport.topDataPos();
+              const topPaddingHeightOld = viewport.topDataPos();
               viewport.adjustPaddings();
               if (propName === 'minIndex') {
                 viewport.onAfterMinIndexSet(topPaddingHeightOld);
@@ -157,6 +160,26 @@ angular.module('ui.scroll', [])
             }, success);
           };
 
+        const run = () => {
+          let tryCount = 0;
+          if(!viewport.applyContainerStyle()) {
+            const timer = $interval(() => {
+              tryCount++;
+              if(viewport.applyContainerStyle()) {
+                $interval.cancel(timer);
+                reload();
+              }
+              if(tryCount * VIEWPORT_POLLING_INTERVAL >= MAX_VIEWPORT_DELAY) {
+                $interval.cancel(timer);
+                throw Error(`ui-scroll directive requires a viewport with non-zero height in ${MAX_VIEWPORT_DELAY}ms`);
+              }
+            }, VIEWPORT_POLLING_INTERVAL);
+          }
+          else {
+            reload();
+          }
+        };
+
         /**
          * Build padding elements
          *
@@ -180,10 +203,7 @@ angular.module('ui.scroll', [])
 
         viewport.bind('mousewheel', wheelHandler);
 
-        $timeout(() => {
-          viewport.applyContainerStyle();
-          reload();
-        });
+        run();
 
         /* Private function definitions */
 
@@ -239,7 +259,7 @@ angular.module('ui.scroll', [])
 
         function createElement(wrapper, insertAfter, insertElement) {
           let promises = null;
-          let sibling = (insertAfter > 0) ? buffer[insertAfter - 1].element : undefined;
+          const sibling = (insertAfter > 0) ? buffer[insertAfter - 1].element : undefined;
           linker((clone, scope) => {
             promises = insertElement(clone, sibling);
             wrapper.element = clone;
@@ -248,7 +268,7 @@ angular.module('ui.scroll', [])
           });
           // ui-scroll-grid apply
           if (adapter.transform) {
-            let tdInitializer = wrapper.scope.uiScrollTdInitializer;
+            const tdInitializer = wrapper.scope.uiScrollTdInitializer;
             if (tdInitializer && tdInitializer.linking) {
               adapter.transform(wrapper.scope, wrapper.element);
             } else {
@@ -459,8 +479,8 @@ angular.module('ui.scroll', [])
 
         function wheelHandler(event) {
           if (!adapter.disabled) {
-            let scrollTop = viewport[0].scrollTop;
-            let yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
+            const scrollTop = viewport[0].scrollTop;
+            const yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
 
             if ((scrollTop === 0 && !buffer.bof) || (scrollTop === yMax && !buffer.eof)) {
               event.preventDefault();

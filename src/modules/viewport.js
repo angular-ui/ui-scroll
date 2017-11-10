@@ -25,14 +25,20 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     createPaddingElements(template) {
       topPadding = new Padding(template);
       bottomPadding = new Padding(template);
-      element.before(topPadding);
-      element.after(bottomPadding);
+      element.before(topPadding.element);
+      element.after(bottomPadding.element);
+      topPadding.height(0);
+      bottomPadding.height(0);
     },
 
     applyContainerStyle() {
-      if (container && container !== viewport) {
+      if (!container) {
+        return true;
+      }
+      if(container !== viewport) {
         viewport.css('height', window.getComputedStyle(container[0]).height);
       }
+      return viewport.height() > 0;
     },
 
     bottomDataPos() {
@@ -54,11 +60,11 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     },
 
     insertElement(e, sibling) {
-      return elementRoutines.insertElement(e, sibling || topPadding);
+      return elementRoutines.insertElement(e, sibling || topPadding.element);
     },
 
     insertElementAnimated(e, sibling) {
-      return elementRoutines.insertElementAnimated(e, sibling || topPadding);
+      return elementRoutines.insertElementAnimated(e, sibling || topPadding.element);
     },
 
     shouldLoadBottom() {

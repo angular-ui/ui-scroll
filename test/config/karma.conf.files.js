@@ -6,7 +6,7 @@ var files = [
   'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-mocks.js',
   '../misc/test.css',
   '../misc/datasources.js',
-  '../misc/scaffolding.js',
+  '../misc/scaffolding*.js',
   '../*Spec.js',
   {
     pattern: scrollerPath + '*.js.map',

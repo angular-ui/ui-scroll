@@ -40,14 +40,13 @@ describe('uiScroll', function () {
     };
 
     var executeTest = function(template, scopeSelector, scopeContainer) {
-        inject(function($rootScope, $compile, $timeout) {
+        inject(function($rootScope, $compile) {
             // build and render
             var templateElement = angular.element(template);
             var scope = $rootScope.$new();
             angular.element(document).find('body').append(templateElement);
             $compile(templateElement)(scope);
             scope.$apply();
-            $timeout.flush();
 
             // find adapter element and scope container
             var adapterContainer;
