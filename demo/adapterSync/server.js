@@ -108,7 +108,7 @@ angular.module('server', []).factory('Server',
               }
             }
             this.data.splice(i, 1);
-            this.setIndicies();
+            this.setIndices();
             return this.returnDeferredResult(indexRemoved);
           }
         }
@@ -128,14 +128,14 @@ angular.module('server', []).factory('Server',
             item = this.generateItem(index + 1);
             item.content += params;
             this.data.splice(i + 1, 0, item);
-            this.setIndicies();
+            this.setIndices();
             return this.returnDeferredResult(item);
           }
         }
         return this.returnDeferredResult(null);
       },
 
-      setIndicies: function () {
+      setIndices: function () {
         if(!this.data.length) {
           this.firstIndex = 1;
           this.lastIndex = 1;

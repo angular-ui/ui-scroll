@@ -105,14 +105,14 @@ app.factory('Server', [
           if (this.data[i].id === itemId) {
             var indexRemoved = this.data[i].index;
             this.data.splice(i, 1);
-            this.setIndicies();
+            this.setIndices();
             return this.returnDeferredResult(indexRemoved);
           }
         }
         return this.returnDeferredResult(false);
       },
 
-      setIndicies: function() {
+      setIndices: function() {
         if(!this.data.length) {
           this.firstIndex = 1;
           this.lastIndex = 1;
