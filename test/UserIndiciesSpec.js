@@ -1,5 +1,5 @@
 /*global describe, beforeEach, module, inject, it, expect, runTest */
-describe('uiScroll main/max indicies', function() {
+describe('uiScroll main/max indices', function() {
   'use strict';
 
   beforeEach(module('ui.scroll'));

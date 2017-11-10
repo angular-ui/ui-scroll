@@ -23,11 +23,11 @@ describe('uiScroll Paddings spec.', () => {
     viewportHeight: viewportHeight
   };
 
-  function appendTitle(outside, indicies) {
-    return (outside ? ' outside' : ' inside') + ' the buffer' + (indicies ? ' when min/max indicies are set': '');
+  function appendTitle(outside, indices) {
+    return (outside ? ' outside' : ' inside') + ' the buffer' + (indices ? ' when min/max indices are set': '');
   }
 
-  function setUserIndicies() {
+  function setUserIndices() {
     datasource.minIndex = datasource.min;
     datasource.maxIndex = datasource.max;
   }
@@ -108,11 +108,11 @@ describe('uiScroll Paddings spec.', () => {
   describe('Removing items via indexed-based applyUpdates\n', () => {
 
     [true, false].forEach(outside =>
-      [true, false].forEach(userIndicies =>
-        it('should remove last row' + appendTitle(outside, userIndicies), () =>
+      [true, false].forEach(userIndices =>
+        it('should remove last row' + appendTitle(outside, userIndices), () =>
           runTest(scrollSettings,
             (viewport, scope) => {
-              userIndicies && setUserIndicies();
+              userIndices && setUserIndices();
 
               scrollBottom(viewport, MAX);
               outside && scrollTop(viewport);
@@ -133,11 +133,11 @@ describe('uiScroll Paddings spec.', () => {
     );
 
     [true, false].forEach(outside =>
-      [true, false].forEach(userIndicies =>
-        it('should remove last row and then the next after last' + appendTitle(outside, userIndicies), () =>
+      [true, false].forEach(userIndices =>
+        it('should remove last row and then the next after last' + appendTitle(outside, userIndices), () =>
           runTest(scrollSettings,
             (viewport, scope) => {
-              userIndicies && setUserIndicies();
+              userIndices && setUserIndices();
 
               scrollBottom(viewport, MAX);
               outside && scrollTop(viewport);
@@ -160,11 +160,11 @@ describe('uiScroll Paddings spec.', () => {
     );
 
     [true, false].forEach(outside =>
-      [true, false].forEach(userIndicies =>
-        it('should remove pre-last row' + appendTitle(outside, userIndicies), () =>
+      [true, false].forEach(userIndices =>
+        it('should remove pre-last row' + appendTitle(outside, userIndices), () =>
           runTest(scrollSettings,
             (viewport, scope) => {
-              userIndicies && setUserIndicies();
+              userIndices && setUserIndices();
 
               scrollBottom(viewport, MAX);
               outside && scrollTop(viewport);
@@ -186,11 +186,11 @@ describe('uiScroll Paddings spec.', () => {
     );
 
     [true, false].forEach(outside =>
-      [true, false].forEach(userIndicies =>
-        it('should remove first row' + appendTitle(outside, userIndicies), () =>
+      [true, false].forEach(userIndices =>
+        it('should remove first row' + appendTitle(outside, userIndices), () =>
           runTest(scrollSettings,
             (viewport, scope) => {
-              userIndicies && setUserIndicies();
+              userIndices && setUserIndices();
 
               outside && scrollBottom(viewport, MAX);
 
@@ -212,11 +212,11 @@ describe('uiScroll Paddings spec.', () => {
     );
 
     [true, false].forEach(outside =>
-      [true, false].forEach(userIndicies =>
-        it('should remove first row and then the next after first' + appendTitle(outside, userIndicies), () =>
+      [true, false].forEach(userIndices =>
+        it('should remove first row and then the next after first' + appendTitle(outside, userIndices), () =>
           runTest(scrollSettings,
             (viewport, scope) => {
-              userIndicies && setUserIndicies();
+              userIndices && setUserIndices();
 
               outside && scrollBottom(viewport, MAX);
 
@@ -240,11 +240,11 @@ describe('uiScroll Paddings spec.', () => {
     );
 
     [true, false].forEach(outside =>
-      [true, false].forEach(userIndicies =>
-        it('should remove second row' + appendTitle(outside, userIndicies), () =>
+      [true, false].forEach(userIndices =>
+        it('should remove second row' + appendTitle(outside, userIndices), () =>
           runTest(scrollSettings,
             (viewport, scope) => {
-              userIndicies && setUserIndicies();
+              userIndices && setUserIndices();
 
               outside && scrollBottom(viewport, MAX);
 
@@ -294,7 +294,7 @@ describe('uiScroll Paddings spec.', () => {
       );
     });
 
-    it('should append 3 rows via index-based applyUpdates when min/max indicies are set', () => {
+    it('should append 3 rows via index-based applyUpdates when min/max indices are set', () => {
       runTest(Object.assign({}, scrollSettings, { startIndex: 28 }),
         (viewport, scope) => {
           const newItems = [
@@ -327,11 +327,11 @@ describe('uiScroll Paddings spec.', () => {
   describe('Removing items via indexed-based applyUpdates when neither BOF nor EOF are reached\n', () => {
     const _scrollSettings = Object.assign({}, scrollSettings, { startIndex: 12 });
 
-    [true, false].forEach(userIndicies =>
-      it('should remove first buffered row' + appendTitle(true, userIndicies), () =>
+    [true, false].forEach(userIndices =>
+      it('should remove first buffered row' + appendTitle(true, userIndices), () =>
         runTest(_scrollSettings,
           (viewport, scope) => {
-            userIndicies && setUserIndicies();
+            userIndices && setUserIndices();
 
             removeItem(datasource, 2);
             scope.adapter.applyUpdates(2, []);
@@ -349,11 +349,11 @@ describe('uiScroll Paddings spec.', () => {
       )
     );
 
-    [true, false].forEach(userIndicies =>
-      it('should remove last buffered row' + appendTitle(true, userIndicies), () =>
+    [true, false].forEach(userIndices =>
+      it('should remove last buffered row' + appendTitle(true, userIndices), () =>
         runTest(_scrollSettings,
           (viewport, scope) => {
-            userIndicies && setUserIndicies();
+            userIndices && setUserIndices();
 
             removeItem(datasource, 19);
             scope.adapter.applyUpdates(19, []);
@@ -369,11 +369,11 @@ describe('uiScroll Paddings spec.', () => {
       )
     );
 
-    [true, false].forEach(userIndicies =>
-      it('should remove absolute first row' + appendTitle(true, userIndicies), () =>
+    [true, false].forEach(userIndices =>
+      it('should remove absolute first row' + appendTitle(true, userIndices), () =>
         runTest(_scrollSettings,
           (viewport, scope) => {
-            userIndicies && setUserIndicies();
+            userIndices && setUserIndices();
 
             removeItem(datasource, 1);
             scope.adapter.applyUpdates(1, []);
@@ -391,11 +391,11 @@ describe('uiScroll Paddings spec.', () => {
       )
     );
 
-    [true, false].forEach(userIndicies =>
-      it('should remove absolute last row' + appendTitle(true, userIndicies), () =>
+    [true, false].forEach(userIndices =>
+      it('should remove absolute last row' + appendTitle(true, userIndices), () =>
         runTest(_scrollSettings,
           (viewport, scope) => {
-            userIndicies && setUserIndicies();
+            userIndices && setUserIndices();
 
             removeItem(datasource, itemsCount);
             scope.adapter.applyUpdates(itemsCount, []);

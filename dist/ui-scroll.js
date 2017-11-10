@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.5 -- 2017-11-08T02:08:45.645Z
+ * Version: 1.7.0-rc.5 -- 2017-11-10T00:53:20.545Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -944,13 +944,19 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
     createPaddingElements: function createPaddingElements(template) {
       topPadding = new _padding2.default(template);
       bottomPadding = new _padding2.default(template);
-      element.before(topPadding);
-      element.after(bottomPadding);
+      element.before(topPadding.element);
+      element.after(bottomPadding.element);
+      topPadding.height(0);
+      bottomPadding.height(0);
     },
     applyContainerStyle: function applyContainerStyle() {
-      if (container && container !== viewport) {
+      if (!container) {
+        return true;
+      }
+      if (container !== viewport) {
         viewport.css('height', window.getComputedStyle(container[0]).height);
       }
+      return viewport.height() > 0;
     },
     bottomDataPos: function bottomDataPos() {
       var scrollHeight = viewport[0].scrollHeight;
@@ -967,10 +973,10 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       return viewport.scrollTop();
     },
     insertElement: function insertElement(e, sibling) {
-      return elementRoutines.insertElement(e, sibling || topPadding);
+      return elementRoutines.insertElement(e, sibling || topPadding.element);
     },
     insertElementAnimated: function insertElementAnimated(e, sibling) {
-      return elementRoutines.insertElementAnimated(e, sibling || topPadding);
+      return elementRoutines.insertElementAnimated(e, sibling || topPadding.element);
     },
     shouldLoadBottom: function shouldLoadBottom() {
       return !buffer.eof && viewport.bottomDataPos() < viewport.bottomVisiblePos() + bufferPadding();
@@ -1126,8 +1132,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-exports.default = Padding;
-
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 // Can't just extend the Array, due to Babel does not support built-in classes extending
@@ -1194,31 +1198,46 @@ Object.getOwnPropertyNames(CacheProto.prototype).forEach(function (methodName) {
   return Cache.prototype[methodName] = CacheProto.prototype[methodName];
 });
 
-function Padding(template) {
-  var result = void 0;
-
+function generateElement(template) {
   if (template.nodeType !== Node.ELEMENT_NODE) {
     throw new Error('ui-scroll directive requires an Element node for templating the view');
   }
-
+  var element = void 0;
   switch (template.tagName.toLowerCase()) {
     case 'dl':
       throw new Error('ui-scroll directive does not support <' + template.tagName + '> as a repeating tag: ' + template.outerHTML);
     case 'tr':
       var table = angular.element('<table><tr><td><div></div></td></tr></table>');
-      result = table.find('tr');
+      element = table.find('tr');
       break;
     case 'li':
-      result = angular.element('<li></li>');
+      element = angular.element('<li></li>');
       break;
     default:
-      result = angular.element('<div></div>');
+      element = angular.element('<div></div>');
+  }
+  return element;
+}
+
+var Padding = function () {
+  function Padding(template) {
+    _classCallCheck(this, Padding);
+
+    this.element = generateElement(template);
+    this.cache = new Cache();
   }
 
-  result.cache = new Cache();
+  _createClass(Padding, [{
+    key: 'height',
+    value: function height() {
+      return this.element.height.apply(this.element, arguments);
+    }
+  }]);
 
-  return result;
-}
+  return Padding;
+}();
+
+exports.default = Padding;
 
 /***/ }),
 /* 6 */,
@@ -1273,7 +1292,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       return this;
     }]
   };
-}).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $q, $parse) {
+}).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$interval', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $interval, $q, $parse) {
 
   return {
     require: ['?^uiScrollViewport'],
@@ -1299,6 +1318,8 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
     var BUFFER_DEFAULT = 10;
     var PADDING_MIN = 0.3;
     var PADDING_DEFAULT = 0.5;
+    var MAX_VIEWPORT_DELAY = 500;
+    var VIEWPORT_POLLING_INTERVAL = 50;
 
     var datasource = null;
     var itemName = match[1];
@@ -1397,6 +1418,25 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       }, success);
     };
 
+    var run = function run() {
+      var tryCount = 0;
+      if (!viewport.applyContainerStyle()) {
+        var timer = $interval(function () {
+          tryCount++;
+          if (viewport.applyContainerStyle()) {
+            $interval.cancel(timer);
+            reload();
+          }
+          if (tryCount * VIEWPORT_POLLING_INTERVAL >= MAX_VIEWPORT_DELAY) {
+            $interval.cancel(timer);
+            throw Error('ui-scroll directive requires a viewport with non-zero height in ' + MAX_VIEWPORT_DELAY + 'ms');
+          }
+        }, VIEWPORT_POLLING_INTERVAL);
+      } else {
+        reload();
+      }
+    };
+
     /**
      * Build padding elements
      *
@@ -1420,10 +1460,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
 
     viewport.bind('mousewheel', wheelHandler);
 
-    $timeout(function () {
-      viewport.applyContainerStyle();
-      reload();
-    });
+    run();
 
     /* Private function definitions */
 
