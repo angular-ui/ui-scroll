@@ -103,7 +103,7 @@ angular.module('ui.scroll', [])
 
         let onRenderHandlers = [];
         function onRenderHandlersRunner() {
-          onRenderHandlers.forEach(handler => handler());
+          onRenderHandlers.forEach(handler => handler.run());
           onRenderHandlers = [];
         }
         function persistDatasourceIndex(datasource, propName) {
@@ -112,7 +112,11 @@ angular.module('ui.scroll', [])
           if(Number.isInteger(datasource[propName])) {
             getter = datasource[propName];
             if(Number.isInteger(getter)) {
-              onRenderHandlers.push(() => datasource[propName] = getter);
+              onRenderHandlers = onRenderHandlers.filter(handler => handler.id !== propName);
+              onRenderHandlers.push({
+                id: propName,
+                run: () => datasource[propName] = getter
+              });
             }
           }
         }

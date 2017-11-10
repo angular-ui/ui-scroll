@@ -188,14 +188,13 @@ angular.module('ui.scroll.test.datasources', [])
   ])
 
 
-  .factory('myResponsiveDatasource', [
-    '$log', '$timeout', '$rootScope',
-    function() {
+  .factory('myResponsiveDatasource', function() {
       var datasource = {
         data: [],
         min: 1,
         max: 30,
         init: function() {
+          this.data = [];
           for (var i = this.min; i <= this.max; i++) {
             this.data.push('item' + i);
           }
@@ -218,4 +217,4 @@ angular.module('ui.scroll.test.datasources', [])
       datasource.init();
       return datasource;
     }
-  ]);
+  );

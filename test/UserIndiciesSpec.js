@@ -85,7 +85,7 @@ describe('uiScroll user min/max indicies.', () => {
       );
     });
 
-    it('should work when the viewport is big enough to include more than 1 pack of item', () => {
+    it('should work when the viewport is big enough to include more than 1 pack of item (last)', () => {
       const viewportHeight = 450;
       const _topItemsCount = Math.round(viewportHeight * 0.5 / itemHeight);
       const _topPackCount = Math.ceil(_topItemsCount / bufferSize);
@@ -100,7 +100,7 @@ describe('uiScroll user min/max indicies.', () => {
       );
     });
 
-    it('should work when the viewport is big enough to include more than 1 pack of item', () => {
+    it('should work when the viewport is big enough to include more than 1 pack of item (first)', () => {
       const viewportHeight = 450;
       const _topItemsCount = Math.round(viewportHeight * 0.5 / itemHeight);
       const _topPackCount = Math.ceil(_topItemsCount / bufferSize);
@@ -122,6 +122,7 @@ describe('uiScroll user min/max indicies.', () => {
     beforeEach(() => {
       datasource.min = userMinIndex;
       datasource.max = userMaxIndex;
+      datasource.init();
     });
 
     it('should persist user maxIndex after reload', () => {
