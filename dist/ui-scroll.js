@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.4 -- 2017-11-09T02:11:48.835Z
+ * Version: 1.7.0-rc.5 -- 2017-11-10T00:37:43.150Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1085,8 +1085,7 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       if (buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser) {
         var diff = topPadding.height() - topPaddingHeightOld;
         viewport.scrollTop(viewport.scrollTop() + diff);
-        diff -= viewport.scrollTop();
-        if (diff > 0) {
+        while ((diff -= viewport.scrollTop()) > 0) {
           bottomPadding.height(bottomPadding.height() + diff);
           viewport.scrollTop(viewport.scrollTop() + diff);
         }
@@ -1360,7 +1359,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
     var onRenderHandlers = [];
     function onRenderHandlersRunner() {
       onRenderHandlers.forEach(function (handler) {
-        return handler();
+        return handler.run();
       });
       onRenderHandlers = [];
     }
@@ -1370,8 +1369,14 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       if (Number.isInteger(datasource[propName])) {
         getter = datasource[propName];
         if (Number.isInteger(getter)) {
-          onRenderHandlers.push(function () {
-            return datasource[propName] = getter;
+          onRenderHandlers = onRenderHandlers.filter(function (handler) {
+            return handler.id !== propName;
+          });
+          onRenderHandlers.push({
+            id: propName,
+            run: function run() {
+              return datasource[propName] = getter;
+            }
           });
         }
       }
