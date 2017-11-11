@@ -3,8 +3,8 @@ var webpack = require('webpack');
 
 module.exports = {
   entry: {
-    'ui-scroll': '../src/ui-scroll.js',
-    'ui-scroll-grid': '../src/ui-scroll-grid.js'
+    'ui-scroll': path.resolve(__dirname, '../src/ui-scroll.js'),
+    'ui-scroll-grid': path.resolve(__dirname, '../src/ui-scroll-grid.js')
   },
   output: {
     path: path.join(__dirname, '../temp'),
