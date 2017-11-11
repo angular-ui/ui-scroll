@@ -16,6 +16,18 @@ module.exports = function (config) {
     files: require('./karma.conf.files.js').defaultFiles,
 
 
+    // add webpack as preprocessor
+    preprocessors: { 'test/*Spec.js': ['webpack'] },
+
+
+    // webpack configuration
+    webpack: require('../../webpack/_config.js'),
+
+
+    // webpack-dev-middleware configuration
+    webpackMiddleware: { stats: 'errors-only' },
+
+
     // list of files to exclude
     exclude: [],
 
