@@ -21,7 +21,7 @@ module.exports = function (config) {
 
 
     // webpack configuration
-    webpack: require('../../webpack/_config.js'),
+    webpack: require('../../webpack/config.js'),
 
 
     // webpack-dev-middleware configuration
