@@ -10,8 +10,8 @@ module.exports = {
     path: path.join(__dirname, '../temp'),
     filename: '[name].js'
   },
-  // cache: false,
-  // devtool: 'source-map',
+  cache: false,
+  devtool: 'source-map',
   module: {
     loaders: [{
       test: /\.js$/,

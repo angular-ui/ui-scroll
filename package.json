@@ -23,7 +23,7 @@
     "test": "grunt test",
     "dev": "concurrently --kill-others --raw \"grunt server\" \"grunt test\"",
     "build": "grunt build",
-    "webpack-test": "karma start test/config/karma.conf.js --single-run"
+    "webpack-test": "webpack --config webpack/config.js && karma start test/config/karma.conf.js --single-run"
   },
   "devDependencies": {
     "babel-core": "^6.22.1",
