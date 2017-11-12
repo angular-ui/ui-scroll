@@ -20,10 +20,9 @@
   "license": "MIT",
   "scripts": {
     "start": "grunt",
-    "test": "grunt test",
+    "test": "rm -rf temp && webpack --config webpack/config.js && karma start test/config/karma.conf.js",
     "dev": "concurrently --kill-others --raw \"grunt server\" \"grunt test\"",
-    "build": "grunt build",
-    "webpack-test": "webpack --config webpack/config.js && karma start test/config/karma.conf.js"
+    "build": "grunt build"
   },
   "devDependencies": {
     "babel-core": "^6.22.1",

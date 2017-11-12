@@ -16,12 +16,8 @@ module.exports = function (config) {
     files: require('./karma.conf.files.js').defaultFiles,
 
 
-    // add webpack as preprocessor
-    preprocessors: { 'test/*Spec.js': ['webpack'] },
-
-
     // webpack configuration
-    webpack: require('../../webpack/config.js'),
+    webpack: require('../../webpack.config.js').config,
 
 
     // webpack-dev-middleware configuration
@@ -51,10 +47,10 @@ module.exports = function (config) {
 
 
     // enable / disable watching file and executing tests whenever any file changes
-    autoWatch: false,
+    autoWatch: true,
 
 
-    keepalive: false,
+    keepalive: true,
 
 
     // Start these browsers, currently available:
@@ -80,6 +76,6 @@ module.exports = function (config) {
 
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
-    singleRun: true
+    singleRun: false
   });
 };
