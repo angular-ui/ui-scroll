@@ -16,6 +16,11 @@ module.exports = function (config) {
     files: require('./karma.conf.files.js').defaultFiles,
 
 
+    preprocessors: {
+      '../*Spec.js': ['webpack']
+    },
+
+
     // webpack configuration
     webpack: require('../../webpack.config.js').config,
 

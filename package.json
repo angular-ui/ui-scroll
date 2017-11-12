@@ -20,7 +20,8 @@
   "license": "MIT",
   "scripts": {
     "start": "grunt",
-    "test": "rm -rf temp && webpack --config webpack/config.js && karma start test/config/karma.conf.js",
+    "test": "webpack --config webpack/config.js && karma start test/config/karma.conf.js",
+    "new-test": "karma start test/config/karma.conf.js",
     "dev": "concurrently --kill-others --raw \"grunt server\" \"grunt test\"",
     "build": "grunt build"
   },
