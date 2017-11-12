@@ -19,6 +19,7 @@ module.exports = {
       loader: 'babel-loader?presets[]=es2015'
     }]
   },
+  watch: true,
   resolve: {
     extensions: ['.js'],
     modules: [
