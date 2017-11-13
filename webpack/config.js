@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const packageJSON = require('../package.json');
 
@@ -70,7 +71,11 @@ if (ENV === 'production') {
           comments: false,
         },
         include: /\.min\.js$/
-      })
+      }),
+      new CopyWebpackPlugin([
+        {from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.min.js'},
+        {from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.js'}
+      ], {copyUnmodified: true})
     ],
 
     watch: false
