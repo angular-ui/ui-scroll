@@ -1,6 +1,8 @@
-var chrome = process.platform === 'linux' ? 'Chromium' : 'Chrome';
-var firefox = 'Firefox';
-var ie = 'IE';
+const chrome = process.platform === 'linux' ? 'Chromium' : 'Chrome';
+const firefox = 'Firefox';
+const ie = 'IE';
+
+const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
 
 module.exports = function (config) {
   config.set({
@@ -9,21 +11,21 @@ module.exports = function (config) {
 
     frameworks: ['jasmine'],
 
-    files: require('./karma.conf.files.js').defaultFiles,
+    files: require('./karma.conf.files.js')[ENV],
 
     exclude: [],
 
     reporters: ['dots'],
 
-    port: 8082,
+    port: ENV === 'development' ? 9100 : 8082,
 
     colors: true,
 
     logLevel: config.LOG_INFO,
 
-    autoWatch: true,
+    autoWatch: ENV === 'development',
 
-    keepalive: true,
+    keepalive: ENV === 'development',
 
     browsers: process.env.TRAVIS ?
       [firefox, chrome] :
@@ -31,6 +33,6 @@ module.exports = function (config) {
 
     captureTimeout: 60000,
 
-    singleRun: false
+    singleRun: ENV !== 'development'
   });
 };

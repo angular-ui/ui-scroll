@@ -7,19 +7,23 @@ var files = [
   '../misc/test.css',
   '../misc/datasources.js',
   '../misc/scaffolding*.js',
-  '../*Spec.js',
-  {
-    pattern: scrollerPath + '*.js.map',
-    included: false
-  }
+  '../*Spec.js'
 ];
 
-module.exports.defaultFiles = files.concat([
-  scrollerPath + 'ui-scroll.js',
-  scrollerPath + 'ui-scroll-grid.js'
+module.exports.development = files.concat([
+  '../../temp/ui-scroll.js',
+  '../../temp/ui-scroll-grid.js',
+  {
+    pattern: '../../temp/*.js.map',
+    included: false
+  }
 ]);
 
-module.exports.compressedFiles = files.concat([
-  scrollerPath + 'ui-scroll.min.js',
-  scrollerPath + 'ui-scroll-grid.min.js'
+module.exports.production = files.concat([
+  '../../dist/ui-scroll.min.js',
+  '../../dist/ui-scroll-grid.min.js',
+  {
+    pattern: '../../dist/*.js.map',
+    included: false
+  }
 ]);
