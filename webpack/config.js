@@ -13,6 +13,12 @@ const getBanner = function (compressing) {
 
 const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
 
+_loaders = [{
+  test: /\.js$/,
+  exclude: /node_modules/,
+  loader: 'babel-loader?presets[]=es2015'
+}];
+
 let configEnv = {};
 
 if (ENV === 'development') {
@@ -22,6 +28,16 @@ if (ENV === 'development') {
     compressing: false,
 
     entry: {},
+
+    module: {
+      loaders: [..._loaders, {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        enforce: 'pre',
+        loader: 'jshint-loader',
+        options: require('../.jshintrc.json')
+      }
+    ]},
 
     plugins: [],
 
@@ -38,6 +54,10 @@ if (ENV === 'production') {
     entry: {
       'ui-scroll.min': path.resolve(__dirname, '../src/ui-scroll.js'),
       'ui-scroll-grid.min': path.resolve(__dirname, '../src/ui-scroll-grid.js')
+    },
+
+    module: {
+      loaders: _loaders
     },
 
     plugins: [
@@ -72,13 +92,7 @@ module.exports = {
 
   devtool: 'source-map',
 
-  module: {
-    loaders: [{
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loader: 'babel-loader?presets[]=es2015'
-    }]
-  },
+  module: configEnv.module,
 
   resolve: {
     extensions: ['.js'],
