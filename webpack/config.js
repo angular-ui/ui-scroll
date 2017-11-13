@@ -1,8 +1,6 @@
 var path = require('path');
 var webpack = require('webpack');
-
-var cleanTemp = require('./clean-temp.js');
-cleanTemp(path.join(__dirname, '../temp'));
+var CleanWebpackPlugin = require('clean-webpack-plugin');
 
 var packageJSON = require('../package.json');
 
@@ -23,11 +21,17 @@ switch (process.env.npm_lifecycle_event) {
     break;
 }
 
-var _plugins = [];
+var _plugins = [
+  new CleanWebpackPlugin('temp', {
+    root: path.join(__dirname, '..')
+  })
+];
 var _output = {};
 
 if (ENV === 'development') {
-  _plugins = [new webpack.BannerPlugin(getBanner(false))];
+  _plugins = [..._plugins,
+    new webpack.BannerPlugin(getBanner(false))
+  ];
   _output = {
     path: path.join(__dirname, '../temp'),
     filename: '[name].js'
@@ -35,7 +39,7 @@ if (ENV === 'development') {
 }
 
 if (ENV === 'production') {
-  _plugins = [
+  _plugins = [..._plugins,
     new webpack.BannerPlugin(getBanner(true)),
     new webpack.optimize.UglifyJsPlugin({
       sourceMap: true,
