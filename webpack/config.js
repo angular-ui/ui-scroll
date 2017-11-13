@@ -4,8 +4,8 @@ const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 const packageJSON = require('../package.json');
 
-const getBanner = function (compressed) {
-  return packageJSON.name + (compressed ? ' (compressed)' : ' (uncompressed)') + '\n' +
+const getBanner = function (compressing) {
+  return packageJSON.name + (compressing ? ' (compressed)' : ' (uncompressed)') + '\n' +
     packageJSON.homepage + '\n' +
     'Version: ' + packageJSON.version + ' -- ' + (new Date()).toISOString() + '\n' +
     'License: ' + packageJSON.license;
@@ -17,19 +17,13 @@ let configEnv = {};
 
 if (ENV === 'development') {
   configEnv = {
+    outputFolder: 'temp',
+
+    compressing: false,
+
     entry: {},
 
-    output: {
-      path: path.join(__dirname, '../temp'),
-      filename: '[name].js'
-    },
-
-    plugins: [
-      new CleanWebpackPlugin('temp', {
-        root: path.join(__dirname, '..')
-      }),
-      new webpack.BannerPlugin(getBanner(false))
-    ],
+    plugins: [],
 
     watch: true
   }
@@ -37,21 +31,16 @@ if (ENV === 'development') {
 
 if (ENV === 'production') {
   configEnv = {
+    outputFolder: 'dist',
+
+    compressing: true,
+
     entry: {
       'ui-scroll.min': path.resolve(__dirname, '../src/ui-scroll.js'),
       'ui-scroll-grid.min': path.resolve(__dirname, '../src/ui-scroll-grid.js')
     },
 
-    output: {
-      path: path.join(__dirname, '../dist'),
-      filename: '[name].js'
-    },
-
     plugins: [
-      new CleanWebpackPlugin('dist', {
-        root: path.join(__dirname, '..')
-      }),
-      new webpack.BannerPlugin(getBanner(true)),
       new webpack.optimize.UglifyJsPlugin({
         sourceMap: true,
         compress: {
@@ -74,7 +63,10 @@ module.exports = {
     'ui-scroll-grid': path.resolve(__dirname, '../src/ui-scroll-grid.js')
   }, configEnv.entry),
 
-  output: configEnv.output,
+  output: {
+    path: path.join(__dirname, '../' + configEnv.outputFolder),
+    filename: '[name].js'
+  },
 
   cache: false,
 
@@ -96,7 +88,13 @@ module.exports = {
     ]
   },
 
-  plugins: configEnv.plugins,
+  plugins: [
+    new CleanWebpackPlugin(configEnv.outputFolder, {
+      root: path.join(__dirname, '..')
+    }),
+    new webpack.BannerPlugin(getBanner(configEnv.compressing)),
+    ...configEnv.plugins
+  ],
 
   watch: configEnv.watch
 };
