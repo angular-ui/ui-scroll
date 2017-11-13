@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 const packageJSON = require('../package.json');
 
@@ -24,6 +25,9 @@ if (ENV === 'development') {
     },
 
     plugins: [
+      new CleanWebpackPlugin('temp', {
+        root: path.join(__dirname, '..')
+      }),
       new webpack.BannerPlugin(getBanner(false))
     ],
 
@@ -44,6 +48,9 @@ if (ENV === 'production') {
     },
 
     plugins: [
+      new CleanWebpackPlugin('dist', {
+        root: path.join(__dirname, '..')
+      }),
       new webpack.BannerPlugin(getBanner(true)),
       new webpack.optimize.UglifyJsPlugin({
         sourceMap: true,
