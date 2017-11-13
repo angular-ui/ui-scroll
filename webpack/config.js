@@ -1,6 +1,9 @@
 var path = require('path');
 var webpack = require('webpack');
 
+var cleanTemp = require('./clean-temp.js');
+cleanTemp(path.join(__dirname, '../temp'));
+
 var packageJSON = require('../package.json');
 
 var getBanner = function (compressed) {
