@@ -92,8 +92,8 @@ module.exports = {
     new CleanWebpackPlugin(configEnv.outputFolder, {
       root: path.join(__dirname, '..')
     }),
-    new webpack.BannerPlugin(getBanner(configEnv.compressing)),
-    ...configEnv.plugins
+    ...configEnv.plugins,
+    new webpack.BannerPlugin(getBanner(configEnv.compressing))
   ],
 
   watch: configEnv.watch
