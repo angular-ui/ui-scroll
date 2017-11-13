@@ -19,6 +19,7 @@
   },
   "license": "MIT",
   "scripts": {
+    "build": "webpack --config webpack/config.js",
     "dev-build": "webpack --config webpack/config.js",
     "dev-test": "karma start test/config/karma.conf.js",
     "test": "concurrently --kill-others --raw \"npm run dev-build\" \"npm run dev-test\""
