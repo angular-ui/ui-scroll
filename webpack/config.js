@@ -23,6 +23,36 @@ if (ENV === 'development') {
 
     compressing: false,
 
+    module: {
+      rules: [{
+        enforce: 'pre',
+        test: /Spec\.js$/,
+        include: path.resolve(__dirname, '../test'),
+        use: [{
+          loader: 'jshint-loader',
+          options: {
+            node: true,
+            globals: {
+              angular: false,
+              inject: false,
+              jQuery: false,
+              jasmine: false,
+              afterEach: false,
+              beforeEach: false,
+              ddescribe: false,
+              describe: false,
+              expect: false,
+              iit: false,
+              it: false,
+              spyOn: false,
+              xdescribe: false,
+              xit: false
+            }
+          }
+        }]
+      }]
+    },
+
     devtool: 'inline-source-map',
 
     entry: {},
@@ -38,6 +68,8 @@ if (ENV === 'production') {
     outputFolder: 'dist',
 
     compressing: true,
+
+    module: {},
 
     devtool: 'source-map',
 
@@ -83,7 +115,7 @@ module.exports = {
   devtool: configEnv.devtool,
 
   module: {
-    rules: [
+    rules: [...configEnv.module.rules,
       {
         test: /\.js$/,
         exclude: /node_modules/,
@@ -97,7 +129,7 @@ module.exports = {
         test: /\.js$/,
         include: path.resolve(__dirname, '../src'),
         use: [{
-          loader: "jshint-loader"
+          loader: 'jshint-loader'
         }]
       }
     ]
