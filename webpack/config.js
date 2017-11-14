@@ -91,7 +91,7 @@ module.exports = {
         options: {
           presets: ['es2015']
         }
-      }, 
+      },
       {
         enforce: 'pre',
         test: /\.js$/,
