@@ -4,27 +4,23 @@ const ie = 'IE';
 
 const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
 
+const webpackSettings = ENV === 'development' ? {
+  preprocessors: {
+    '../../src/ui-scroll*.js': ['webpack', 'sourcemap']
+  },
+  webpack: require('../../webpack/config.js')
+} : {};
+
 module.exports = function (config) {
-  config.set({
+  config.set(Object.assign({
 
     basePath: '',
 
     frameworks: ['jasmine'],
 
     files: [
-      ...require('./karma.conf.files.js')[ENV],
-      {
-        pattern: '../../src/*.js',
-        watched: true,
-        served: false
-      }
+      ...require('./karma.conf.files.js')[ENV]
     ],
-
-    preprocessors: {
-      '../../src/*.js': ['webpack']
-    },
-
-    webpack: {},
 
     exclude: [],
 
@@ -46,8 +42,7 @@ module.exports = function (config) {
 
     captureTimeout: 60000,
 
-    singleRun: ENV !== 'development',
+    singleRun: ENV !== 'development'
 
-    // restartOnFileChange: true
-  });
+  }, webpackSettings));
 };

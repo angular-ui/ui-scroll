@@ -23,7 +23,7 @@
     "prod-test": "karma start test/config/karma.conf.js",
     "dev-build": "webpack --config webpack/config.js",
     "dev-test": "karma start test/config/karma.conf.js",
-    "test": "concurrently --kill-others --raw \"npm run dev-build\" \"npm run dev-test\"",
+    "test": "npm run dev-test",
     "build": "npm run prod-build && npm run prod-test"
   },
   "devDependencies": {
@@ -41,6 +41,7 @@
     "karma-firefox-launcher": "^1.0.1",
     "karma-ie-launcher": "^1.0.0",
     "karma-jasmine": "^1.1.0",
+    "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^2.0.6",
     "webpack": "^3.8.1"
   },

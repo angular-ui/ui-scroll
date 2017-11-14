@@ -13,6 +13,7 @@ const getBanner = function (compressing) {
 };
 
 const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
+console.log('********** webpack runs in ' + ENV + ' environment **********\n');
 
 let configEnv = {};
 
@@ -21,6 +22,8 @@ if (ENV === 'development') {
     outputFolder: 'temp',
 
     compressing: false,
+
+    devtool: 'inline-source-map',
 
     entry: {},
 
@@ -35,6 +38,8 @@ if (ENV === 'production') {
     outputFolder: 'dist',
 
     compressing: true,
+
+    devtool: 'source-map',
 
     entry: {
       'ui-scroll.min': path.resolve(__dirname, '../src/ui-scroll.js'),
@@ -75,7 +80,7 @@ module.exports = {
 
   cache: false,
 
-  devtool: 'source-map',
+  devtool: configEnv.devtool,
 
   module: {
     rules: [
