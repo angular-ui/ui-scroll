@@ -22,7 +22,7 @@
     "prod-build": "webpack --config webpack/config.js",
     "prod-test": "karma start test/config/karma.conf.js",
     "dev-build": "webpack --config webpack/config.js",
-    "dev-test": "karma start test/config/karma.conf.js",
+    "dev-test": "npm run dev-build && karma start test/config/karma.conf.js",
     "test": "concurrently --kill-others --raw \"npm run dev-build\" \"npm run dev-test\"",
     "build": "npm run prod-build && npm run prod-test"
   },

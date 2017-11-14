@@ -3,6 +3,9 @@ const firefox = 'Firefox';
 const ie = 'IE';
 
 const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
+let webpackConfig = require('../../webpack/config.js');
+// webpackConfig.entry = null;
+webpackConfig.plugins = [];
 
 module.exports = function (config) {
   config.set({
@@ -24,7 +27,7 @@ module.exports = function (config) {
       '../../src/*.js': ['webpack']
     },
 
-    webpack: {},
+    webpack: webpackConfig,
 
     exclude: [],
 

@@ -86,7 +86,7 @@ module.exports = {
         options: {
           presets: ['es2015']
         }
-      }, 
+      },
       {
         enforce: 'pre',
         test: /\.js$/,
@@ -106,5 +106,6 @@ module.exports = {
     new webpack.BannerPlugin(getBanner(configEnv.compressing))
   ],
 
-  watch: configEnv.watch
+  // watch: configEnv.watch
+  watch: false
 };
