@@ -19,39 +19,37 @@ let configEnv = {};
 
 if (ENV === 'development') {
   configEnv = {
-    outputFolder: 'temp',
-
-    compressing: false,
-
-    module: {
-      rules: [{
-        enforce: 'pre',
-        test: /Spec\.js$/,
-        include: path.resolve(__dirname, '../test'),
-        use: [{
-          loader: 'jshint-loader',
-          options: {
-            node: true,
-            globals: {
-              angular: false,
-              inject: false,
-              jQuery: false,
-              jasmine: false,
-              afterEach: false,
-              beforeEach: false,
-              ddescribe: false,
-              describe: false,
-              expect: false,
-              iit: false,
-              it: false,
-              spyOn: false,
-              xdescribe: false,
-              xit: false
-            }
-          }
-        }]
-      }]
+    output: {
+      filename: '[name].js'
     },
+
+    rules: [{
+      enforce: 'pre',
+      test: /Spec\.js$/,
+      include: path.resolve(__dirname, '../test'),
+      use: [{
+        loader: 'jshint-loader',
+        options: {
+          node: true,
+          globals: {
+            angular2: false,
+            inject: false,
+            jQuery: false,
+            jasmine: false,
+            afterEach: false,
+            beforeEach: false,
+            ddescribe: false,
+            describe: false,
+            expect: false,
+            iit: false,
+            it: false,
+            spyOn: false,
+            xdescribe: false,
+            xit: false
+          }
+        }
+      }]
+    }],
 
     devtool: 'inline-source-map',
 
@@ -65,11 +63,12 @@ if (ENV === 'development') {
 
 if (ENV === 'production') {
   configEnv = {
-    outputFolder: 'dist',
+    output: {
+      path: path.join(__dirname, '../dist'),
+      filename: '[name].js'
+    },
 
-    compressing: true,
-
-    module: {},
+    rules: [],
 
     devtool: 'source-map',
 
@@ -79,6 +78,9 @@ if (ENV === 'production') {
     },
 
     plugins: [
+      new CleanWebpackPlugin('dist', {
+        root: path.join(__dirname, '..')
+      }),
       new webpack.optimize.UglifyJsPlugin({
         sourceMap: true,
         compress: {
@@ -92,7 +94,8 @@ if (ENV === 'production') {
       new CopyWebpackPlugin([
         {from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.min.js'},
         {from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.js'}
-      ], {copyUnmodified: true})
+      ], {copyUnmodified: true}),
+      new webpack.BannerPlugin(getBanner(true))
     ],
 
     watch: false
@@ -105,17 +108,14 @@ module.exports = {
     'ui-scroll-grid': path.resolve(__dirname, '../src/ui-scroll-grid.js')
   }, configEnv.entry),
 
-  output: {
-    path: path.join(__dirname, '../' + configEnv.outputFolder),
-    filename: '[name].js'
-  },
+  output: configEnv.output,
 
   cache: false,
 
   devtool: configEnv.devtool,
 
   module: {
-    rules: [...configEnv.module.rules,
+    rules: [...configEnv.rules,
       {
         test: /\.js$/,
         exclude: /node_modules/,
@@ -135,13 +135,7 @@ module.exports = {
     ]
   },
 
-  plugins: [
-    new CleanWebpackPlugin(configEnv.outputFolder, {
-      root: path.join(__dirname, '..')
-    }),
-    ...configEnv.plugins,
-    new webpack.BannerPlugin(getBanner(configEnv.compressing))
-  ],
+  plugins: configEnv.plugins,
 
   watch: configEnv.watch
 };
