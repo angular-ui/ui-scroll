@@ -18,6 +18,13 @@ _loaders = [{
   test: /\.js$/,
   exclude: /node_modules/,
   loader: 'babel-loader?presets[]=es2015'
+}, {
+  // './src/*.js', './src/modules/*.js'
+  test: /\.\.\/src\/[a-z]*\.js/,
+  exclude: /node_modules/,
+  enforce: 'pre',
+  loader: 'jshint-loader',
+  options: Object.assign({}, require('../.jshintrc.json'), require('../src/.jshintrc.json'))
 }];
 
 let configEnv = {};
@@ -32,11 +39,30 @@ if (ENV === 'development') {
 
     module: {
       loaders: [..._loaders, {
-        test: /\.js$/,
+        // './test/*Spec.js'
+        test: /\.[/]test[/][a-z*]\.js/,
         exclude: /node_modules/,
         enforce: 'pre',
         loader: 'jshint-loader',
-        options: require('../.jshintrc.json')
+        options: Object.assign({}, require('../.jshintrc.json'), {
+          node: true,
+          globals: {
+            angular: false,
+            inject: false,
+            jQuery: false,
+            jasmine: false,
+            afterEach: false,
+            beforeEach: false,
+            ddescribe: false,
+            describe: false,
+            expect: false,
+            iit: false,
+            it: false,
+            spyOn: false,
+            xdescribe: false,
+            xit: false
+          }
+        })
       }
     ]},
 
