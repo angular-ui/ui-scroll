@@ -1,4 +1,3 @@
-/*global describe, beforeEach, module, inject, it, expect, runTest */
 describe('uiScroll main/max indices', function() {
   'use strict';
 
