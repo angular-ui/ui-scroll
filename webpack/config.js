@@ -98,14 +98,6 @@ module.exports = {
     ]
   },
 
-  resolve: {
-    extensions: ['.js'],
-    modules: [
-      __dirname,
-      path.resolve(__dirname, '../node_modules')
-    ]
-  },
-
   plugins: [
     new CleanWebpackPlugin(configEnv.outputFolder, {
       root: path.join(__dirname, '..')
