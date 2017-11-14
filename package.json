@@ -34,7 +34,7 @@
     "concurrently": "^3.5.0",
     "copy-webpack-plugin": "^4.2.0",
     "jasmine-core": "^2.8.0",
-    "jshint": "^2.9.5",
+    "jshint": "^2.5.0",
     "jshint-loader": "^0.8.4",
     "karma": "^1.7.1",
     "karma-chrome-launcher": "^2.2.0",

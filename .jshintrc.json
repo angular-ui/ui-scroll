@@ -13,7 +13,7 @@
 	"nonew": true,
 	"quotmark": true,
 	"smarttabs": true,
-	"strict": true,
+	"strict": false,
 	"sub": true,
 	"trailing": true,
 	"undef": true,

@@ -14,18 +14,6 @@ const getBanner = function (compressing) {
 
 const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
 
-_loaders = [{
-  test: /\.js$/,
-  exclude: /node_modules/,
-  loader: 'babel-loader?presets[]=es2015'
-}, {
-  test: [/\.\.\/src\/*\.js$/, /\.\.\/src\/modules\/*\.js$/],
-  exclude: /node_modules/,
-  enforce: 'pre',
-  loader: 'jshint-loader',
-  options: Object.assign({}, require('../.jshintrc.json'), require('../src/.jshintrc.json'))
-}];
-
 let configEnv = {};
 
 if (ENV === 'development') {
@@ -35,34 +23,6 @@ if (ENV === 'development') {
     compressing: false,
 
     entry: {},
-
-    module: {
-      loaders: [..._loaders, {
-        test: /\.\.\/test\/*Spec\.js$/,
-        exclude: /node_modules/,
-        enforce: 'pre',
-        loader: 'jshint-loader',
-        options: Object.assign({}, require('../.jshintrc.json'), {
-          node: true,
-          globals: {
-            angular: false,
-            inject: false,
-            jQuery: false,
-            jasmine: false,
-            afterEach: false,
-            beforeEach: false,
-            ddescribe: false,
-            describe: false,
-            expect: false,
-            iit: false,
-            it: false,
-            spyOn: false,
-            xdescribe: false,
-            xit: false
-          }
-        })
-      }
-    ]},
 
     plugins: [],
 
@@ -79,10 +39,6 @@ if (ENV === 'production') {
     entry: {
       'ui-scroll.min': path.resolve(__dirname, '../src/ui-scroll.js'),
       'ui-scroll-grid.min': path.resolve(__dirname, '../src/ui-scroll-grid.js')
-    },
-
-    module: {
-      loaders: _loaders
     },
 
     plugins: [
@@ -121,7 +77,27 @@ module.exports = {
 
   devtool: 'source-map',
 
-  module: configEnv.module,
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        loader: 'babel-loader',
+        options: {
+          presets: ['es2015']
+        }
+      }, 
+      {
+        enforce: 'pre',
+        test: /\.js$/,
+        include: path.resolve(__dirname, '../src'),
+        use: [{
+          loader: "jshint-loader",
+          options: require(path.resolve(__dirname, '../.jshintrc.json'))
+        }]
+      }
+    ]
+  },
 
   resolve: {
     extensions: ['.js'],
