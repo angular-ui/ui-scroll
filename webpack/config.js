@@ -19,7 +19,7 @@ _loaders = [{
   exclude: /node_modules/,
   loader: 'babel-loader?presets[]=es2015'
 }, {
-  test: [/\.\.\/src\/([a-z]*)\.js$/, /\.\.\/src\/modules\/([a-z]*)\.js$/],
+  test: [/\.\.\/src\/*\.js$/, /\.\.\/src\/modules\/*\.js$/],
   exclude: /node_modules/,
   enforce: 'pre',
   loader: 'jshint-loader',
@@ -38,7 +38,7 @@ if (ENV === 'development') {
 
     module: {
       loaders: [..._loaders, {
-        test: /\.\.\/test\/([a-z]*)Spec\.js$/,
+        test: /\.\.\/test\/*Spec\.js$/,
         exclude: /node_modules/,
         enforce: 'pre',
         loader: 'jshint-loader',
