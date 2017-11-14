@@ -1,0 +1,20 @@
+{
+  "node": true,
+  "esversion": 3,
+  "globals": {
+    "angular2": false,
+    "inject": false,
+    "jQuery": false,
+    "jasmine": false,
+    "afterEach": false,
+    "beforeEach": false,
+    "ddescribe": false,
+    "describe": false,
+    "expect": false,
+    "iit": false,
+    "it": false,
+    "spyOn": false,
+    "xdescribe": false,
+    "xit": false
+  }
+}

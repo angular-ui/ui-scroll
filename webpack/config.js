@@ -28,26 +28,7 @@ if (ENV === 'development') {
       test: /Spec\.js$/,
       include: path.resolve(__dirname, '../test'),
       use: [{
-        loader: 'jshint-loader',
-        options: {
-          node: true,
-          globals: {
-            angular2: false,
-            inject: false,
-            jQuery: false,
-            jasmine: false,
-            afterEach: false,
-            beforeEach: false,
-            ddescribe: false,
-            describe: false,
-            expect: false,
-            iit: false,
-            it: false,
-            spyOn: false,
-            xdescribe: false,
-            xit: false
-          }
-        }
+        loader: 'jshint-loader'
       }]
     }],
 
