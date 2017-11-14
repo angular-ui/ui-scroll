@@ -11,7 +11,20 @@ module.exports = function (config) {
 
     frameworks: ['jasmine'],
 
-    files: require('./karma.conf.files.js')[ENV],
+    files: [
+      ...require('./karma.conf.files.js')[ENV],
+      {
+        pattern: '../../src/*.js',
+        watched: true,
+        served: false
+      }
+    ],
+
+    preprocessors: {
+      '../../src/*.js': ['webpack']
+    },
+
+    webpack: {},
 
     exclude: [],
 
@@ -35,6 +48,6 @@ module.exports = function (config) {
 
     singleRun: ENV !== 'development',
 
-    restartOnFileChange: true
+    // restartOnFileChange: true
   });
 };

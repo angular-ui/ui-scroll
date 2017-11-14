@@ -41,6 +41,7 @@
     "karma-firefox-launcher": "^1.0.1",
     "karma-ie-launcher": "^1.0.0",
     "karma-jasmine": "^1.1.0",
+    "karma-webpack": "^2.0.6",
     "webpack": "^3.8.1"
   },
   "keywords": [
