@@ -92,8 +92,7 @@ module.exports = {
         test: /\.js$/,
         include: path.resolve(__dirname, '../src'),
         use: [{
-          loader: "jshint-loader",
-          options: require(path.resolve(__dirname, '../.jshintrc.json'))
+          loader: "jshint-loader"
         }]
       }
     ]
