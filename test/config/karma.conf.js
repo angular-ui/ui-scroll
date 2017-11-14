@@ -33,6 +33,8 @@ module.exports = function (config) {
 
     captureTimeout: 60000,
 
-    singleRun: ENV !== 'development'
+    singleRun: ENV !== 'development',
+
+    restartOnFileChange: true
   });
 };
