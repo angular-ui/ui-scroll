@@ -22,7 +22,9 @@
     "prod-build": "webpack --config webpack/config.js",
     "prod-test": "karma start test/config/karma.conf.js",
     "dev-build": "webpack --config webpack/config.js",
+    "dev-server": "webpack-dev-server --config webpack/config.js",
     "dev-test": "karma start test/config/karma.conf.js",
+    "start": "npm run dev-server",
     "test": "npm run dev-test",
     "build": "npm run prod-build && npm run prod-test"
   },
@@ -43,7 +45,8 @@
     "karma-jasmine": "^1.1.0",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^2.0.6",
-    "webpack": "^3.8.1"
+    "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.4"
   },
   "keywords": [
     "angular",

@@ -48,6 +48,15 @@ if (ENV === 'development') {
 
     plugins: [],
 
+    devServer: {
+      contentBase: path.join(__dirname, '../demo/'),
+      inline: true,
+      quiet: false,
+      hot: true,
+      port: 5005,
+      publicPath: path.join(__dirname, '../')
+    },
+
     watch: true
   }
 }
@@ -89,6 +98,8 @@ if (ENV === 'production') {
       new webpack.BannerPlugin(getBanner(true))
     ],
 
+    devServer: {},
+
     watch: false
   }
 }
@@ -127,6 +138,8 @@ module.exports = {
   },
 
   plugins: configEnv.plugins,
+
+  devServer: configEnv.devServer,
 
   watch: configEnv.watch
 };
