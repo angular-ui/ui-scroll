@@ -1,5 +1,7 @@
 {
   "node": true,
+  "expr": true,
+  "sub": true,
   "esversion": 6,
   "globals": {
     "angular2": false,
