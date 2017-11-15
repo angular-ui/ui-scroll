@@ -18,14 +18,14 @@ console.log('********** webpack runs in ' + ENV + ' environment **********\n');
 
 let configEnv = {};
 
-const arrTestFiles = fs.readdirSync('test')
-  .map(e => (e.indexOf('Spec.js') !== -1) ?
-    {[e.replace(/\.js/, '')]: path.resolve(__dirname, '../test/' + e)} : null
-  )
-  .filter(e => e !== null);
-
-let testFiles = {};
-arrTestFiles.forEach(e => testFiles[Object.keys(e)[0]] = e[Object.keys(e)[0]]);
+// const arrTestFiles = fs.readdirSync('test')
+//   .map(e => (e.indexOf('Spec.js') !== -1) ?
+//     {[e.replace(/\.js/, '')]: path.resolve(__dirname, '../test/' + e)} : null
+//   )
+//   .filter(e => e !== null);
+//
+// let testFiles = {};
+// arrTestFiles.forEach(e => testFiles[Object.keys(e)[0]] = e[Object.keys(e)[0]]);
 
 if (ENV === 'development') {
   configEnv = {
@@ -44,7 +44,8 @@ if (ENV === 'development') {
 
     devtool: 'inline-source-map',
 
-    entry: testFiles,
+    // entry: testFiles,
+    entry: {},
 
     plugins: [],
 
