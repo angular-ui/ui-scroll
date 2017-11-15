@@ -1,6 +1,5 @@
 {
   "node": true,
-  "esversion": 3,
   "globals": {
     "angular2": false,
     "inject": false,

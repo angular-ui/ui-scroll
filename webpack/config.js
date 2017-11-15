@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -17,6 +18,15 @@ console.log('********** webpack runs in ' + ENV + ' environment **********\n');
 
 let configEnv = {};
 
+const arrTestFiles = fs.readdirSync('test')
+  .map(e => (e.indexOf('Spec.js') !== -1) ?
+    {[e.replace(/\.js/, '')]: path.resolve(__dirname, '../test/' + e)} : null
+  )
+  .filter(e => e !== null);
+
+let testFiles = {};
+arrTestFiles.forEach(e => testFiles[Object.keys(e)[0]] = e[Object.keys(e)[0]]);
+
 if (ENV === 'development') {
   configEnv = {
     output: {
@@ -34,7 +44,7 @@ if (ENV === 'development') {
 
     devtool: 'inline-source-map',
 
-    entry: {},
+    entry: testFiles,
 
     plugins: [],
 
