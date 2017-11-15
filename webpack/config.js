@@ -49,7 +49,17 @@ if (ENV === 'development') {
     plugins: [],
 
     devServer: {
-      contentBase: path.join(__dirname, '../demo/'),
+      // contentBase: path.join(__dirname, '../demo/'),
+      historyApiFallback: {
+        rewrites: [
+          { from: /^\/$/, to: '/demo/index.html' },
+          { from: /\/index\.html$/, to: '/demo/index.html' },
+          { from: /\/css\/style\.css$/, to: '/demo/css/style.css' },
+          { from: /\/css\/bootstrap\.css$/, to: '/demo/css/bootstrap.css' },
+          { from: /\/serviceDatasource\/serviceDatasource\.html$/, to: '/demo/serviceDatasource/serviceDatasource.html' },
+          { from: /\/serviceDatasource\/serviceDatasource\.js$/, to: '/demo/serviceDatasource/serviceDatasource.js' }
+        ]
+      },
       inline: true,
       quiet: false,
       hot: true,
