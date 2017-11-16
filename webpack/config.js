@@ -30,7 +30,8 @@ let configEnv = {};
 if (ENV === 'development') {
   configEnv = {
     output: {
-      filename: '[name].js'
+      filename: '[name].js',
+      publicPath: '/'
     },
 
     rules: [{
@@ -63,7 +64,7 @@ if (ENV === 'development') {
       quiet: false,
       hot: true,
       port: 5005,
-      publicPath: path.join(__dirname, '../')
+      publicPath: '/'
     },
 
     watch: true
