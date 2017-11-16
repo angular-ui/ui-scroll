@@ -36,7 +36,7 @@ describe('uiScroll', function () {
         function (viewport, scope) {
 
           scope.adapter.applyUpdates(
-            function (item, scope) {
+            function(item, scope){
               return [item + ' *' + scope.$index];
             }
           );
@@ -67,8 +67,9 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item, scope) {
-              if (item === 'one')
+              if (item === 'one') {
                 return [item + ' *' + scope.$index];
+              }
             }
           );
 
@@ -99,8 +100,9 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item, scope) {
-              if (item === 'two')
+              if (item === 'two') {
                 return [item + ' *' + scope.$index];
+              }
             }
           );
 
@@ -131,8 +133,9 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item, scope) {
-              if (item === 'three')
+              if (item === 'three') {
                 return [item + ' *' + scope.$index];
+              }
             }
           );
 
@@ -163,8 +166,9 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item) {
-              if (item === 'one')
+              if (item === 'one') {
                 return [];
+              }
             }
           );
 
@@ -191,8 +195,9 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item) {
-              if (item === 'two')
+              if (item === 'two') {
                 return [];
+              }
             }
           );
 
@@ -219,8 +224,9 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item) {
-              if (item === 'three')
+              if (item === 'three') {
                 return [];
+              }
             }
           );
 
@@ -247,8 +253,9 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item) {
-              if (item === 'one')
+              if (item === 'one') {
                 return ['before one', item];
+              }
             }
           );
 
@@ -284,8 +291,9 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item) {
-              if (item.text === 'one')
+              if (item.text === 'one') {
                 return [item, {text: 'after one'}];
+              }
             }
           );
 
@@ -320,8 +328,9 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item) {
-              if (item === 'two')
+              if (item === 'two') {
                 return ['before two', item];
+              }
             }
           );
 
@@ -356,8 +365,9 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item) {
-              if (item === 'three')
+              if (item === 'three') {
                 return [item, 'after three'];
+              }
             }
           );
 
@@ -798,7 +808,7 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item, scope) {
-              if (scope.$index == 1) {
+              if (scope.$index === 1) {
                 item.text += ' *' + scope.$index;
                 return [
                   {text: item.text + ' before 1'},
@@ -855,7 +865,7 @@ describe('uiScroll', function () {
 
           scope.adapter.applyUpdates(
             function (item, scope) {
-              if (scope.$index == 2) {
+              if (scope.$index === 2) {
                 item.text += ' *' + scope.$index;
                 return [
                   {text: item.text + ' before 1'},

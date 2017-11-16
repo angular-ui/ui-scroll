@@ -24,7 +24,7 @@
     "dev-build": "webpack --config webpack/config.js",
     "dev-server": "webpack-dev-server --config webpack/config.js",
     "dev-test": "karma start test/config/karma.conf.js",
-    "hint-tests": "jshint test/*Spec.js",
+    "hint-tests": "jshint --verbose test",
     "start": "npm run dev-server",
     "test": "npm run hint-tests && npm run dev-test",
     "build": "npm run prod-build && npm run prod-test"

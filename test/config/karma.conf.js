@@ -1,6 +1,6 @@
 const chrome = process.platform === 'linux' ? 'Chromium' : 'Chrome';
 const firefox = 'Firefox';
-const ie = 'IE';
+//const ie = 'IE';
 
 const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
 
@@ -12,6 +12,8 @@ const webpackSettings = ENV === 'development' ? {
 } : {};
 
 module.exports = function (config) {
+  'use strict';
+
   config.set(Object.assign({
 
     basePath: '',
