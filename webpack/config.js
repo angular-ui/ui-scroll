@@ -13,6 +13,7 @@ const getBanner = () =>
   'License: ' + packageJSON.license;
 
 const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
+const isTest = (process.env.npm_lifecycle_event.indexOf('dev-test') !== -1) ? true : false;
 console.log('********** webpack runs in ' + ENV + ' environment **********\n');
 
 let configEnv;
@@ -39,7 +40,7 @@ if (ENV === 'development') {
 
     plugins: [],
 
-    devServer: {
+    devServer: !isTest ? {
       historyApiFallback: {
         rewrites: [
           { from: '/dist/ui-scroll.js', to: (context) => '/ui-scroll.js' },
@@ -56,7 +57,7 @@ if (ENV === 'development') {
       port: 5005,
       stats: 'errors-only',
       publicPath: '/'
-    },
+    } : {},
 
     watch: true
   }
