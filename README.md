@@ -132,7 +132,7 @@ To use it in your angular-app you should add the module (modules)
 angular.module('application', ['ui.scroll', 'ui.scroll.grid'])
 ```
 
-Currently we have 2 regular modules which can be added to the angular-app you are developing.
+Currently we have 2 regular modules which can be added to the angular-app you are developing:
  - __ui.scroll__ module which has
    - [uiScroll directive](#uiscroll-directive)
    - [uiScrollViewport directive](#uiscrollviewport-directive)
@@ -141,7 +141,7 @@ Currently we have 2 regular modules which can be added to the angular-app you ar
    - [uiScrollTh directive](#uiscrollth-and-uiscrolltd-directives)
    - [uiScrollTd directive](#uiscrollth-and-uiscrolltd-directives)
   
-Also there is one more additional module in a separate file
+Also, there is one more additional module in a separate file:
  - __ui.scroll.jqlite__ module (it is empty since it was deprecated in v1.6.0)
   
   
@@ -179,9 +179,9 @@ The `expression` can be any angular expression (assignable expression where so s
 
 #### Assignable expressions
 
-The `assignable expressions` will be used by scroller to inject the requested value into the target scope. The target scope locating is based on AngularJS $parse service. If the viewport is presented (the element marked with the uiScrollViewport directive), then the scope associated with the viewport will be a start point in the target scope locating. If not, the scope next to ui-scroll local scopes (ui-scroll parent scope) will be a start point.
+The `assignable expressions` will be used by scroller to inject the requested value into the target scope. The target scope locating is based on AngularJS $parse service. If the viewport is presented (the element marked with the uiScrollViewport directive), then the scope associated with the viewport will be a start point in the target scope locating. If not, the scope next to the ui-scroll local scopes (ui-scroll parent scope) will be a start point.
 
-Please notice that property defined via `assignable expression` could be unavailable in case of nested scopes and non-explicit assignment. For example, if you want to have the Adapter on some controller's scope and there are intermediate scopes in between (obtained by ng-if or whatever), you should use Controller As syntax or explicitly define at least two-level object hierarchy on your controller:
+Please notice that properties defined via `assignable expression` could be unavailable in case of nested scopes and non-explicit assignment. For example, if you want to have the Adapter on some controller's scope and there are intermediate scopes in between (due to ng-if for example), you should use Controller As syntax or explicitly define at least two-level object hierarchy on your controller:
 
 ```
 <div ng-controller="MyController">
@@ -196,7 +196,7 @@ Please notice that property defined via `assignable expression` could be unavail
 
 ### Datasource
 
-Data source is an object to be used by the uiScroll directive to access the data.
+Datasource is an object to be used by the uiScroll directive to access the data.
 
 The directive will locate the object using the provided data source name. It will first look for a property with the given name on its
 $scope ([here](https://github.com/angular-ui/ui-scroll/blob/master/demo/scopeDatasource) is the example of
@@ -204,29 +204,32 @@ scope-based datasource usage). If none found it will try to get an angular servi
 ([here](https://github.com/angular-ui/ui-scroll/blob/master/demo/serviceDatasource) is the example of
 service-based datasource usage).
 
-The data source object implements methods and properties to be used by the directive to access the data.
+The datasource object implements methods and properties to be used by the directive to access the data.
 
 * Method `get`
 
-        get(descriptor, success)
-     or
-     
         get(index, count, success)
+     or
+
+        get(descriptor, success)
 
     This is a mandatory method used by the directive to retrieve the data.
 
     Parameters
-    * **descriptor** is an object defining the portion of the dataset requested. The object will have 3 properties. Two of them named  `index` and `count`. They have the same meaning as in the alternative signature when the parameters passed explicitly (see below). The third one will be named either `append` if the items will be appended to the last item in the buffer, or `prepend` if they are to be prepended to the first item in the buffer. The value of the property in either case will be the item the new items will be appended/prepended to. This is useful if it is easier to identify the items to be added based on the previously requested items rather than on the index. Keep in mind that in certain use cases (i.e. on initial load) the value of the append/prepend property can be undefined.
-    * **index** indicates the first data row requested
-    * **count** indicates number of data rows requested
+    * **index** indicates the first data row requested.
+    * **count** indicates number of data rows requested.
     * **success** function to call when the data are retrieved. The implementation of the data source has to call this function when the data are retrieved and pass it an array of the items retrieved. If no items are retrieved, an empty array has to be passed.
+    * **descriptor** is an object defining the portion of the dataset requested. The object will have 3 properties. Two of them named  `index` and `count`. They have the same meaning as in the alternative signature when the parameters passed explicitly (index-count based). The third one will be named either `append` if the items will be appended to the last item in the buffer, or `prepend` if they are to be prepended to the first item in the buffer. The value of the property in either case will be the item the new items will be appended/prepended to. This is useful if it is easier to identify the items to be added based on the previously requested items rather than on the index. Keep in mind that in certain use cases (i.e. on initial load) the value of the append/prepend property can be undefined.
 
 _Important!_ Make sure to respect the `index` and `count` parameters of the request. The array passed to the success method should have
 exactly `count` elements unless it hit eof/bof.
 
 * Properties `minIndex` and  `maxIndex`
 
-    As the scroller receives the items requested by the `get` method, the value of minimum and maximum values of the item index are placed in the `minIndex` and `maxIndex` properties respectively. The values of the properties are cumulative - the value of the `minIndex` will never increase, and the value of the `maxIndex` will never decrease - except the values are reset in response to a call to the adapter `reload` method. The values of the properties are used to maintain the appearance of the scroller scrollBar.
+    As the scroller receives the items requested by the `get` method, the value of minimum and maximum values of the item index are placed in the `minIndex` and `maxIndex` properties respectively. These values are used to maintain the appearance of the scrollbar. The values of the properties can be internaly changed by the ui-scroll engine in three cases:
+     * reset both properties in response to a call to the adapter `reload` method;
+     * increment `minIndex` in response to deleteing the topmost element via adapter `applyUpdates` method;
+     * decrement `maxIndex` in response to deleteing anything other than the topmost element via adapter `applyUpdates` method.
 
     Values of the properties can be assigned programmatically. If the range of the index values is known in advance, assigning them programmatically would improve the usability of the scrollBar.
 
@@ -479,7 +482,11 @@ PR should include source code (./scr) changes, may include tests (./test) change
 
 ### v1.7.0
  * Reduced dygest cycles amount.
- * Refactored tests (removed timeouts).
+ * Refactored Adapter and Padding classes.
+ * Reconsidered min/max indices processing.
+ * Refactored tests (removed timeouts, added helpers).
+ * Added ~50 new tests.
+ * Fixed a number of issues.
 
 ### v1.6.2
  * Added bottomVisible, bottomVisibleElement and bottomVisibleScope properties to the Adapter.
