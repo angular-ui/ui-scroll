@@ -54,6 +54,7 @@ if (ENV === 'development') {
       inline: true,
       quiet: false,
       port: 5005,
+      stats: 'errors-only',
       publicPath: '/'
     },
 
