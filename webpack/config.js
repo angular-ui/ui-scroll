@@ -44,11 +44,11 @@ if (ENV === 'development') {
         rewrites: [
           { from: '/dist/ui-scroll.js', to: (context) => '/ui-scroll.js' },
           { from: '/dist/ui-scroll-grid.js', to: (context) => '/ui-scroll-grid.js' },
-          { from: /^\/$/, to: '/demo/index.html' },
-          { from: /\/ui-scroll-demo\.gif$/, to: '/demo/ui-scroll-demo.gif' },
           { from: /\/*\/*\.html$/, to: (context) => '/demo' + context.parsedUrl.pathname },
           { from: /\/*\/*\.css$/, to: (context) => '/demo' + context.parsedUrl.pathname },
-          { from: /\/*\/*\.js$/, to: (context) => '/demo' + context.parsedUrl.pathname }
+          { from: /\/*\/*\.js$/, to: (context) => '/demo' + context.parsedUrl.pathname },
+          { from: /\/ui-scroll-demo\.gif$/, to: '/demo/ui-scroll-demo.gif' },
+          { from: /^\/$/, to: '/demo/index.html' }
         ]
       },
       inline: true,

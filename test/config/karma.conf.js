@@ -26,7 +26,7 @@ module.exports = function (config) {
 
     exclude: [],
 
-    reporters: ['dots'],
+    reporters: ['progress'],
 
     port: ENV === 'development' ? 9100 : 8082,
 
