@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll (uncompressed)
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.5 -- 2017-11-10T00:53:20.545Z
+ * Version: 1.7.0-rc.5 -- 2017-11-10T01:00:29.941Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -88,12 +88,15 @@ var _createClass = function () { function defineProperties(target, props) { for 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Adapter = function () {
-  function Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope) {
+  function Adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload) {
     _classCallCheck(this, Adapter);
 
+    this.$parse = $parse;
+    this.$attr = $attr;
     this.viewport = viewport;
     this.buffer = buffer;
-    this.adjustBuffer = adjustBuffer;
+
+    this.doAdjust = doAdjust;
     this.reload = reload;
 
     this.isLoading = false;
@@ -103,32 +106,32 @@ var Adapter = function () {
     this.startScope = viewportScope.$parent ? viewportScope : $scope;
 
     this.publicContext = {};
-    this.assignAdapter($attr.adapter, $parse);
-    this.generatePublicContext($attr, $parse);
+    this.assignAdapter($attr.adapter);
+    this.generatePublicContext();
   }
 
   _createClass(Adapter, [{
     key: 'assignAdapter',
-    value: function assignAdapter(adapterAttr, $parse) {
+    value: function assignAdapter(adapterAttr) {
       if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
         return;
       }
       var adapterOnScope = void 0;
 
       try {
-        $parse(adapterAttr).assign(this.startScope, {});
-        adapterOnScope = $parse(adapterAttr)(this.startScope);
+        this.$parse(adapterAttr).assign(this.startScope, {});
+        adapterOnScope = this.$parse(adapterAttr)(this.startScope);
       } catch (error) {
         error.message = 'Angular ui-scroll Adapter assignment exception.\n' + ('Can\'t parse "' + adapterAttr + '" expression.\n') + error.message;
         throw error;
       }
 
-      angular.extend(adapterOnScope, this.publicContext);
+      Object.assign(adapterOnScope, this.publicContext);
       this.publicContext = adapterOnScope;
     }
   }, {
     key: 'generatePublicContext',
-    value: function generatePublicContext($attr, $parse) {
+    value: function generatePublicContext() {
       var _this = this;
 
       // these methods will be accessible out of ui-scroll via user defined adapter
@@ -142,7 +145,7 @@ var Adapter = function () {
 
       var _loop = function _loop(_i) {
         var property = void 0,
-            attr = $attr[publicProps[_i]];
+            attr = _this.$attr[publicProps[_i]];
         Object.defineProperty(_this, publicProps[_i], {
           get: function get() {
             return property;
@@ -151,7 +154,7 @@ var Adapter = function () {
             property = value;
             _this.publicContext[publicProps[_i]] = value;
             if (attr) {
-              $parse(attr).assign(_this.startScope, value);
+              _this.$parse(attr).assign(_this.startScope, value);
             }
           }
         });
@@ -167,14 +170,14 @@ var Adapter = function () {
           return _this.disabled;
         },
         set: function set(value) {
-          return !(_this.disabled = value) ? _this.adjustBuffer() : null;
+          return !(_this.disabled = value) ? _this.doAdjust() : null;
         }
       });
     }
   }, {
     key: 'loading',
     value: function loading(value) {
-      this['isLoading'] = value;
+      this.isLoading = value;
     }
   }, {
     key: 'isBOF',
@@ -195,7 +198,7 @@ var Adapter = function () {
     key: 'append',
     value: function append(newItems) {
       this.buffer.append(newItems);
-      this.adjustBuffer();
+      this.doAdjust();
       this.viewport.clipTop();
       this.viewport.clipBottom();
     }
@@ -203,19 +206,19 @@ var Adapter = function () {
     key: 'prepend',
     value: function prepend(newItems) {
       this.buffer.prepend(newItems);
-      this.adjustBuffer();
+      this.doAdjust();
       this.viewport.clipTop();
       this.viewport.clipBottom();
     }
   }, {
     key: 'applyUpdates',
     value: function applyUpdates(arg1, arg2) {
-      if (angular.isFunction(arg1)) {
+      if (typeof arg1 === 'function') {
         this.applyUpdatesFunc(arg1);
       } else {
         this.applyUpdatesIndex(arg1, arg2);
       }
-      this.adjustBuffer();
+      this.doAdjust();
     }
   }, {
     key: 'applyUpdatesFunc',
@@ -242,7 +245,7 @@ var Adapter = function () {
       }
       // out-of-buffer case: deletion may affect Paddings
       else if (index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
-          if (angular.isArray(newItems) && !newItems.length) {
+          if (Array.isArray(newItems) && !newItems.length) {
             this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
             if (index === this.buffer.getAbsMinIndex()) {
               this.buffer.incrementMinIndex();
@@ -257,7 +260,7 @@ var Adapter = function () {
     value: function applyUpdate(wrapper, newItems) {
       var _this3 = this;
 
-      if (!angular.isArray(newItems)) {
+      if (!Array.isArray(newItems)) {
         return;
       }
       var position = this.buffer.indexOf(wrapper);
@@ -335,10 +338,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.default = ScrollBuffer;
-function ScrollBuffer(elementRoutines, bufferSize) {
+function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
   var buffer = Object.create(Array.prototype);
 
-  angular.extend(buffer, {
+  Object.assign(buffer, {
     size: bufferSize,
 
     reset: function reset(startIndex) {
@@ -404,12 +407,11 @@ function ScrollBuffer(elementRoutines, bufferSize) {
 
     // removes elements from buffer
     remove: function remove(arg1, arg2) {
-      if (angular.isNumber(arg1)) {
+      if (Number.isInteger(arg1)) {
         // removes items from arg1 (including) through arg2 (excluding)
         for (var i = arg1; i < arg2; i++) {
           elementRoutines.removeElement(buffer[i]);
         }
-
         return buffer.splice(arg1, arg2 - arg1);
       }
       // removes single item(wrapper) from the buffer
@@ -477,6 +479,8 @@ function ScrollBuffer(elementRoutines, bufferSize) {
       return Math.max(0, bottom - top);
     }
   });
+
+  buffer.reset(startIndex);
 
   return buffer;
 }
@@ -654,13 +658,14 @@ var JQLiteExtras = function () {
             prop = _top$left$direction[1],
             preserve = _top$left$direction[2];
 
+        var isValueDefined = typeof value !== 'undefined';
         if (isWindow(elem)) {
-          if (angular.isDefined(value)) {
+          if (isValueDefined) {
             return elem.scrollTo(self[preserve].call(self), value);
           }
           return prop in elem ? elem[prop] : elem.document.documentElement[method];
         } else {
-          if (angular.isDefined(value)) {
+          if (isValueDefined) {
             elem[method] = value;
           }
           return elem[method];
@@ -825,8 +830,8 @@ var JQLiteExtras = function () {
         height: function height(value) {
           var self;
           self = this;
-          if (angular.isDefined(value)) {
-            if (angular.isNumber(value)) {
+          if (typeof value !== 'undefined') {
+            if (Number.isInteger(value)) {
               value = value + 'px';
             }
             return css.call(self, 'height', value);
@@ -937,7 +942,7 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
     return viewport.outerHeight() * padding; // some extra space to initiate preload
   }
 
-  angular.extend(viewport, {
+  Object.assign(viewport, {
     getScope: function getScope() {
       return scope;
     },
@@ -1080,8 +1085,7 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       if (buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser) {
         var diff = topPadding.height() - topPaddingHeightOld;
         viewport.scrollTop(viewport.scrollTop() + diff);
-        diff -= viewport.scrollTop();
-        if (diff > 0) {
+        while ((diff -= viewport.scrollTop()) > 0) {
           bottomPadding.height(bottomPadding.height() + diff);
           viewport.scrollTop(viewport.scrollTop() + diff);
         }
@@ -1332,17 +1336,18 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
     var pending = [];
 
     var elementRoutines = new _elementRoutines2.default($injector, $q);
-    var buffer = new _buffer2.default(elementRoutines, bufferSize);
+    var buffer = new _buffer2.default(elementRoutines, bufferSize, startIndex);
     var viewport = new _viewport2.default(elementRoutines, buffer, element, viewportController, $rootScope, padding);
-    var adapter = new _adapter2.default(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope);
+    var adapter = new _adapter2.default($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
 
     if (viewportController) {
       viewportController.adapter = adapter;
     }
 
     var isDatasourceValid = function isDatasourceValid() {
-      return angular.isObject(datasource) && angular.isFunction(datasource.get);
+      return Object.prototype.toString.call(datasource) === '[object Object]' && typeof datasource.get === 'function';
     };
+
     datasource = $parse(datasourceName)($scope); // try to get datasource on scope
     if (!isDatasourceValid()) {
       datasource = $injector.get(datasourceName); // try to inject datasource as service
@@ -1353,35 +1358,44 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
 
     var onRenderHandlers = [];
     function onRenderHandlersRunner() {
-      if (onRenderHandlers.length) {
-        angular.forEach(onRenderHandlers, function (handler) {
-          return handler();
-        });
-        onRenderHandlers = [];
-      }
+      onRenderHandlers.forEach(function (handler) {
+        return handler.run();
+      });
+      onRenderHandlers = [];
     }
-    function preDefineIndexProperty(datasource, propName) {
+    function persistDatasourceIndex(datasource, propName) {
       var getter = void 0;
       // need to postpone min/maxIndexUser processing if the view is empty
-      if (datasource.hasOwnProperty(propName) && !buffer.length) {
+      if (Number.isInteger(datasource[propName])) {
         getter = datasource[propName];
-        delete datasource[propName];
-        onRenderHandlers.push(function () {
-          return datasource[propName] = getter;
-        });
+        if (Number.isInteger(getter)) {
+          onRenderHandlers = onRenderHandlers.filter(function (handler) {
+            return handler.id !== propName;
+          });
+          onRenderHandlers.push({
+            id: propName,
+            run: function run() {
+              return datasource[propName] = getter;
+            }
+          });
+        }
       }
     }
 
-    function defineIndexProperty(datasource, propName, propUserName) {
+    function defineDatasourceIndex(datasource, propName, propUserName) {
       var descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
       if (descriptor && (descriptor.set || descriptor.get)) {
         return;
       }
       var getter = void 0;
-      preDefineIndexProperty(datasource, propName);
+      persistDatasourceIndex(datasource, propName);
       Object.defineProperty(datasource, propName, {
         set: function set(value) {
           getter = value;
+          if (pending.length && !buffer.length) {
+            persistDatasourceIndex(datasource, propName);
+            return;
+          }
           buffer[propUserName] = value;
           var topPaddingHeightOld = viewport.topDataPos();
           viewport.adjustPaddings();
@@ -1395,8 +1409,8 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       });
     }
 
-    defineIndexProperty(datasource, 'minIndex', 'minIndexUser');
-    defineIndexProperty(datasource, 'maxIndex', 'maxIndexUser');
+    defineDatasourceIndex(datasource, 'minIndex', 'minIndexUser');
+    defineDatasourceIndex(datasource, 'maxIndex', 'maxIndexUser');
 
     var fetchNext = datasource.get.length !== 2 ? function (success) {
       return datasource.get(buffer.next, bufferSize, success);
@@ -1418,14 +1432,14 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       }, success);
     };
 
-    var run = function run() {
+    var initialize = function initialize() {
       var tryCount = 0;
       if (!viewport.applyContainerStyle()) {
         var timer = $interval(function () {
           tryCount++;
           if (viewport.applyContainerStyle()) {
             $interval.cancel(timer);
-            reload();
+            doAdjust();
           }
           if (tryCount * VIEWPORT_POLLING_INTERVAL >= MAX_VIEWPORT_DELAY) {
             $interval.cancel(timer);
@@ -1433,7 +1447,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
           }
         }, VIEWPORT_POLLING_INTERVAL);
       } else {
-        reload();
+        doAdjust();
       }
     };
 
@@ -1460,7 +1474,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
 
     viewport.bind('mousewheel', wheelHandler);
 
-    run();
+    initialize();
 
     /* Private function definitions */
 
@@ -1485,7 +1499,9 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
         startIndex = arguments[0];
       }
       buffer.reset(startIndex);
-      adjustBuffer();
+      persistDatasourceIndex(datasource, 'minIndex');
+      persistDatasourceIndex(datasource, 'maxIndex');
+      doAdjust();
     }
 
     function isElementVisible(wrapper) {
@@ -1495,14 +1511,14 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
     function visibilityWatcher(wrapper) {
       if (isElementVisible(wrapper)) {
         buffer.forEach(function (item) {
-          if (angular.isFunction(item.unregisterVisibilityWatcher)) {
+          if (typeof item.unregisterVisibilityWatcher === 'function') {
             item.unregisterVisibilityWatcher();
             delete item.unregisterVisibilityWatcher;
           }
         });
         if (!pending.length) {
           $timeout(function () {
-            return adjustBuffer();
+            return doAdjust();
           });
         }
       }
@@ -1592,11 +1608,11 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
     }
 
     function updatePaddings(rid, updates) {
-      // schedule another adjustBuffer after animation completion
+      // schedule another doAdjust after animation completion
       if (updates.animated.length) {
         $q.all(updates.animated).then(function () {
           viewport.adjustPaddings();
-          adjustBuffer(rid);
+          doAdjust(rid);
         });
       } else {
         viewport.adjustPaddings();
@@ -1640,7 +1656,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       return updates;
     }
 
-    function adjustBuffer(rid) {
+    function doAdjust(rid) {
       if (!rid) {
         // dismiss pending requests
         pending = [];
@@ -1661,7 +1677,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       }
     }
 
-    function adjustBufferAfterFetch(rid) {
+    function doAdjustAfterFetch(rid) {
       var updates = processUpdates();
 
       viewport.onAfterPrepend(updates);
@@ -1686,7 +1702,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
       if (pending[0]) {
         // scrolling down
         if (buffer.length && !viewport.shouldLoadBottom()) {
-          adjustBufferAfterFetch(rid);
+          doAdjustAfterFetch(rid);
         } else {
           fetchNext(function (result) {
             if (isInvalid(rid)) {
@@ -1702,13 +1718,13 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
               buffer.append(result);
             }
 
-            adjustBufferAfterFetch(rid);
+            doAdjustAfterFetch(rid);
           });
         }
       } else {
         // scrolling up
         if (buffer.length && !viewport.shouldLoadTop()) {
-          adjustBufferAfterFetch(rid);
+          doAdjustAfterFetch(rid);
         } else {
           fetchPrevious(function (result) {
             if (isInvalid(rid)) {
@@ -1727,7 +1743,7 @@ angular.module('ui.scroll', []).service('jqLiteExtras', function () {
               buffer.prepend(result);
             }
 
-            adjustBufferAfterFetch(rid);
+            doAdjustAfterFetch(rid);
           });
         }
       }

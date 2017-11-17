@@ -22,11 +22,11 @@ angular.module('ui.scroll', [])
           this.viewport = element;
           this.scope = scope;
 
-          angular.forEach(element.children(), (child => {
+          angular.forEach(element.children(), child => {
             if (child.tagName.toLowerCase() === 'tbody') {
               this.viewport = angular.element(child);
             }
-          }));
+          });
 
           return this;
         }
@@ -78,19 +78,21 @@ angular.module('ui.scroll', [])
         const bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
         const padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT));
         let startIndex = parseNumericAttr($attr.startIndex, 1);
-        let ridActual = 0;// current data revision id
+        let ridActual = 0; // current data revision id
         let pending = [];
 
         const elementRoutines = new ElementRoutines($injector, $q);
-        const buffer = new ScrollBuffer(elementRoutines, bufferSize);
+        const buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex);
         const viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
-        const adapter = new Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope);
+        const adapter = new Adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
 
         if (viewportController) {
           viewportController.adapter = adapter;
         }
 
-        const isDatasourceValid = () => angular.isObject(datasource) && angular.isFunction(datasource.get);
+        const isDatasourceValid = () =>
+          Object.prototype.toString.call(datasource) === '[object Object]' && typeof datasource.get === 'function';
+
         datasource = $parse(datasourceName)($scope); // try to get datasource on scope
         if (!isDatasourceValid()) {
           datasource = $injector.get(datasourceName); // try to inject datasource as service
@@ -101,31 +103,38 @@ angular.module('ui.scroll', [])
 
         let onRenderHandlers = [];
         function onRenderHandlersRunner() {
-          if(onRenderHandlers.length) {
-            angular.forEach(onRenderHandlers, (handler) => handler());
-            onRenderHandlers = [];
-          }
+          onRenderHandlers.forEach(handler => handler.run());
+          onRenderHandlers = [];
         }
-        function preDefineIndexProperty(datasource, propName) {
+        function persistDatasourceIndex(datasource, propName) {
           let getter;
           // need to postpone min/maxIndexUser processing if the view is empty
-          if(datasource.hasOwnProperty(propName) && !buffer.length) {
+          if(Number.isInteger(datasource[propName])) {
             getter = datasource[propName];
-            delete datasource[propName];
-            onRenderHandlers.push(() => datasource[propName] = getter);
+            if(Number.isInteger(getter)) {
+              onRenderHandlers = onRenderHandlers.filter(handler => handler.id !== propName);
+              onRenderHandlers.push({
+                id: propName,
+                run: () => datasource[propName] = getter
+              });
+            }
           }
         }
 
-        function defineIndexProperty(datasource, propName, propUserName) {
+        function defineDatasourceIndex(datasource, propName, propUserName) {
           const descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
           if (descriptor && (descriptor.set || descriptor.get)) {
             return;
           }
           let getter;
-          preDefineIndexProperty(datasource, propName);
+          persistDatasourceIndex(datasource, propName);
           Object.defineProperty(datasource, propName, {
             set: (value) => {
               getter = value;
+              if(pending.length && !buffer.length) {
+                persistDatasourceIndex(datasource, propName);
+                return;
+              }
               buffer[propUserName] = value;
               const topPaddingHeightOld = viewport.topDataPos();
               viewport.adjustPaddings();
@@ -137,8 +146,8 @@ angular.module('ui.scroll', [])
           });
         }
 
-        defineIndexProperty(datasource, 'minIndex', 'minIndexUser');
-        defineIndexProperty(datasource, 'maxIndex', 'maxIndexUser');
+        defineDatasourceIndex(datasource, 'minIndex', 'minIndexUser');
+        defineDatasourceIndex(datasource, 'maxIndex', 'maxIndexUser');
 
         const fetchNext = (datasource.get.length !== 2) ?
           (success) => datasource.get(buffer.next, bufferSize, success) :
@@ -160,14 +169,14 @@ angular.module('ui.scroll', [])
             }, success);
           };
 
-        const run = () => {
+        const initialize = () => {
           let tryCount = 0;
           if(!viewport.applyContainerStyle()) {
             const timer = $interval(() => {
               tryCount++;
               if(viewport.applyContainerStyle()) {
                 $interval.cancel(timer);
-                reload();
+                doAdjust();
               }
               if(tryCount * VIEWPORT_POLLING_INTERVAL >= MAX_VIEWPORT_DELAY) {
                 $interval.cancel(timer);
@@ -176,7 +185,7 @@ angular.module('ui.scroll', [])
             }, VIEWPORT_POLLING_INTERVAL);
           }
           else {
-            reload();
+            doAdjust();
           }
         };
 
@@ -203,7 +212,7 @@ angular.module('ui.scroll', [])
 
         viewport.bind('mousewheel', wheelHandler);
 
-        run();
+        initialize();
 
         /* Private function definitions */
 
@@ -228,7 +237,9 @@ angular.module('ui.scroll', [])
             startIndex = arguments[0];
           }
           buffer.reset(startIndex);
-          adjustBuffer();
+          persistDatasourceIndex(datasource, 'minIndex');
+          persistDatasourceIndex(datasource, 'maxIndex');
+          doAdjust();
         }
 
         function isElementVisible(wrapper) {
@@ -238,13 +249,13 @@ angular.module('ui.scroll', [])
         function visibilityWatcher(wrapper) {
           if (isElementVisible(wrapper)) {
             buffer.forEach((item) => {
-              if (angular.isFunction(item.unregisterVisibilityWatcher)) {
+              if (typeof item.unregisterVisibilityWatcher === 'function') {
                 item.unregisterVisibilityWatcher();
                 delete item.unregisterVisibilityWatcher;
               }
             });
             if (!pending.length) {
-              $timeout(() => adjustBuffer());
+              $timeout(() => doAdjust());
             }
           }
         }
@@ -327,11 +338,11 @@ angular.module('ui.scroll', [])
         }
 
         function updatePaddings(rid, updates) {
-          // schedule another adjustBuffer after animation completion
+          // schedule another doAdjust after animation completion
           if (updates.animated.length) {
             $q.all(updates.animated).then(() => {
               viewport.adjustPaddings();
-              adjustBuffer(rid);
+              doAdjust(rid);
             });
           } else {
             viewport.adjustPaddings();
@@ -371,7 +382,7 @@ angular.module('ui.scroll', [])
           return updates;
         }
 
-        function adjustBuffer(rid) {
+        function doAdjust(rid) {
           if (!rid) { // dismiss pending requests
             pending = [];
             rid = ++ridActual;
@@ -391,7 +402,7 @@ angular.module('ui.scroll', [])
           }
         }
 
-        function adjustBufferAfterFetch(rid) {
+        function doAdjustAfterFetch(rid) {
           const updates = processUpdates();
 
           viewport.onAfterPrepend(updates);
@@ -417,7 +428,7 @@ angular.module('ui.scroll', [])
         function fetch(rid) {
           if (pending[0]) {// scrolling down
             if (buffer.length && !viewport.shouldLoadBottom()) {
-              adjustBufferAfterFetch(rid);
+              doAdjustAfterFetch(rid);
             } else {
               fetchNext((result) => {
                 if (isInvalid(rid)) {
@@ -433,12 +444,12 @@ angular.module('ui.scroll', [])
                   buffer.append(result);
                 }
 
-                adjustBufferAfterFetch(rid);
+                doAdjustAfterFetch(rid);
               });
             }
           } else {  // scrolling up
             if (buffer.length && !viewport.shouldLoadTop()) {
-              adjustBufferAfterFetch(rid);
+              doAdjustAfterFetch(rid);
             } else {
               fetchPrevious((result) => {
                 if (isInvalid(rid)) {
@@ -457,7 +468,7 @@ angular.module('ui.scroll', [])
                   buffer.prepend(result);
                 }
 
-                adjustBufferAfterFetch(rid);
+                doAdjustAfterFetch(rid);
               });
             }
           }

@@ -7,6 +7,7 @@ var files = [
   '../misc/test.css',
   '../misc/datasources.js',
   '../misc/scaffolding*.js',
+  '../misc/helpers.js',
   '../*Spec.js',
   {
     pattern: scrollerPath + '*.js.map',

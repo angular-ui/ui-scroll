@@ -1,4 +1,4 @@
-/*global describe, beforeEach, module, it, expect, runTest */
+/*global describe, beforeEach, module, it, expect, runTest, Helper */
 describe('uiScroll Paddings spec.', () => {
   'use strict';
 
@@ -30,18 +30,6 @@ describe('uiScroll Paddings spec.', () => {
   function setUserIndices() {
     datasource.minIndex = datasource.min;
     datasource.maxIndex = datasource.max;
-  }
-
-  function getBottomPaddingHeight(viewport) {
-    const viewportChildren = viewport.children();
-    const bottomPadding = viewportChildren[viewportChildren.length - 1];
-    return parseInt(angular.element(bottomPadding).css('height'), 10);
-  }
-
-  function getTopPaddingHeight(viewport) {
-    const viewportChildren = viewport.children();
-    const topPadding = viewportChildren[0];
-    return parseInt(angular.element(topPadding).css('height'), 10);
   }
 
   function scrollBottom(viewport, count = 1) {
@@ -116,11 +104,11 @@ describe('uiScroll Paddings spec.', () => {
 
               scrollBottom(viewport, MAX);
               outside && scrollTop(viewport);
-              const initialBottomHeight = getBottomPaddingHeight(viewport);
+              const initialBottomHeight = Helper.getBottomPadding(viewport);
 
               removeItem(datasource, datasource.max);
               scope.adapter.applyUpdates(itemsCount, []);
-              outside && expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
+              outside && expect(Helper.getBottomPadding(viewport)).toBe(initialBottomHeight - itemHeight);
 
               !outside && scrollTop(viewport);
               scrollBottom(viewport, MAX);
@@ -142,12 +130,12 @@ describe('uiScroll Paddings spec.', () => {
               scrollBottom(viewport, MAX);
               outside && scrollTop(viewport);
 
-              const initialBottomHeight = getBottomPaddingHeight(viewport);
+              const initialBottomHeight = Helper.getBottomPadding(viewport);
               removeItem(datasource, datasource.max);
               scope.adapter.applyUpdates(itemsCount, []);
               removeItem(datasource, datasource.max);
               scope.adapter.applyUpdates(itemsCount - 1, []);
-              outside && expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight * 2);
+              outside && expect(Helper.getBottomPadding(viewport)).toBe(initialBottomHeight - itemHeight * 2);
 
               !outside && scrollTop(viewport);
               scrollBottom(viewport, MAX);
@@ -169,10 +157,10 @@ describe('uiScroll Paddings spec.', () => {
               scrollBottom(viewport, MAX);
               outside && scrollTop(viewport);
 
-              const initialBottomHeight = getBottomPaddingHeight(viewport);
+              const initialBottomHeight = Helper.getBottomPadding(viewport);
               removeItem(datasource, datasource.max - 1);
               scope.adapter.applyUpdates(itemsCount - 1, []);
-              outside && expect(getBottomPaddingHeight(viewport)).toBe(initialBottomHeight - itemHeight);
+              outside && expect(Helper.getBottomPadding(viewport)).toBe(initialBottomHeight - itemHeight);
 
               !outside && scrollTop(viewport);
               scrollBottom(viewport, MAX);
@@ -194,16 +182,16 @@ describe('uiScroll Paddings spec.', () => {
 
               outside && scrollBottom(viewport, MAX);
 
-              const initialTopHeight = getTopPaddingHeight(viewport);
+              const initialTopHeight = Helper.getTopPadding(viewport);
               removeItem(datasource, datasource.min);
               scope.adapter.applyUpdates(1, []);
-              outside && expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight);
+              outside && expect(Helper.getTopPadding(viewport)).toBe(initialTopHeight - itemHeight);
 
               !outside && scrollBottom(viewport, MAX);
-              expect(getBottomPaddingHeight(viewport)).toBe(0);
+              expect(Helper.getBottomPadding(viewport)).toBe(0);
 
               scrollTop(viewport);
-              expect(getTopPaddingHeight(viewport)).toBe(0);
+              expect(Helper.getTopPadding(viewport)).toBe(0);
               checkRow(viewport, 1, '2: item2');
             }
           )
@@ -220,18 +208,18 @@ describe('uiScroll Paddings spec.', () => {
 
               outside && scrollBottom(viewport, MAX);
 
-              const initialTopHeight = getTopPaddingHeight(viewport);
+              const initialTopHeight = Helper.getTopPadding(viewport);
               removeItem(datasource, datasource.min);
               scope.adapter.applyUpdates(1, []);
               removeItem(datasource, datasource.min);
               scope.adapter.applyUpdates(2, []);
-              outside && expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 2);
+              outside && expect(Helper.getTopPadding(viewport)).toBe(initialTopHeight - itemHeight * 2);
 
               !outside && scrollBottom(viewport, MAX);
-              expect(getBottomPaddingHeight(viewport)).toBe(0);
+              expect(Helper.getBottomPadding(viewport)).toBe(0);
 
               scrollTop(viewport);
-              expect(getTopPaddingHeight(viewport)).toBe(0);
+              expect(Helper.getTopPadding(viewport)).toBe(0);
               checkRow(viewport, 1, '3: item3');
             }
           )
@@ -248,16 +236,16 @@ describe('uiScroll Paddings spec.', () => {
 
               outside && scrollBottom(viewport, MAX);
 
-              const initialTopHeight = getTopPaddingHeight(viewport);
+              const initialTopHeight = Helper.getTopPadding(viewport);
               removeItem(datasource, datasource.min  + 1);
               scope.adapter.applyUpdates(2, []);
-              outside && expect(getTopPaddingHeight(viewport)).toBe(initialTopHeight - itemHeight * 1);
+              outside && expect(Helper.getTopPadding(viewport)).toBe(initialTopHeight - itemHeight * 1);
 
               !outside && scrollBottom(viewport, MAX);
-              expect(getBottomPaddingHeight(viewport)).toBe(0);
+              expect(Helper.getBottomPadding(viewport)).toBe(0);
 
               scrollTop(viewport);
-              expect(getTopPaddingHeight(viewport)).toBe(0);
+              expect(Helper.getTopPadding(viewport)).toBe(0);
               checkRow(viewport, 1, '1: item1');
               checkRow(viewport, 2, '2: item3');
             }
@@ -337,11 +325,11 @@ describe('uiScroll Paddings spec.', () => {
             scope.adapter.applyUpdates(2, []);
 
             scrollBottom(viewport, MAX);
-            expect(getBottomPaddingHeight(viewport)).toBe(0);
+            expect(Helper.getBottomPadding(viewport)).toBe(0);
             checkRowBack(viewport, 1, (itemsCount - 1) + ': item' + itemsCount);
 
             scrollTop(viewport);
-            expect(getTopPaddingHeight(viewport)).toBe(0);
+            expect(Helper.getTopPadding(viewport)).toBe(0);
             checkRow(viewport, 1, '1: item1');
             checkRow(viewport, 2, '2: item3');
           }
@@ -359,11 +347,11 @@ describe('uiScroll Paddings spec.', () => {
             scope.adapter.applyUpdates(19, []);
 
             scrollBottom(viewport);
-            expect(getBottomPaddingHeight(viewport)).toBe(0);
+            expect(Helper.getBottomPadding(viewport)).toBe(0);
             checkRowBack(viewport, 1, (itemsCount - 1) + ': item' + itemsCount);
 
             scrollTop(viewport);
-            expect(getTopPaddingHeight(viewport)).toBe(0);
+            expect(Helper.getTopPadding(viewport)).toBe(0);
           }
         )
       )
@@ -379,11 +367,11 @@ describe('uiScroll Paddings spec.', () => {
             scope.adapter.applyUpdates(1, []);
 
             scrollBottom(viewport, MAX);
-            expect(getBottomPaddingHeight(viewport)).toBe(0);
+            expect(Helper.getBottomPadding(viewport)).toBe(0);
             checkRowBack(viewport, 1, itemsCount + ': item' + itemsCount);
 
             scrollTop(viewport);
-            expect(getTopPaddingHeight(viewport)).toBe(0);
+            expect(Helper.getTopPadding(viewport)).toBe(0);
             checkRow(viewport, 1, '2: item2');
             checkRow(viewport, 2, '3: item3');
           }
@@ -401,11 +389,11 @@ describe('uiScroll Paddings spec.', () => {
             scope.adapter.applyUpdates(itemsCount, []);
 
             scrollBottom(viewport, MAX);
-            expect(getBottomPaddingHeight(viewport)).toBe(0);
+            expect(Helper.getBottomPadding(viewport)).toBe(0);
             checkRowBack(viewport, 1, (itemsCount - 1) + ': item' + (itemsCount - 1));
 
             scrollTop(viewport);
-            expect(getTopPaddingHeight(viewport)).toBe(0);
+            expect(Helper.getTopPadding(viewport)).toBe(0);
             checkRow(viewport, 1, '1: item1');
             checkRow(viewport, 2, '2: item2');
           }
