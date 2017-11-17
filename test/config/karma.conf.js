@@ -8,7 +8,7 @@ const webpackSettings = ENV === 'development' ? {
   preprocessors: {
     '../../src/ui-scroll*.js': ['webpack', 'sourcemap']
   },
-  webpack: require('../../webpack/config.js')
+  webpack: require('../../webpack.config.js')
 } : {};
 
 module.exports = function (config) {
