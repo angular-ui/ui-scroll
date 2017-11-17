@@ -53,6 +53,8 @@ if (ENV === 'development') {
     devServer: {
       historyApiFallback: {
         rewrites: [
+          { from: '/dist/ui-scroll.js', to: (context) => '/ui-scroll.js' },
+          { from: '/dist/ui-scroll-grid.js', to: (context) => '/ui-scroll-grid.js' },
           { from: /^\/$/, to: '/demo/index.html' },
           { from: /\/ui-scroll-demo\.gif$/, to: '/demo/ui-scroll-demo.gif' },
           { from: /\/*\/*\.html$/, to: (context) => '/demo' + context.parsedUrl.pathname },
@@ -62,7 +64,6 @@ if (ENV === 'development') {
       },
       inline: true,
       quiet: false,
-      hot: true,
       port: 5005,
       publicPath: '/'
     },
