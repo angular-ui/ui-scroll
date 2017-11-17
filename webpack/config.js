@@ -6,26 +6,16 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 const packageJSON = require('../package.json');
 
-const getBanner = function (compressing) {
-  return packageJSON.name + (compressing ? ' (compressed)' : ' (uncompressed)') + '\n' +
-    packageJSON.homepage + '\n' +
-    'Version: ' + packageJSON.version + ' -- ' + (new Date()).toISOString() + '\n' +
-    'License: ' + packageJSON.license;
-};
+const getBanner = () =>
+  packageJSON.name + '\n' +
+  packageJSON.homepage + '\n' +
+  'Version: ' + packageJSON.version + ' -- ' + (new Date()).toISOString() + '\n' +
+  'License: ' + packageJSON.license;
 
 const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
 console.log('********** webpack runs in ' + ENV + ' environment **********\n');
 
-let configEnv = {};
-
-// const arrTestFiles = fs.readdirSync('test')
-//   .map(e => (e.indexOf('Spec.js') !== -1) ?
-//     {[e.replace(/\.js/, '')]: path.resolve(__dirname, '../test/' + e)} : null
-//   )
-//   .filter(e => e !== null);
-//
-// let testFiles = {};
-// arrTestFiles.forEach(e => testFiles[Object.keys(e)[0]] = e[Object.keys(e)[0]]);
+let configEnv;
 
 if (ENV === 'development') {
   configEnv = {
@@ -45,7 +35,6 @@ if (ENV === 'development') {
 
     devtool: 'inline-source-map',
 
-    // entry: testFiles,
     entry: {},
 
     plugins: [],
@@ -106,7 +95,7 @@ if (ENV === 'production') {
         {from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.min.js'},
         {from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.js'}
       ], {copyUnmodified: true}),
-      new webpack.BannerPlugin(getBanner(true))
+      new webpack.BannerPlugin(getBanner())
     ],
 
     devServer: {},
