@@ -19,10 +19,10 @@
   },
   "license": "MIT",
   "scripts": {
-    "prod-build": "webpack --config webpack.config.js",
+    "prod-build": "webpack",
     "prod-test": "karma start test/config/karma.conf.js",
-    "dev-build": "webpack --config webpack.config.js",
-    "dev-server": "webpack-dev-server --config webpack.config.js",
+    "dev-build": "webpack",
+    "dev-server": "webpack-dev-server",
     "dev-test": "karma start test/config/karma.conf.js",
     "hint-tests": "jshint --verbose test",
     "start": "npm-run-all --parallel dev-server dev-test",
