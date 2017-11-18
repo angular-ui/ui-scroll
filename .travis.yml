@@ -11,12 +11,10 @@ before_install:
 - sh -e /etc/init.d/xvfb start
 
 before_script:
-- npm install -g grunt-cli
-- npm install -g karma
 - npm install
 
 script:
-- grunt travis
+- npm run build
 
 deploy:
   provider: npm
