@@ -1,5 +1,6 @@
 const path = require('path');
 const fs = require('fs');
+const glob = require("glob");
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
@@ -12,14 +13,19 @@ const getBanner = () =>
   'Version: ' + packageJSON.version + ' -- ' + (new Date()).toISOString() + '\n' +
   'License: ' + packageJSON.license;
 
-const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
-const isTest = (process.env.npm_lifecycle_event.indexOf('dev-test') !== -1) ? true : false;
-console.log('********** webpack runs in ' + ENV + ' environment **********\n');
+const scriptName = process.env.npm_lifecycle_event;
+const ENV = scriptName.indexOf('dev') === 0 ? 'development' : 'production';
+const isTest = scriptName.indexOf('test') >= 0 ? true : false;
+console.log('***** webpack runs in ' + ENV + (isTest ? ' (test)' : '') + ' environment\n');
 
 let configEnv;
 
 if (ENV === 'development') {
   configEnv = {
+    entry: {
+      'test': glob.sync(path.resolve(__dirname, 'test/*.js'))
+    },
+
     output: {
       filename: '[name].js',
       publicPath: '/'
@@ -27,7 +33,7 @@ if (ENV === 'development') {
 
     rules: [{
       enforce: 'pre',
-      test: /Spec\.js$/,
+      test: /\.js$/,
       include: path.resolve(__dirname, 'test'),
       use: [{
         loader: 'jshint-loader'
@@ -36,15 +42,11 @@ if (ENV === 'development') {
 
     devtool: 'inline-source-map',
 
-    entry: {},
-
     plugins: [],
 
     devServer: !isTest ? {
       historyApiFallback: {
         rewrites: [
-          { from: '/dist/ui-scroll.js', to: (context) => '/ui-scroll.js' },
-          { from: '/dist/ui-scroll-grid.js', to: (context) => '/ui-scroll-grid.js' },
           { from: /\/*\/*\.html$/, to: (context) => '/demo' + context.parsedUrl.pathname },
           { from: /\/*\/*\.css$/, to: (context) => '/demo' + context.parsedUrl.pathname },
           { from: /\/*\/*\.js$/, to: (context) => '/demo' + context.parsedUrl.pathname },
@@ -52,10 +54,20 @@ if (ENV === 'development') {
           { from: /^\/$/, to: '/demo/index.html' }
         ]
       },
+      proxy: {
+        "/dist": {
+          target: "http://localhost:5005",
+          pathRewrite: {"^/dist" : ""}
+        }
+      },
       inline: true,
       quiet: false,
+      stats: {
+        modules: false,
+        errors: true,
+        warnings: true
+      },
       port: 5005,
-      stats: 'errors-only',
       publicPath: '/'
     } : {},
 
@@ -65,6 +77,11 @@ if (ENV === 'development') {
 
 if (ENV === 'production') {
   configEnv = {
+    entry: {
+      'ui-scroll.min': path.resolve(__dirname, 'src/ui-scroll.js'),
+      'ui-scroll-grid.min': path.resolve(__dirname, 'src/ui-scroll-grid.js')
+    },
+
     output: {
       path: path.join(__dirname, 'dist'),
       filename: '[name].js'
@@ -73,11 +90,6 @@ if (ENV === 'production') {
     rules: [],
 
     devtool: 'source-map',
-
-    entry: {
-      'ui-scroll.min': path.resolve(__dirname, 'src/ui-scroll.js'),
-      'ui-scroll-grid.min': path.resolve(__dirname, 'src/ui-scroll-grid.js')
-    },
 
     plugins: [
       new CleanWebpackPlugin('dist', {
@@ -94,9 +106,9 @@ if (ENV === 'production') {
         include: /\.min\.js$/
       }),
       new CopyWebpackPlugin([
-        {from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.min.js'},
-        {from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.js'}
-      ], {copyUnmodified: true}),
+        { from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.min.js' },
+        { from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.js' }
+      ], { copyUnmodified: true }),
       new webpack.BannerPlugin(getBanner())
     ],
 
@@ -138,7 +150,7 @@ module.exports = {
       }
     ]
   },
-
+ 
   plugins: configEnv.plugins,
 
   devServer: configEnv.devServer,

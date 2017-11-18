@@ -5,7 +5,12 @@ const files = [
   '../misc/test.css',
   '../misc/datasources.js',
   '../misc/scaffolding*.js',
-  '../*Spec.js'
+  {
+    pattern: '../*Spec.js',
+    watched: false,
+    served: true,
+    included: true
+  }
 ];
 
 module.exports.development = [

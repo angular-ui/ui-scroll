@@ -1,6 +1,4 @@
 const chrome = process.platform === 'linux' ? 'Chromium' : 'Chrome';
-const firefox = 'Firefox';
-//const ie = 'IE';
 
 const ENV = (process.env.npm_lifecycle_event.indexOf('dev') === 0) ? 'development' : 'production';
 
@@ -26,7 +24,7 @@ module.exports = function (config) {
 
     exclude: [],
 
-    reporters: [ENV === 'development' ? 'dots' : 'progress'],
+    reporters: ['dots'],
 
     port: ENV === 'development' ? 9100 : 8082,
 
@@ -39,7 +37,7 @@ module.exports = function (config) {
     keepalive: ENV === 'development',
 
     browsers: process.env.TRAVIS ?
-      [firefox, chrome] :
+      ['Firefox', chrome] :
       [chrome],
 
     captureTimeout: 60000,

@@ -21,13 +21,12 @@
   "scripts": {
     "prod-build": "webpack",
     "prod-test": "karma start test/config/karma.conf.js",
-    "dev-build": "webpack",
     "dev-server": "webpack-dev-server",
     "dev-test": "karma start test/config/karma.conf.js",
     "hint-tests": "jshint --verbose test",
-    "start": "npm-run-all --parallel dev-server dev-test",
-    "test": "npm run hint-tests && npm run dev-test",
-    "build": "npm run prod-build && npm run prod-test && npm run hint-tests"
+    "build": "npm run hint-tests && npm run prod-build && npm run prod-test",
+    "test": "npm run dev-test",
+    "start": "npm-run-all --parallel dev-server dev-test"
   },
   "devDependencies": {
     "babel-core": "^6.24.1",
@@ -36,18 +35,16 @@
     "clean-webpack-plugin": "^0.1.17",
     "copy-webpack-plugin": "^4.2.0",
     "jasmine-core": "^2.8.0",
-    "jshint": "^2.5.0",
+    "jshint": "^2.9.2",
     "jshint-loader": "^0.8.4",
     "karma": "^1.7.1",
     "karma-chrome-launcher": "^2.2.0",
     "karma-firefox-launcher": "^1.0.1",
-    "karma-ie-launcher": "^1.0.0",
     "karma-jasmine": "^1.1.0",
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^2.0.6",
     "npm-run-all": "^4.1.2",
     "webpack": "^3.8.1",
-    "webpack-dev-middleware": "^1.12.0",
     "webpack-dev-server": "^2.9.4"
   },
   "keywords": [
