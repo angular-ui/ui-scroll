@@ -1,6 +1,6 @@
 const path = require('path');
 const fs = require('fs');
-const glob = require("glob");
+const glob = require('glob');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');

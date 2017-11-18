@@ -25,8 +25,9 @@
     "dev-test": "karma start test/config/karma.conf.js",
     "hint-tests": "jshint --verbose test",
     "build": "npm run hint-tests && npm run prod-build && npm run prod-test",
+    "dev": "npm-run-all --parallel dev-server dev-test",
     "test": "npm run dev-test",
-    "start": "npm-run-all --parallel dev-server dev-test"
+    "start": "npm run dev-server"
   },
   "devDependencies": {
     "babel-core": "^6.24.1",
