@@ -18,6 +18,8 @@ const ENV = scriptName.indexOf('dev') === 0 ? 'development' : 'production';
 const isTest = scriptName.indexOf('test') >= 0 ? true : false;
 console.log('***** webpack runs in ' + ENV + (isTest ? ' (test)' : '') + ' environment\n');
 
+const devServerPort = 5005;
+const devServerHost = 'localhost';
 let configEnv;
 
 if (ENV === 'development') {
@@ -55,9 +57,9 @@ if (ENV === 'development') {
         ]
       },
       proxy: {
-        "/dist": {
-          target: "http://localhost:5005",
-          pathRewrite: {"^/dist" : ""}
+        '/dist': {
+          target: 'http://' + devServerHost + ':' + devServerPort,
+          pathRewrite: {'^/dist' : ''}
         }
       },
       inline: true,
@@ -67,7 +69,8 @@ if (ENV === 'development') {
         errors: true,
         warnings: true
       },
-      port: 5005,
+      port: devServerPort,
+      host: devServerHost,
       publicPath: '/'
     } : {},
 
