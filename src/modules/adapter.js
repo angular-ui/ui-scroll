@@ -1,9 +1,12 @@
 class Adapter {
 
-  constructor(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope) {
+  constructor($scope, $parse, $attr, viewport, buffer, doAdjust, reload) {
+    this.$parse = $parse;
+    this.$attr = $attr;
     this.viewport = viewport;
     this.buffer = buffer;
-    this.adjustBuffer = adjustBuffer;
+
+    this.doAdjust = doAdjust;
     this.reload = reload;
 
     this.isLoading = false;
@@ -13,19 +16,19 @@ class Adapter {
     this.startScope = viewportScope.$parent ? viewportScope : $scope;
 
     this.publicContext = {};
-    this.assignAdapter($attr.adapter, $parse);
-    this.generatePublicContext($attr, $parse);
+    this.assignAdapter($attr.adapter);
+    this.generatePublicContext();
   }
 
-  assignAdapter(adapterAttr, $parse) {
+  assignAdapter(adapterAttr) {
     if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
       return;
     }
     let adapterOnScope;
 
     try {
-      $parse(adapterAttr).assign(this.startScope, {});
-      adapterOnScope = $parse(adapterAttr)(this.startScope);
+      this.$parse(adapterAttr).assign(this.startScope, {});
+      adapterOnScope = this.$parse(adapterAttr)(this.startScope);
     }
     catch (error) {
       error.message = `Angular ui-scroll Adapter assignment exception.\n` +
@@ -34,11 +37,11 @@ class Adapter {
       throw error;
     }
 
-    angular.extend(adapterOnScope, this.publicContext);
+    Object.assign(adapterOnScope, this.publicContext);
     this.publicContext = adapterOnScope;
   }
 
-  generatePublicContext($attr, $parse) {
+  generatePublicContext() {
     // these methods will be accessible out of ui-scroll via user defined adapter
     const publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty'];
     for (let i = publicMethods.length - 1; i >= 0; i--) {
@@ -48,14 +51,14 @@ class Adapter {
     // these read-only props will be accessible out of ui-scroll via user defined adapter
     const publicProps = ['isLoading', 'topVisible', 'topVisibleElement', 'topVisibleScope', 'bottomVisible', 'bottomVisibleElement', 'bottomVisibleScope'];
     for (let i = publicProps.length - 1; i >= 0; i--) {
-      let property, attr = $attr[publicProps[i]];
+      let property, attr = this.$attr[publicProps[i]];
       Object.defineProperty(this, publicProps[i], {
         get: () => property,
         set: (value) => {
           property = value;
           this.publicContext[publicProps[i]] = value;
           if (attr) {
-            $parse(attr).assign(this.startScope, value);
+            this.$parse(attr).assign(this.startScope, value);
           }
         }
       });
@@ -64,12 +67,12 @@ class Adapter {
     // non-read-only public property
     Object.defineProperty(this.publicContext, 'disabled', {
       get: () => this.disabled,
-      set: (value) => (!(this.disabled = value)) ? this.adjustBuffer() : null
+      set: (value) => (!(this.disabled = value)) ? this.doAdjust() : null
     });
   }
 
   loading(value) {
-    this['isLoading'] = value;
+    this.isLoading = value;
   }
 
   isBOF() {
@@ -86,25 +89,25 @@ class Adapter {
 
   append(newItems) {
     this.buffer.append(newItems);
-    this.adjustBuffer();
+    this.doAdjust();
     this.viewport.clipTop();
     this.viewport.clipBottom();
   }
 
   prepend(newItems) {
     this.buffer.prepend(newItems);
-    this.adjustBuffer();
+    this.doAdjust();
     this.viewport.clipTop();
     this.viewport.clipBottom();
   }
 
   applyUpdates(arg1, arg2) {
-    if (angular.isFunction(arg1)) {
+    if (typeof arg1 === 'function') {
       this.applyUpdatesFunc(arg1);
     } else {
       this.applyUpdatesIndex(arg1, arg2);
     }
-    this.adjustBuffer();
+    this.doAdjust();
   }
 
   applyUpdatesFunc(cb) {
@@ -127,7 +130,7 @@ class Adapter {
     }
     // out-of-buffer case: deletion may affect Paddings
     else if(index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
-      if(angular.isArray(newItems) && !newItems.length) {
+      if(Array.isArray(newItems) && !newItems.length) {
         this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
         if(index === this.buffer.getAbsMinIndex()) {
           this.buffer.incrementMinIndex();
@@ -140,7 +143,7 @@ class Adapter {
   }
 
   applyUpdate(wrapper, newItems) {
-    if (!angular.isArray(newItems)) {
+    if (!Array.isArray(newItems)) {
       return;
     }
     let position = this.buffer.indexOf(wrapper);

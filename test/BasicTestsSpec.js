@@ -118,8 +118,8 @@ describe('uiScroll', function () {
                 var itemsWithPaddings = itemsLoaded + 2;
                 expect(viewport.children().length).toBe(itemsWithPaddings);
                 expect(viewport.scrollTop()).toBe(0);
-                expect(viewport.children().css('height')).toBe('0px');
-                expect(angular.element(viewport.children()[itemsWithPaddings - 1]).css('height')).toBe('0px');
+                expect(Helper.getTopPadding(viewport)).toBe(0);
+                expect(Helper.getBottomPadding(viewport)).toBe(0);
 
                 for (var i = 1; i < itemsLoaded; i++) {
                   var row = viewport.children()[i];
@@ -159,8 +159,8 @@ describe('uiScroll', function () {
                     inject(function () {
                         expect(viewport.children().length).toBe(itemsWithPaddings);
                         expect(viewport.scrollTop()).toBe(100);
-                        expect(viewport.children().css('height')).toBe('0px');
-                        expect(angular.element(viewport.children()[itemsWithPaddings-1]).css('height')).toBe('0px');
+                        expect(Helper.getTopPadding(viewport)).toBe(0);
+                        expect(Helper.getBottomPadding(viewport)).toBe(0);
 
                         for (var i = 1; i < itemsLoaded; i++) {
                             var row = viewport.children()[i];
@@ -207,8 +207,8 @@ describe('uiScroll', function () {
 
                     expect(viewport.children().length).toBe(itemsWithPaddings);
                     expect(viewport.scrollTop()).toBe(280);
-                    expect(viewport.children().css('height')).toBe('160px');
-                    expect(angular.element(viewport.children()[itemsWithPaddings-1]).css('height')).toBe('0px');
+                    expect(Helper.getTopPadding(viewport)).toBe(160);
+                    expect(Helper.getBottomPadding(viewport)).toBe(0);
 
                     for (var i = 1; i <= itemsLoaded; i++) {
                         var row = viewport.children()[i];
@@ -262,8 +262,8 @@ describe('uiScroll', function () {
 
                     expect(viewport.children().length).toBe(itemsWithPaddings);
                     expect(viewport.scrollTop()).toBe(0);
-                    expect(viewport.children().css('height')).toBe('0px');
-                    expect(angular.element(viewport.children()[itemsWithPaddings-1]).css('height')).toBe('280px');
+                    expect(Helper.getTopPadding(viewport)).toBe(0);
+                    expect(Helper.getBottomPadding(viewport)).toBe(280);
 
                     for (var i = 1; i <= itemsLoaded; i++) {
                         var row = viewport.children()[i];
@@ -510,13 +510,11 @@ describe('uiScroll', function () {
         it('should calculate top padding element\'s height during scroll down', function () {
             runTest(scrollSettings,
                 function (viewport) {
-                    var topPaddingElement = angular.element(viewport.children()[0]);
-
                     // scroll down + expectation
                     for(var i = 0; i < 6; i++) {
                         viewport.scrollTop(5000);
                         viewport.trigger('scroll');
-                        expect(topPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
+                        expect(Helper.getTopPadding(viewport)).toBe(itemHeight * bufferSize * (i + 1));
                     }
                 }
             );
@@ -525,13 +523,11 @@ describe('uiScroll', function () {
         it('should calculate bottom padding element\'s height during scroll up', function () {
             runTest(scrollSettings,
                 function (viewport) {
-                    var bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
-
                     // scroll up + expectation
                     for(var i = 0; i < 6; i++) {
                         viewport.scrollTop(-5000);
                         viewport.trigger('scroll');
-                        expect(bottomPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
+                        expect(Helper.getBottomPadding(viewport)).toBe(itemHeight * bufferSize * (i + 1));
                     }
 
                 }
@@ -541,9 +537,6 @@ describe('uiScroll', function () {
         it('should calculate both padding elements heights during scroll down and up', function () {
             runTest(scrollSettings,
                 function (viewport) {
-                    var topPaddingElement = angular.element(viewport.children()[0]);
-                    var bottomPaddingElement = angular.element(viewport.children()[viewport.children().length - 1]);
-
                     var scrollDelta = itemHeight * bufferSize;
                     var i, scrollIteration = 7;
 
@@ -551,24 +544,24 @@ describe('uiScroll', function () {
                     for(i = 0; i < scrollIteration; i++) {
                         viewport.scrollTop(viewport.scrollTop() + scrollDelta);
                         viewport.trigger('scroll');
-                        expect(topPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
-                        expect(bottomPaddingElement.height()).toBe(0);
+                        expect(Helper.getTopPadding(viewport)).toBe(itemHeight * bufferSize * (i + 1));
+                        expect(Helper.getBottomPadding(viewport)).toBe(0);
                     }
 
                     // scroll up + expectation
                     for(i = 0; i < scrollIteration; i++) {
                         viewport.scrollTop(viewport.scrollTop() - scrollDelta);
                         viewport.trigger('scroll');
-                        expect(topPaddingElement.height()).toBe(itemHeight * bufferSize * (scrollIteration - i - 1));
-                        expect(bottomPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
+                        expect(Helper.getTopPadding(viewport)).toBe(itemHeight * bufferSize * (scrollIteration - i - 1));
+                        expect(Helper.getBottomPadding(viewport)).toBe(itemHeight * bufferSize * (i + 1));
                     }
 
                     // further scroll up + expectation
                     for(i = scrollIteration; i < 2*scrollIteration; i++) {
                       viewport.scrollTop(viewport.scrollTop() - scrollDelta);
                       viewport.trigger('scroll');
-                      expect(topPaddingElement.height()).toBe(0);
-                      expect(bottomPaddingElement.height()).toBe(itemHeight * bufferSize * (i + 1));
+                      expect(Helper.getTopPadding(viewport)).toBe(0);
+                      expect(Helper.getBottomPadding(viewport)).toBe(itemHeight * bufferSize * (i + 1));
                     }
                 }
             );

@@ -5,6 +5,8 @@ const files = [
   '../misc/test.css',
   '../misc/datasources.js',
   '../misc/scaffolding*.js',
+  '../misc/helpers.js',
+  // '../*Spec.js',
   {
     pattern: '../*Spec.js',
     watched: false,

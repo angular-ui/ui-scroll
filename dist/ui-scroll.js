@@ -1,7 +1,7 @@
 /*!
- * angular-ui-scroll (uncompressed)
+ * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.5 -- 2017-11-10T00:53:20.545Z
+ * Version: 1.7.0-rc.6 -- 2017-11-19T07:39:04.374Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -39,9 +39,6 @@
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
 /******/
-/******/ 	// identity function for calling harmony imports with the correct context
-/******/ 	__webpack_require__.i = function(value) { return value; };
-/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -69,7 +66,7 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -79,516 +76,533 @@
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
+var _jqLiteExtras = __webpack_require__(1);
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _jqLiteExtras2 = _interopRequireDefault(_jqLiteExtras);
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+var _elementRoutines = __webpack_require__(2);
 
-var Adapter = function () {
-  function Adapter(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope) {
-    _classCallCheck(this, Adapter);
+var _elementRoutines2 = _interopRequireDefault(_elementRoutines);
 
-    this.viewport = viewport;
-    this.buffer = buffer;
-    this.adjustBuffer = adjustBuffer;
-    this.reload = reload;
+var _buffer = __webpack_require__(3);
 
-    this.isLoading = false;
-    this.disabled = false;
+var _buffer2 = _interopRequireDefault(_buffer);
 
-    var viewportScope = viewport.getScope();
-    this.startScope = viewportScope.$parent ? viewportScope : $scope;
+var _viewport = __webpack_require__(4);
 
-    this.publicContext = {};
-    this.assignAdapter($attr.adapter, $parse);
-    this.generatePublicContext($attr, $parse);
-  }
+var _viewport2 = _interopRequireDefault(_viewport);
 
-  _createClass(Adapter, [{
-    key: 'assignAdapter',
-    value: function assignAdapter(adapterAttr, $parse) {
-      if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
-        return;
-      }
-      var adapterOnScope = void 0;
+var _adapter = __webpack_require__(6);
 
-      try {
-        $parse(adapterAttr).assign(this.startScope, {});
-        adapterOnScope = $parse(adapterAttr)(this.startScope);
-      } catch (error) {
-        error.message = 'Angular ui-scroll Adapter assignment exception.\n' + ('Can\'t parse "' + adapterAttr + '" expression.\n') + error.message;
-        throw error;
-      }
+var _adapter2 = _interopRequireDefault(_adapter);
 
-      angular.extend(adapterOnScope, this.publicContext);
-      this.publicContext = adapterOnScope;
-    }
-  }, {
-    key: 'generatePublicContext',
-    value: function generatePublicContext($attr, $parse) {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+angular.module('ui.scroll', []).service('jqLiteExtras', function () {
+  return new _jqLiteExtras2.default();
+}).run(['jqLiteExtras', function (jqLiteExtras) {
+  return !window.jQuery ? jqLiteExtras.registerFor(angular.element) : null;
+}]).directive('uiScrollViewport', function () {
+  return {
+    restrict: 'A',
+    controller: ['$scope', '$element', function (scope, element) {
       var _this = this;
 
-      // these methods will be accessible out of ui-scroll via user defined adapter
-      var publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty'];
-      for (var i = publicMethods.length - 1; i >= 0; i--) {
-        this.publicContext[publicMethods[i]] = this[publicMethods[i]].bind(this);
-      }
+      this.container = element;
+      this.viewport = element;
+      this.scope = scope;
 
-      // these read-only props will be accessible out of ui-scroll via user defined adapter
-      var publicProps = ['isLoading', 'topVisible', 'topVisibleElement', 'topVisibleScope', 'bottomVisible', 'bottomVisibleElement', 'bottomVisibleScope'];
-
-      var _loop = function _loop(_i) {
-        var property = void 0,
-            attr = $attr[publicProps[_i]];
-        Object.defineProperty(_this, publicProps[_i], {
-          get: function get() {
-            return property;
-          },
-          set: function set(value) {
-            property = value;
-            _this.publicContext[publicProps[_i]] = value;
-            if (attr) {
-              $parse(attr).assign(_this.startScope, value);
-            }
-          }
-        });
-      };
-
-      for (var _i = publicProps.length - 1; _i >= 0; _i--) {
-        _loop(_i);
-      }
-
-      // non-read-only public property
-      Object.defineProperty(this.publicContext, 'disabled', {
-        get: function get() {
-          return _this.disabled;
-        },
-        set: function set(value) {
-          return !(_this.disabled = value) ? _this.adjustBuffer() : null;
+      angular.forEach(element.children(), function (child) {
+        if (child.tagName.toLowerCase() === 'tbody') {
+          _this.viewport = angular.element(child);
         }
       });
-    }
-  }, {
-    key: 'loading',
-    value: function loading(value) {
-      this['isLoading'] = value;
-    }
-  }, {
-    key: 'isBOF',
-    value: function isBOF() {
-      return this.buffer.bof;
-    }
-  }, {
-    key: 'isEOF',
-    value: function isEOF() {
-      return this.buffer.eof;
-    }
-  }, {
-    key: 'isEmpty',
-    value: function isEmpty() {
-      return !this.buffer.length;
-    }
-  }, {
-    key: 'append',
-    value: function append(newItems) {
-      this.buffer.append(newItems);
-      this.adjustBuffer();
-      this.viewport.clipTop();
-      this.viewport.clipBottom();
-    }
-  }, {
-    key: 'prepend',
-    value: function prepend(newItems) {
-      this.buffer.prepend(newItems);
-      this.adjustBuffer();
-      this.viewport.clipTop();
-      this.viewport.clipBottom();
-    }
-  }, {
-    key: 'applyUpdates',
-    value: function applyUpdates(arg1, arg2) {
-      if (angular.isFunction(arg1)) {
-        this.applyUpdatesFunc(arg1);
-      } else {
-        this.applyUpdatesIndex(arg1, arg2);
-      }
-      this.adjustBuffer();
-    }
-  }, {
-    key: 'applyUpdatesFunc',
-    value: function applyUpdatesFunc(cb) {
-      var _this2 = this;
 
-      this.buffer.slice(0).forEach(function (wrapper) {
-        // we need to do it on the buffer clone, because buffer content
-        // may change as we iterate through
-        _this2.applyUpdate(wrapper, cb(wrapper.item, wrapper.scope, wrapper.element));
+      return this;
+    }]
+  };
+}).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$interval', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $interval, $q, $parse) {
+
+  return {
+    require: ['?^uiScrollViewport'],
+    restrict: 'A',
+    transclude: 'element',
+    priority: 1000,
+    terminal: true,
+    link: link
+  };
+
+  function link($scope, element, $attr, controllers, linker) {
+    var match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([(\w|\$)\.]+)\s*$/);
+    if (!match) {
+      throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
+    }
+
+    function parseNumericAttr(value, defaultValue) {
+      var result = $parse(value)($scope);
+      return isNaN(result) ? defaultValue : result;
+    }
+
+    var BUFFER_MIN = 3;
+    var BUFFER_DEFAULT = 10;
+    var PADDING_MIN = 0.3;
+    var PADDING_DEFAULT = 0.5;
+    var MAX_VIEWPORT_DELAY = 500;
+    var VIEWPORT_POLLING_INTERVAL = 50;
+
+    var datasource = null;
+    var itemName = match[1];
+    var datasourceName = match[2];
+    var viewportController = controllers[0];
+    var bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
+    var padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT));
+    var startIndex = parseNumericAttr($attr.startIndex, 1);
+    var ridActual = 0; // current data revision id
+    var pending = [];
+
+    var elementRoutines = new _elementRoutines2.default($injector, $q);
+    var buffer = new _buffer2.default(elementRoutines, bufferSize, startIndex);
+    var viewport = new _viewport2.default(elementRoutines, buffer, element, viewportController, $rootScope, padding);
+    var adapter = new _adapter2.default($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
+
+    if (viewportController) {
+      viewportController.adapter = adapter;
+    }
+
+    var isDatasourceValid = function isDatasourceValid() {
+      return Object.prototype.toString.call(datasource) === '[object Object]' && typeof datasource.get === 'function';
+    };
+
+    datasource = $parse(datasourceName)($scope); // try to get datasource on scope
+    if (!isDatasourceValid()) {
+      datasource = $injector.get(datasourceName); // try to inject datasource as service
+      if (!isDatasourceValid()) {
+        throw new Error(datasourceName + ' is not a valid datasource');
+      }
+    }
+
+    var onRenderHandlers = [];
+    function onRenderHandlersRunner() {
+      onRenderHandlers.forEach(function (handler) {
+        return handler.run();
       });
+      onRenderHandlers = [];
     }
-  }, {
-    key: 'applyUpdatesIndex',
-    value: function applyUpdatesIndex(index, newItems) {
-      if (index % 1 !== 0) {
-        throw new Error('applyUpdates - ' + index + ' is not a valid index (should be an integer)');
-      }
-      var _index = index - this.buffer.first;
-
-      // apply updates only within buffer
-      if (_index >= 0 && _index < this.buffer.length) {
-        this.applyUpdate(this.buffer[_index], newItems);
-      }
-      // out-of-buffer case: deletion may affect Paddings
-      else if (index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
-          if (angular.isArray(newItems) && !newItems.length) {
-            this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
-            if (index === this.buffer.getAbsMinIndex()) {
-              this.buffer.incrementMinIndex();
-            } else {
-              this.buffer.decrementMaxIndex();
+    function persistDatasourceIndex(datasource, propName) {
+      var getter = void 0;
+      // need to postpone min/maxIndexUser processing if the view is empty
+      if (Number.isInteger(datasource[propName])) {
+        getter = datasource[propName];
+        if (Number.isInteger(getter)) {
+          onRenderHandlers = onRenderHandlers.filter(function (handler) {
+            return handler.id !== propName;
+          });
+          onRenderHandlers.push({
+            id: propName,
+            run: function run() {
+              return datasource[propName] = getter;
             }
-          }
+          });
         }
+      }
     }
-  }, {
-    key: 'applyUpdate',
-    value: function applyUpdate(wrapper, newItems) {
-      var _this3 = this;
 
-      if (!angular.isArray(newItems)) {
+    function defineDatasourceIndex(datasource, propName, propUserName) {
+      var descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
+      if (descriptor && (descriptor.set || descriptor.get)) {
         return;
       }
-      var position = this.buffer.indexOf(wrapper);
-      if (!newItems.reverse().some(function (newItem) {
-        return newItem === wrapper.item;
-      })) {
-        wrapper.op = 'remove';
-        if (position === 0 && !newItems.length) {
-          wrapper._op = 'isTop'; // to catch "first" edge case on remove
-        }
-      }
-      newItems.forEach(function (newItem) {
-        if (newItem === wrapper.item) {
-          position--;
-        } else {
-          // 3 parameter (isTop) is to catch "first" edge case on insert
-          _this3.buffer.insert(position + 1, newItem, position === -1);
+      var getter = void 0;
+      persistDatasourceIndex(datasource, propName);
+      Object.defineProperty(datasource, propName, {
+        set: function set(value) {
+          getter = value;
+          if (pending.length && !buffer.length) {
+            persistDatasourceIndex(datasource, propName);
+            return;
+          }
+          buffer[propUserName] = value;
+          var topPaddingHeightOld = viewport.topDataPos();
+          viewport.adjustPaddings();
+          if (propName === 'minIndex') {
+            viewport.onAfterMinIndexSet(topPaddingHeightOld);
+          }
+        },
+        get: function get() {
+          return getter;
         }
       });
     }
-  }, {
-    key: 'calculateProperties',
-    value: function calculateProperties() {
-      var rowTop = null,
-          topHeight = 0;
-      var topDone = false,
-          bottomDone = false;
-      var length = this.buffer.length;
 
-      for (var i = 0; i < length; i++) {
-        var item = this.buffer[i];
-        var itemTop = item.element.offset().top;
+    defineDatasourceIndex(datasource, 'minIndex', 'minIndexUser');
+    defineDatasourceIndex(datasource, 'maxIndex', 'maxIndexUser');
 
-        if (rowTop !== itemTop) {
-          // a new row condition
-          var itemHeight = item.element.outerHeight(true);
-          var top = this.viewport.topDataPos() + topHeight + itemHeight;
+    var fetchNext = datasource.get.length !== 2 ? function (success) {
+      return datasource.get(buffer.next, bufferSize, success);
+    } : function (success) {
+      datasource.get({
+        index: buffer.next,
+        append: buffer.length ? buffer[buffer.length - 1].item : void 0,
+        count: bufferSize
+      }, success);
+    };
 
-          if (!topDone && top > this.viewport.topVisiblePos()) {
-            topDone = true;
-            this['topVisible'] = item.item;
-            this['topVisibleElement'] = item.element;
-            this['topVisibleScope'] = item.scope;
+    var fetchPrevious = datasource.get.length !== 2 ? function (success) {
+      return datasource.get(buffer.first - bufferSize, bufferSize, success);
+    } : function (success) {
+      datasource.get({
+        index: buffer.first - bufferSize,
+        prepend: buffer.length ? buffer[0].item : void 0,
+        count: bufferSize
+      }, success);
+    };
+
+    var initialize = function initialize() {
+      var tryCount = 0;
+      if (!viewport.applyContainerStyle()) {
+        var timer = $interval(function () {
+          tryCount++;
+          if (viewport.applyContainerStyle()) {
+            $interval.cancel(timer);
+            doAdjust();
           }
-          if (!bottomDone && (top >= this.viewport.bottomVisiblePos() || i === length - 1 && this.isEOF())) {
-            bottomDone = true;
-            this['bottomVisible'] = item.item;
-            this['bottomVisibleElement'] = item.element;
-            this['bottomVisibleScope'] = item.scope;
+          if (tryCount * VIEWPORT_POLLING_INTERVAL >= MAX_VIEWPORT_DELAY) {
+            $interval.cancel(timer);
+            throw Error('ui-scroll directive requires a viewport with non-zero height in ' + MAX_VIEWPORT_DELAY + 'ms');
           }
-          topHeight += itemHeight;
-        }
-        rowTop = itemTop;
+        }, VIEWPORT_POLLING_INTERVAL);
+      } else {
+        doAdjust();
+      }
+    };
 
-        if (topDone && bottomDone) {
-          break;
+    /**
+     * Build padding elements
+     *
+     * Calling linker is the only way I found to get access to the tag name of the template
+     * to prevent the directive scope from pollution a new scope is created and destroyed
+     * right after the builder creation is completed
+     */
+    linker(function (clone, scope) {
+      viewport.createPaddingElements(clone[0]);
+      // we do not include the clone in the DOM. It means that the nested directives will not
+      // be able to reach the parent directives, but in this case it is intentional because we
+      // created the clone to access the template tag name
+      scope.$destroy();
+      clone.remove();
+    });
+
+    $scope.$on('$destroy', function () {
+      unbindEvents();
+      viewport.unbind('mousewheel', wheelHandler);
+    });
+
+    viewport.bind('mousewheel', wheelHandler);
+
+    initialize();
+
+    /* Private function definitions */
+
+    function isInvalid(rid) {
+      return rid && rid !== ridActual || $scope.$$destroyed;
+    }
+
+    function bindEvents() {
+      viewport.bind('resize', resizeAndScrollHandler);
+      viewport.bind('scroll', resizeAndScrollHandler);
+    }
+
+    function unbindEvents() {
+      viewport.unbind('resize', resizeAndScrollHandler);
+      viewport.unbind('scroll', resizeAndScrollHandler);
+    }
+
+    function reload() {
+      viewport.resetTopPadding();
+      viewport.resetBottomPadding();
+      if (arguments.length) {
+        startIndex = arguments[0];
+      }
+      buffer.reset(startIndex);
+      persistDatasourceIndex(datasource, 'minIndex');
+      persistDatasourceIndex(datasource, 'maxIndex');
+      doAdjust();
+    }
+
+    function isElementVisible(wrapper) {
+      return wrapper.element.height() && wrapper.element[0].offsetParent;
+    }
+
+    function visibilityWatcher(wrapper) {
+      if (isElementVisible(wrapper)) {
+        buffer.forEach(function (item) {
+          if (typeof item.unregisterVisibilityWatcher === 'function') {
+            item.unregisterVisibilityWatcher();
+            delete item.unregisterVisibilityWatcher;
+          }
+        });
+        if (!pending.length) {
+          $timeout(function () {
+            return doAdjust();
+          });
         }
       }
     }
-  }]);
 
-  return Adapter;
-}();
+    function insertWrapperContent(wrapper, insertAfter) {
+      createElement(wrapper, insertAfter, viewport.insertElement);
+      if (!isElementVisible(wrapper)) {
+        wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function () {
+          return visibilityWatcher(wrapper);
+        });
+      }
+      elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
+    }
 
-exports.default = Adapter;
+    function createElement(wrapper, insertAfter, insertElement) {
+      var promises = null;
+      var sibling = insertAfter > 0 ? buffer[insertAfter - 1].element : undefined;
+      linker(function (clone, scope) {
+        promises = insertElement(clone, sibling);
+        wrapper.element = clone;
+        wrapper.scope = scope;
+        scope[itemName] = wrapper.item;
+      });
+      // ui-scroll-grid apply
+      if (adapter.transform) {
+        var tdInitializer = wrapper.scope.uiScrollTdInitializer;
+        if (tdInitializer && tdInitializer.linking) {
+          adapter.transform(wrapper.scope, wrapper.element);
+        } else {
+          wrapper.scope.uiScrollTdInitializer = {
+            onLink: function onLink() {
+              return adapter.transform(wrapper.scope, wrapper.element);
+            },
+            scope: wrapper.scope
+          };
+        }
+      }
+      return promises;
+    }
+
+    function updateDOM() {
+      var promises = [];
+      var toBePrepended = [];
+      var toBeRemoved = [];
+      var inserted = [];
+
+      buffer.forEach(function (wrapper, i) {
+        switch (wrapper.op) {
+          case 'prepend':
+            toBePrepended.unshift(wrapper);
+            break;
+          case 'append':
+            insertWrapperContent(wrapper, i);
+            wrapper.op = 'none';
+            inserted.push(wrapper);
+            break;
+          case 'insert':
+            promises = promises.concat(createElement(wrapper, i, viewport.insertElementAnimated));
+            wrapper.op = 'none';
+            inserted.push(wrapper);
+            break;
+          case 'remove':
+            toBeRemoved.push(wrapper);
+        }
+      });
+
+      toBeRemoved.forEach(function (wrapper) {
+        return promises = promises.concat(viewport.removeItem(wrapper));
+      });
+
+      if (toBePrepended.length) toBePrepended.forEach(function (wrapper) {
+        insertWrapperContent(wrapper);
+        wrapper.op = 'none';
+      });
+
+      buffer.forEach(function (item, i) {
+        return item.scope.$index = buffer.first + i;
+      });
+
+      return {
+        prepended: toBePrepended,
+        removed: toBeRemoved,
+        inserted: inserted,
+        animated: promises
+      };
+    }
+
+    function updatePaddings(rid, updates) {
+      // schedule another doAdjust after animation completion
+      if (updates.animated.length) {
+        $q.all(updates.animated).then(function () {
+          viewport.adjustPaddings();
+          doAdjust(rid);
+        });
+      } else {
+        viewport.adjustPaddings();
+      }
+    }
+
+    function enqueueFetch(rid, updates) {
+      if (viewport.shouldLoadBottom()) {
+        if (!updates || buffer.effectiveHeight(updates.inserted) > 0) {
+          // this means that at least one item appended in the last batch has height > 0
+          if (pending.push(true) === 1) {
+            adapter.loading(true);
+            fetch(rid);
+          }
+        }
+      } else if (viewport.shouldLoadTop()) {
+        if (!updates || buffer.effectiveHeight(updates.prepended) > 0 || pending[0]) {
+          // this means that at least one item appended in the last batch has height > 0
+          // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
+          // BTW there will always be at least 1 element in the pending array because bottom is fetched first
+          if (pending.push(false) === 1) {
+            adapter.loading(true);
+            fetch(rid);
+          }
+        }
+      }
+    }
+
+    function processUpdates() {
+      var updates = updateDOM();
+
+      // We need the item bindings to be processed before we can do adjustments
+      !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+
+      updates.inserted.forEach(function (w) {
+        return elementRoutines.showElement(w);
+      });
+      updates.prepended.forEach(function (w) {
+        return elementRoutines.showElement(w);
+      });
+      return updates;
+    }
+
+    function doAdjust(rid) {
+      if (!rid) {
+        // dismiss pending requests
+        pending = [];
+        rid = ++ridActual;
+      }
+
+      var updates = processUpdates();
+
+      if (isInvalid(rid)) {
+        return;
+      }
+
+      updatePaddings(rid, updates);
+      enqueueFetch(rid);
+
+      if (!pending.length) {
+        adapter.calculateProperties();
+      }
+    }
+
+    function doAdjustAfterFetch(rid) {
+      var updates = processUpdates();
+
+      viewport.onAfterPrepend(updates);
+
+      if (isInvalid(rid)) {
+        return;
+      }
+
+      updatePaddings(rid, updates);
+      onRenderHandlersRunner();
+      enqueueFetch(rid, updates);
+      pending.shift();
+
+      if (pending.length) fetch(rid);else {
+        adapter.loading(false);
+        bindEvents();
+        adapter.calculateProperties();
+      }
+    }
+
+    function fetch(rid) {
+      if (pending[0]) {
+        // scrolling down
+        if (buffer.length && !viewport.shouldLoadBottom()) {
+          doAdjustAfterFetch(rid);
+        } else {
+          fetchNext(function (result) {
+            if (isInvalid(rid)) {
+              return;
+            }
+
+            if (result.length < bufferSize) {
+              buffer.eof = true;
+            }
+
+            if (result.length > 0) {
+              viewport.clipTop();
+              buffer.append(result);
+            }
+
+            doAdjustAfterFetch(rid);
+          });
+        }
+      } else {
+        // scrolling up
+        if (buffer.length && !viewport.shouldLoadTop()) {
+          doAdjustAfterFetch(rid);
+        } else {
+          fetchPrevious(function (result) {
+            if (isInvalid(rid)) {
+              return;
+            }
+
+            if (result.length < bufferSize) {
+              buffer.bof = true;
+              // log 'bof is reached'
+            }
+
+            if (result.length > 0) {
+              if (buffer.length) {
+                viewport.clipBottom();
+              }
+              buffer.prepend(result);
+            }
+
+            doAdjustAfterFetch(rid);
+          });
+        }
+      }
+    }
+
+    function resizeAndScrollHandler() {
+      if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
+
+        enqueueFetch(ridActual);
+
+        if (pending.length) {
+          unbindEvents();
+        } else {
+          adapter.calculateProperties();
+          !$scope.$$phase && $scope.$digest();
+        }
+      }
+    }
+
+    function wheelHandler(event) {
+      if (!adapter.disabled) {
+        var scrollTop = viewport[0].scrollTop;
+        var yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
+
+        if (scrollTop === 0 && !buffer.bof || scrollTop === yMax && !buffer.eof) {
+          event.preventDefault();
+        }
+      }
+    }
+  }
+}]);
 
 /***/ }),
 /* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.default = ScrollBuffer;
-function ScrollBuffer(elementRoutines, bufferSize) {
-  var buffer = Object.create(Array.prototype);
-
-  angular.extend(buffer, {
-    size: bufferSize,
-
-    reset: function reset(startIndex) {
-      buffer.remove(0, buffer.length);
-      buffer.eof = false;
-      buffer.bof = false;
-      buffer.first = startIndex;
-      buffer.next = startIndex;
-      buffer.minIndex = startIndex;
-      buffer.maxIndex = startIndex;
-      buffer.minIndexUser = null;
-      buffer.maxIndexUser = null;
-    },
-    append: function append(items) {
-      items.forEach(function (item) {
-        ++buffer.next;
-        buffer.insert('append', item);
-      });
-      buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
-    },
-    prepend: function prepend(items) {
-      items.reverse().forEach(function (item) {
-        --buffer.first;
-        buffer.insert('prepend', item);
-      });
-      buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
-    },
-
-
-    /**
-     * inserts wrapped element in the buffer
-     * the first argument is either operation keyword (see below) or a number for operation 'insert'
-     * for insert the number is the index for the buffer element the new one have to be inserted after
-     * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
-     */
-    insert: function insert(operation, item, isTop) {
-      var wrapper = {
-        item: item
-      };
-
-      if (operation % 1 === 0) {
-        // it is an insert
-        wrapper.op = 'insert';
-        buffer.splice(operation, 0, wrapper);
-        if (isTop) {
-          buffer.first--;
-        } else {
-          buffer.next++;
-        }
-      } else {
-        wrapper.op = operation;
-        switch (operation) {
-          case 'append':
-            buffer.push(wrapper);
-            break;
-          case 'prepend':
-            buffer.unshift(wrapper);
-            break;
-        }
-      }
-    },
-
-
-    // removes elements from buffer
-    remove: function remove(arg1, arg2) {
-      if (angular.isNumber(arg1)) {
-        // removes items from arg1 (including) through arg2 (excluding)
-        for (var i = arg1; i < arg2; i++) {
-          elementRoutines.removeElement(buffer[i]);
-        }
-
-        return buffer.splice(arg1, arg2 - arg1);
-      }
-      // removes single item(wrapper) from the buffer
-      buffer.splice(buffer.indexOf(arg1), 1);
-      if (arg1._op === 'isTop' && buffer.first === this.getAbsMinIndex()) {
-        this.incrementMinIndex();
-      } else {
-        this.decrementMaxIndex();
-      }
-      if (arg1._op === 'isTop') {
-        buffer.first++;
-      } else {
-        buffer.next--;
-      }
-      if (!buffer.length) {
-        buffer.first = 1;
-        buffer.next = 1;
-      }
-
-      return elementRoutines.removeElementAnimated(arg1);
-    },
-    incrementMinIndex: function incrementMinIndex() {
-      if (buffer.minIndexUser !== null) {
-        if (buffer.minIndex > buffer.minIndexUser) {
-          buffer.minIndexUser++;
-          return;
-        }
-        if (buffer.minIndex === buffer.minIndexUser) {
-          buffer.minIndexUser++;
-        }
-      }
-      buffer.minIndex++;
-    },
-    decrementMaxIndex: function decrementMaxIndex() {
-      if (buffer.maxIndexUser !== null && buffer.maxIndex <= buffer.maxIndexUser) {
-        buffer.maxIndexUser--;
-      }
-      buffer.maxIndex--;
-    },
-    getAbsMinIndex: function getAbsMinIndex() {
-      if (buffer.minIndexUser !== null) {
-        return Math.min(buffer.minIndexUser, buffer.minIndex);
-      }
-      return buffer.minIndex;
-    },
-    getAbsMaxIndex: function getAbsMaxIndex() {
-      if (buffer.maxIndexUser !== null) {
-        return Math.max(buffer.maxIndexUser, buffer.maxIndex);
-      }
-      return buffer.maxIndex;
-    },
-    effectiveHeight: function effectiveHeight(elements) {
-      if (!elements.length) {
-        return 0;
-      }
-      var top = Number.MAX_VALUE;
-      var bottom = Number.NEGATIVE_INFINITY;
-      elements.forEach(function (wrapper) {
-        if (wrapper.element[0].offsetParent) {
-          // element style is not display:none
-          top = Math.min(top, wrapper.element.offset().top);
-          bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
-        }
-      });
-      return Math.max(0, bottom - top);
-    }
-  });
-
-  return buffer;
-}
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var hideClassToken = 'ng-ui-scroll-hide';
-
-function addCSSRule(sheet, selector, rules, index) {
-  if ('insertRule' in sheet) {
-    sheet.insertRule(selector + '{' + rules + '}', index);
-  } else if ('addRule' in sheet) {
-    sheet.addRule(selector, rules, index);
-  }
-}
-
-var ElementRoutines = function () {
-  function ElementRoutines($injector, $q) {
-    _classCallCheck(this, ElementRoutines);
-
-    this.$animate = $injector.has && $injector.has('$animate') ? $injector.get('$animate') : null;
-    this.isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
-    this.$q = $q;
-    addCSSRule(document.styleSheets[0], '.' + hideClassToken, 'display: none');
-  }
-
-  _createClass(ElementRoutines, [{
-    key: 'hideElement',
-    value: function hideElement(wrapper) {
-      wrapper.element.addClass(hideClassToken);
-    }
-  }, {
-    key: 'showElement',
-    value: function showElement(wrapper) {
-      wrapper.element.removeClass(hideClassToken);
-    }
-  }, {
-    key: 'insertElement',
-    value: function insertElement(newElement, previousElement) {
-      previousElement.after(newElement);
-      return [];
-    }
-  }, {
-    key: 'removeElement',
-    value: function removeElement(wrapper) {
-      wrapper.element.remove();
-      wrapper.scope.$destroy();
-      return [];
-    }
-  }, {
-    key: 'insertElementAnimated',
-    value: function insertElementAnimated(newElement, previousElement) {
-      if (!this.$animate) {
-        return this.insertElement(newElement, previousElement);
-      }
-
-      if (this.isAngularVersionLessThen1_3) {
-        var deferred = this.$q.defer();
-        // no need for parent - previous element is never null
-        this.$animate.enter(newElement, null, previousElement, function () {
-          return deferred.resolve();
-        });
-
-        return [deferred.promise];
-      }
-
-      // no need for parent - previous element is never null
-      return [this.$animate.enter(newElement, null, previousElement)];
-    }
-  }, {
-    key: 'removeElementAnimated',
-    value: function removeElementAnimated(wrapper) {
-      if (!this.$animate) {
-        return this.removeElement(wrapper);
-      }
-
-      if (this.isAngularVersionLessThen1_3) {
-        var deferred = this.$q.defer();
-        this.$animate.leave(wrapper.element, function () {
-          wrapper.scope.$destroy();
-          return deferred.resolve();
-        });
-
-        return [deferred.promise];
-      }
-
-      return [this.$animate.leave(wrapper.element).then(function () {
-        return wrapper.scope.$destroy();
-      })];
-    }
-  }]);
-
-  return ElementRoutines;
-}();
-
-exports.default = ElementRoutines;
-
-/***/ }),
-/* 3 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -654,13 +668,14 @@ var JQLiteExtras = function () {
             prop = _top$left$direction[1],
             preserve = _top$left$direction[2];
 
+        var isValueDefined = typeof value !== 'undefined';
         if (isWindow(elem)) {
-          if (angular.isDefined(value)) {
+          if (isValueDefined) {
             return elem.scrollTo(self[preserve].call(self), value);
           }
           return prop in elem ? elem[prop] : elem.document.documentElement[method];
         } else {
-          if (angular.isDefined(value)) {
+          if (isValueDefined) {
             elem[method] = value;
           }
           return elem[method];
@@ -825,8 +840,8 @@ var JQLiteExtras = function () {
         height: function height(value) {
           var self;
           self = this;
-          if (angular.isDefined(value)) {
-            if (angular.isNumber(value)) {
+          if (typeof value !== 'undefined') {
+            if (Number.isInteger(value)) {
               value = value + 'px';
             }
             return css.call(self, 'height', value);
@@ -903,6 +918,270 @@ var JQLiteExtras = function () {
 exports.default = JQLiteExtras;
 
 /***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var hideClassToken = 'ng-ui-scroll-hide';
+
+function addCSSRule(sheet, selector, rules, index) {
+  if ('insertRule' in sheet) {
+    sheet.insertRule(selector + '{' + rules + '}', index);
+  } else if ('addRule' in sheet) {
+    sheet.addRule(selector, rules, index);
+  }
+}
+
+var ElementRoutines = function () {
+  function ElementRoutines($injector, $q) {
+    _classCallCheck(this, ElementRoutines);
+
+    this.$animate = $injector.has && $injector.has('$animate') ? $injector.get('$animate') : null;
+    this.isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
+    this.$q = $q;
+    addCSSRule(document.styleSheets[0], '.' + hideClassToken, 'display: none');
+  }
+
+  _createClass(ElementRoutines, [{
+    key: 'hideElement',
+    value: function hideElement(wrapper) {
+      wrapper.element.addClass(hideClassToken);
+    }
+  }, {
+    key: 'showElement',
+    value: function showElement(wrapper) {
+      wrapper.element.removeClass(hideClassToken);
+    }
+  }, {
+    key: 'insertElement',
+    value: function insertElement(newElement, previousElement) {
+      previousElement.after(newElement);
+      return [];
+    }
+  }, {
+    key: 'removeElement',
+    value: function removeElement(wrapper) {
+      wrapper.element.remove();
+      wrapper.scope.$destroy();
+      return [];
+    }
+  }, {
+    key: 'insertElementAnimated',
+    value: function insertElementAnimated(newElement, previousElement) {
+      if (!this.$animate) {
+        return this.insertElement(newElement, previousElement);
+      }
+
+      if (this.isAngularVersionLessThen1_3) {
+        var deferred = this.$q.defer();
+        // no need for parent - previous element is never null
+        this.$animate.enter(newElement, null, previousElement, function () {
+          return deferred.resolve();
+        });
+
+        return [deferred.promise];
+      }
+
+      // no need for parent - previous element is never null
+      return [this.$animate.enter(newElement, null, previousElement)];
+    }
+  }, {
+    key: 'removeElementAnimated',
+    value: function removeElementAnimated(wrapper) {
+      if (!this.$animate) {
+        return this.removeElement(wrapper);
+      }
+
+      if (this.isAngularVersionLessThen1_3) {
+        var deferred = this.$q.defer();
+        this.$animate.leave(wrapper.element, function () {
+          wrapper.scope.$destroy();
+          return deferred.resolve();
+        });
+
+        return [deferred.promise];
+      }
+
+      return [this.$animate.leave(wrapper.element).then(function () {
+        return wrapper.scope.$destroy();
+      })];
+    }
+  }]);
+
+  return ElementRoutines;
+}();
+
+exports.default = ElementRoutines;
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = ScrollBuffer;
+function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
+  var buffer = Object.create(Array.prototype);
+
+  Object.assign(buffer, {
+    size: bufferSize,
+
+    reset: function reset(startIndex) {
+      buffer.remove(0, buffer.length);
+      buffer.eof = false;
+      buffer.bof = false;
+      buffer.first = startIndex;
+      buffer.next = startIndex;
+      buffer.minIndex = startIndex;
+      buffer.maxIndex = startIndex;
+      buffer.minIndexUser = null;
+      buffer.maxIndexUser = null;
+    },
+    append: function append(items) {
+      items.forEach(function (item) {
+        ++buffer.next;
+        buffer.insert('append', item);
+      });
+      buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
+    },
+    prepend: function prepend(items) {
+      items.reverse().forEach(function (item) {
+        --buffer.first;
+        buffer.insert('prepend', item);
+      });
+      buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
+    },
+
+
+    /**
+     * inserts wrapped element in the buffer
+     * the first argument is either operation keyword (see below) or a number for operation 'insert'
+     * for insert the number is the index for the buffer element the new one have to be inserted after
+     * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
+     */
+    insert: function insert(operation, item, isTop) {
+      var wrapper = {
+        item: item
+      };
+
+      if (operation % 1 === 0) {
+        // it is an insert
+        wrapper.op = 'insert';
+        buffer.splice(operation, 0, wrapper);
+        if (isTop) {
+          buffer.first--;
+        } else {
+          buffer.next++;
+        }
+      } else {
+        wrapper.op = operation;
+        switch (operation) {
+          case 'append':
+            buffer.push(wrapper);
+            break;
+          case 'prepend':
+            buffer.unshift(wrapper);
+            break;
+        }
+      }
+    },
+
+
+    // removes elements from buffer
+    remove: function remove(arg1, arg2) {
+      if (Number.isInteger(arg1)) {
+        // removes items from arg1 (including) through arg2 (excluding)
+        for (var i = arg1; i < arg2; i++) {
+          elementRoutines.removeElement(buffer[i]);
+        }
+        return buffer.splice(arg1, arg2 - arg1);
+      }
+      // removes single item(wrapper) from the buffer
+      buffer.splice(buffer.indexOf(arg1), 1);
+      if (arg1._op === 'isTop' && buffer.first === this.getAbsMinIndex()) {
+        this.incrementMinIndex();
+      } else {
+        this.decrementMaxIndex();
+      }
+      if (arg1._op === 'isTop') {
+        buffer.first++;
+      } else {
+        buffer.next--;
+      }
+      if (!buffer.length) {
+        buffer.first = 1;
+        buffer.next = 1;
+      }
+
+      return elementRoutines.removeElementAnimated(arg1);
+    },
+    incrementMinIndex: function incrementMinIndex() {
+      if (buffer.minIndexUser !== null) {
+        if (buffer.minIndex > buffer.minIndexUser) {
+          buffer.minIndexUser++;
+          return;
+        }
+        if (buffer.minIndex === buffer.minIndexUser) {
+          buffer.minIndexUser++;
+        }
+      }
+      buffer.minIndex++;
+    },
+    decrementMaxIndex: function decrementMaxIndex() {
+      if (buffer.maxIndexUser !== null && buffer.maxIndex <= buffer.maxIndexUser) {
+        buffer.maxIndexUser--;
+      }
+      buffer.maxIndex--;
+    },
+    getAbsMinIndex: function getAbsMinIndex() {
+      if (buffer.minIndexUser !== null) {
+        return Math.min(buffer.minIndexUser, buffer.minIndex);
+      }
+      return buffer.minIndex;
+    },
+    getAbsMaxIndex: function getAbsMaxIndex() {
+      if (buffer.maxIndexUser !== null) {
+        return Math.max(buffer.maxIndexUser, buffer.maxIndex);
+      }
+      return buffer.maxIndex;
+    },
+    effectiveHeight: function effectiveHeight(elements) {
+      if (!elements.length) {
+        return 0;
+      }
+      var top = Number.MAX_VALUE;
+      var bottom = Number.NEGATIVE_INFINITY;
+      elements.forEach(function (wrapper) {
+        if (wrapper.element[0].offsetParent) {
+          // element style is not display:none
+          top = Math.min(top, wrapper.element.offset().top);
+          bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
+        }
+      });
+      return Math.max(0, bottom - top);
+    }
+  });
+
+  buffer.reset(startIndex);
+
+  return buffer;
+}
+
+/***/ }),
 /* 4 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -937,7 +1216,7 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
     return viewport.outerHeight() * padding; // some extra space to initiate preload
   }
 
-  angular.extend(viewport, {
+  Object.assign(viewport, {
     getScope: function getScope() {
       return scope;
     },
@@ -1080,8 +1359,7 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       if (buffer.minIndexUser !== null && buffer.minIndex > buffer.minIndexUser) {
         var diff = topPadding.height() - topPaddingHeightOld;
         viewport.scrollTop(viewport.scrollTop() + diff);
-        diff -= viewport.scrollTop();
-        if (diff > 0) {
+        while ((diff -= viewport.scrollTop()) > 0) {
           bottomPadding.height(bottomPadding.height() + diff);
           viewport.scrollTop(viewport.scrollTop() + diff);
         }
@@ -1240,525 +1518,259 @@ var Padding = function () {
 exports.default = Padding;
 
 /***/ }),
-/* 6 */,
-/* 7 */
+/* 6 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _jqLiteExtras = __webpack_require__(3);
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
 
-var _jqLiteExtras2 = _interopRequireDefault(_jqLiteExtras);
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _elementRoutines = __webpack_require__(2);
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var _elementRoutines2 = _interopRequireDefault(_elementRoutines);
+var Adapter = function () {
+  function Adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload) {
+    _classCallCheck(this, Adapter);
 
-var _buffer = __webpack_require__(1);
+    this.$parse = $parse;
+    this.$attr = $attr;
+    this.viewport = viewport;
+    this.buffer = buffer;
 
-var _buffer2 = _interopRequireDefault(_buffer);
+    this.doAdjust = doAdjust;
+    this.reload = reload;
 
-var _viewport = __webpack_require__(4);
+    this.isLoading = false;
+    this.disabled = false;
 
-var _viewport2 = _interopRequireDefault(_viewport);
+    var viewportScope = viewport.getScope();
+    this.startScope = viewportScope.$parent ? viewportScope : $scope;
 
-var _adapter = __webpack_require__(0);
+    this.publicContext = {};
+    this.assignAdapter($attr.adapter);
+    this.generatePublicContext();
+  }
 
-var _adapter2 = _interopRequireDefault(_adapter);
+  _createClass(Adapter, [{
+    key: 'assignAdapter',
+    value: function assignAdapter(adapterAttr) {
+      if (!adapterAttr || !(adapterAttr = adapterAttr.replace(/^\s+|\s+$/gm, ''))) {
+        return;
+      }
+      var adapterOnScope = void 0;
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+      try {
+        this.$parse(adapterAttr).assign(this.startScope, {});
+        adapterOnScope = this.$parse(adapterAttr)(this.startScope);
+      } catch (error) {
+        error.message = 'Angular ui-scroll Adapter assignment exception.\n' + ('Can\'t parse "' + adapterAttr + '" expression.\n') + error.message;
+        throw error;
+      }
 
-angular.module('ui.scroll', []).service('jqLiteExtras', function () {
-  return new _jqLiteExtras2.default();
-}).run(['jqLiteExtras', function (jqLiteExtras) {
-  return !window.jQuery ? jqLiteExtras.registerFor(angular.element) : null;
-}]).directive('uiScrollViewport', function () {
-  return {
-    restrict: 'A',
-    controller: ['$scope', '$element', function (scope, element) {
+      Object.assign(adapterOnScope, this.publicContext);
+      this.publicContext = adapterOnScope;
+    }
+  }, {
+    key: 'generatePublicContext',
+    value: function generatePublicContext() {
       var _this = this;
 
-      this.container = element;
-      this.viewport = element;
-      this.scope = scope;
-
-      angular.forEach(element.children(), function (child) {
-        if (child.tagName.toLowerCase() === 'tbody') {
-          _this.viewport = angular.element(child);
-        }
-      });
-
-      return this;
-    }]
-  };
-}).directive('uiScroll', ['$log', '$injector', '$rootScope', '$timeout', '$interval', '$q', '$parse', function (console, $injector, $rootScope, $timeout, $interval, $q, $parse) {
-
-  return {
-    require: ['?^uiScrollViewport'],
-    restrict: 'A',
-    transclude: 'element',
-    priority: 1000,
-    terminal: true,
-    link: link
-  };
-
-  function link($scope, element, $attr, controllers, linker) {
-    var match = $attr.uiScroll.match(/^\s*(\w+)\s+in\s+([(\w|\$)\.]+)\s*$/);
-    if (!match) {
-      throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
-    }
-
-    function parseNumericAttr(value, defaultValue) {
-      var result = $parse(value)($scope);
-      return isNaN(result) ? defaultValue : result;
-    }
-
-    var BUFFER_MIN = 3;
-    var BUFFER_DEFAULT = 10;
-    var PADDING_MIN = 0.3;
-    var PADDING_DEFAULT = 0.5;
-    var MAX_VIEWPORT_DELAY = 500;
-    var VIEWPORT_POLLING_INTERVAL = 50;
-
-    var datasource = null;
-    var itemName = match[1];
-    var datasourceName = match[2];
-    var viewportController = controllers[0];
-    var bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
-    var padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT));
-    var startIndex = parseNumericAttr($attr.startIndex, 1);
-    var ridActual = 0; // current data revision id
-    var pending = [];
-
-    var elementRoutines = new _elementRoutines2.default($injector, $q);
-    var buffer = new _buffer2.default(elementRoutines, bufferSize);
-    var viewport = new _viewport2.default(elementRoutines, buffer, element, viewportController, $rootScope, padding);
-    var adapter = new _adapter2.default(viewport, buffer, adjustBuffer, reload, $attr, $parse, $scope);
-
-    if (viewportController) {
-      viewportController.adapter = adapter;
-    }
-
-    var isDatasourceValid = function isDatasourceValid() {
-      return angular.isObject(datasource) && angular.isFunction(datasource.get);
-    };
-    datasource = $parse(datasourceName)($scope); // try to get datasource on scope
-    if (!isDatasourceValid()) {
-      datasource = $injector.get(datasourceName); // try to inject datasource as service
-      if (!isDatasourceValid()) {
-        throw new Error(datasourceName + ' is not a valid datasource');
+      // these methods will be accessible out of ui-scroll via user defined adapter
+      var publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty'];
+      for (var i = publicMethods.length - 1; i >= 0; i--) {
+        this.publicContext[publicMethods[i]] = this[publicMethods[i]].bind(this);
       }
-    }
 
-    var onRenderHandlers = [];
-    function onRenderHandlersRunner() {
-      if (onRenderHandlers.length) {
-        angular.forEach(onRenderHandlers, function (handler) {
-          return handler();
-        });
-        onRenderHandlers = [];
-      }
-    }
-    function preDefineIndexProperty(datasource, propName) {
-      var getter = void 0;
-      // need to postpone min/maxIndexUser processing if the view is empty
-      if (datasource.hasOwnProperty(propName) && !buffer.length) {
-        getter = datasource[propName];
-        delete datasource[propName];
-        onRenderHandlers.push(function () {
-          return datasource[propName] = getter;
-        });
-      }
-    }
+      // these read-only props will be accessible out of ui-scroll via user defined adapter
+      var publicProps = ['isLoading', 'topVisible', 'topVisibleElement', 'topVisibleScope', 'bottomVisible', 'bottomVisibleElement', 'bottomVisibleScope'];
 
-    function defineIndexProperty(datasource, propName, propUserName) {
-      var descriptor = Object.getOwnPropertyDescriptor(datasource, propName);
-      if (descriptor && (descriptor.set || descriptor.get)) {
-        return;
-      }
-      var getter = void 0;
-      preDefineIndexProperty(datasource, propName);
-      Object.defineProperty(datasource, propName, {
-        set: function set(value) {
-          getter = value;
-          buffer[propUserName] = value;
-          var topPaddingHeightOld = viewport.topDataPos();
-          viewport.adjustPaddings();
-          if (propName === 'minIndex') {
-            viewport.onAfterMinIndexSet(topPaddingHeightOld);
-          }
-        },
-        get: function get() {
-          return getter;
-        }
-      });
-    }
-
-    defineIndexProperty(datasource, 'minIndex', 'minIndexUser');
-    defineIndexProperty(datasource, 'maxIndex', 'maxIndexUser');
-
-    var fetchNext = datasource.get.length !== 2 ? function (success) {
-      return datasource.get(buffer.next, bufferSize, success);
-    } : function (success) {
-      datasource.get({
-        index: buffer.next,
-        append: buffer.length ? buffer[buffer.length - 1].item : void 0,
-        count: bufferSize
-      }, success);
-    };
-
-    var fetchPrevious = datasource.get.length !== 2 ? function (success) {
-      return datasource.get(buffer.first - bufferSize, bufferSize, success);
-    } : function (success) {
-      datasource.get({
-        index: buffer.first - bufferSize,
-        prepend: buffer.length ? buffer[0].item : void 0,
-        count: bufferSize
-      }, success);
-    };
-
-    var run = function run() {
-      var tryCount = 0;
-      if (!viewport.applyContainerStyle()) {
-        var timer = $interval(function () {
-          tryCount++;
-          if (viewport.applyContainerStyle()) {
-            $interval.cancel(timer);
-            reload();
-          }
-          if (tryCount * VIEWPORT_POLLING_INTERVAL >= MAX_VIEWPORT_DELAY) {
-            $interval.cancel(timer);
-            throw Error('ui-scroll directive requires a viewport with non-zero height in ' + MAX_VIEWPORT_DELAY + 'ms');
-          }
-        }, VIEWPORT_POLLING_INTERVAL);
-      } else {
-        reload();
-      }
-    };
-
-    /**
-     * Build padding elements
-     *
-     * Calling linker is the only way I found to get access to the tag name of the template
-     * to prevent the directive scope from pollution a new scope is created and destroyed
-     * right after the builder creation is completed
-     */
-    linker(function (clone, scope) {
-      viewport.createPaddingElements(clone[0]);
-      // we do not include the clone in the DOM. It means that the nested directives will not
-      // be able to reach the parent directives, but in this case it is intentional because we
-      // created the clone to access the template tag name
-      scope.$destroy();
-      clone.remove();
-    });
-
-    $scope.$on('$destroy', function () {
-      unbindEvents();
-      viewport.unbind('mousewheel', wheelHandler);
-    });
-
-    viewport.bind('mousewheel', wheelHandler);
-
-    run();
-
-    /* Private function definitions */
-
-    function isInvalid(rid) {
-      return rid && rid !== ridActual || $scope.$$destroyed;
-    }
-
-    function bindEvents() {
-      viewport.bind('resize', resizeAndScrollHandler);
-      viewport.bind('scroll', resizeAndScrollHandler);
-    }
-
-    function unbindEvents() {
-      viewport.unbind('resize', resizeAndScrollHandler);
-      viewport.unbind('scroll', resizeAndScrollHandler);
-    }
-
-    function reload() {
-      viewport.resetTopPadding();
-      viewport.resetBottomPadding();
-      if (arguments.length) {
-        startIndex = arguments[0];
-      }
-      buffer.reset(startIndex);
-      adjustBuffer();
-    }
-
-    function isElementVisible(wrapper) {
-      return wrapper.element.height() && wrapper.element[0].offsetParent;
-    }
-
-    function visibilityWatcher(wrapper) {
-      if (isElementVisible(wrapper)) {
-        buffer.forEach(function (item) {
-          if (angular.isFunction(item.unregisterVisibilityWatcher)) {
-            item.unregisterVisibilityWatcher();
-            delete item.unregisterVisibilityWatcher;
+      var _loop = function _loop(_i) {
+        var property = void 0,
+            attr = _this.$attr[publicProps[_i]];
+        Object.defineProperty(_this, publicProps[_i], {
+          get: function get() {
+            return property;
+          },
+          set: function set(value) {
+            property = value;
+            _this.publicContext[publicProps[_i]] = value;
+            if (attr) {
+              _this.$parse(attr).assign(_this.startScope, value);
+            }
           }
         });
-        if (!pending.length) {
-          $timeout(function () {
-            return adjustBuffer();
-          });
-        }
-      }
-    }
-
-    function insertWrapperContent(wrapper, insertAfter) {
-      createElement(wrapper, insertAfter, viewport.insertElement);
-      if (!isElementVisible(wrapper)) {
-        wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function () {
-          return visibilityWatcher(wrapper);
-        });
-      }
-      elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
-    }
-
-    function createElement(wrapper, insertAfter, insertElement) {
-      var promises = null;
-      var sibling = insertAfter > 0 ? buffer[insertAfter - 1].element : undefined;
-      linker(function (clone, scope) {
-        promises = insertElement(clone, sibling);
-        wrapper.element = clone;
-        wrapper.scope = scope;
-        scope[itemName] = wrapper.item;
-      });
-      // ui-scroll-grid apply
-      if (adapter.transform) {
-        var tdInitializer = wrapper.scope.uiScrollTdInitializer;
-        if (tdInitializer && tdInitializer.linking) {
-          adapter.transform(wrapper.scope, wrapper.element);
-        } else {
-          wrapper.scope.uiScrollTdInitializer = {
-            onLink: function onLink() {
-              return adapter.transform(wrapper.scope, wrapper.element);
-            },
-            scope: wrapper.scope
-          };
-        }
-      }
-      return promises;
-    }
-
-    function updateDOM() {
-      var promises = [];
-      var toBePrepended = [];
-      var toBeRemoved = [];
-      var inserted = [];
-
-      buffer.forEach(function (wrapper, i) {
-        switch (wrapper.op) {
-          case 'prepend':
-            toBePrepended.unshift(wrapper);
-            break;
-          case 'append':
-            insertWrapperContent(wrapper, i);
-            wrapper.op = 'none';
-            inserted.push(wrapper);
-            break;
-          case 'insert':
-            promises = promises.concat(createElement(wrapper, i, viewport.insertElementAnimated));
-            wrapper.op = 'none';
-            inserted.push(wrapper);
-            break;
-          case 'remove':
-            toBeRemoved.push(wrapper);
-        }
-      });
-
-      toBeRemoved.forEach(function (wrapper) {
-        return promises = promises.concat(viewport.removeItem(wrapper));
-      });
-
-      if (toBePrepended.length) toBePrepended.forEach(function (wrapper) {
-        insertWrapperContent(wrapper);
-        wrapper.op = 'none';
-      });
-
-      buffer.forEach(function (item, i) {
-        return item.scope.$index = buffer.first + i;
-      });
-
-      return {
-        prepended: toBePrepended,
-        removed: toBeRemoved,
-        inserted: inserted,
-        animated: promises
       };
-    }
 
-    function updatePaddings(rid, updates) {
-      // schedule another adjustBuffer after animation completion
-      if (updates.animated.length) {
-        $q.all(updates.animated).then(function () {
-          viewport.adjustPaddings();
-          adjustBuffer(rid);
-        });
-      } else {
-        viewport.adjustPaddings();
+      for (var _i = publicProps.length - 1; _i >= 0; _i--) {
+        _loop(_i);
       }
-    }
 
-    function enqueueFetch(rid, updates) {
-      if (viewport.shouldLoadBottom()) {
-        if (!updates || buffer.effectiveHeight(updates.inserted) > 0) {
-          // this means that at least one item appended in the last batch has height > 0
-          if (pending.push(true) === 1) {
-            adapter.loading(true);
-            fetch(rid);
+      // non-read-only public property
+      Object.defineProperty(this.publicContext, 'disabled', {
+        get: function get() {
+          return _this.disabled;
+        },
+        set: function set(value) {
+          return !(_this.disabled = value) ? _this.doAdjust() : null;
+        }
+      });
+    }
+  }, {
+    key: 'loading',
+    value: function loading(value) {
+      this.isLoading = value;
+    }
+  }, {
+    key: 'isBOF',
+    value: function isBOF() {
+      return this.buffer.bof;
+    }
+  }, {
+    key: 'isEOF',
+    value: function isEOF() {
+      return this.buffer.eof;
+    }
+  }, {
+    key: 'isEmpty',
+    value: function isEmpty() {
+      return !this.buffer.length;
+    }
+  }, {
+    key: 'append',
+    value: function append(newItems) {
+      this.buffer.append(newItems);
+      this.doAdjust();
+      this.viewport.clipTop();
+      this.viewport.clipBottom();
+    }
+  }, {
+    key: 'prepend',
+    value: function prepend(newItems) {
+      this.buffer.prepend(newItems);
+      this.doAdjust();
+      this.viewport.clipTop();
+      this.viewport.clipBottom();
+    }
+  }, {
+    key: 'applyUpdates',
+    value: function applyUpdates(arg1, arg2) {
+      if (typeof arg1 === 'function') {
+        this.applyUpdatesFunc(arg1);
+      } else {
+        this.applyUpdatesIndex(arg1, arg2);
+      }
+      this.doAdjust();
+    }
+  }, {
+    key: 'applyUpdatesFunc',
+    value: function applyUpdatesFunc(cb) {
+      var _this2 = this;
+
+      this.buffer.slice(0).forEach(function (wrapper) {
+        // we need to do it on the buffer clone, because buffer content
+        // may change as we iterate through
+        _this2.applyUpdate(wrapper, cb(wrapper.item, wrapper.scope, wrapper.element));
+      });
+    }
+  }, {
+    key: 'applyUpdatesIndex',
+    value: function applyUpdatesIndex(index, newItems) {
+      if (index % 1 !== 0) {
+        throw new Error('applyUpdates - ' + index + ' is not a valid index (should be an integer)');
+      }
+      var _index = index - this.buffer.first;
+
+      // apply updates only within buffer
+      if (_index >= 0 && _index < this.buffer.length) {
+        this.applyUpdate(this.buffer[_index], newItems);
+      }
+      // out-of-buffer case: deletion may affect Paddings
+      else if (index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
+          if (Array.isArray(newItems) && !newItems.length) {
+            this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
+            if (index === this.buffer.getAbsMinIndex()) {
+              this.buffer.incrementMinIndex();
+            } else {
+              this.buffer.decrementMaxIndex();
+            }
           }
         }
-      } else if (viewport.shouldLoadTop()) {
-        if (!updates || buffer.effectiveHeight(updates.prepended) > 0 || pending[0]) {
-          // this means that at least one item appended in the last batch has height > 0
-          // pending[0] = true means that previous fetch was appending. We need to force at least one prepend
-          // BTW there will always be at least 1 element in the pending array because bottom is fetched first
-          if (pending.push(false) === 1) {
-            adapter.loading(true);
-            fetch(rid);
+    }
+  }, {
+    key: 'applyUpdate',
+    value: function applyUpdate(wrapper, newItems) {
+      var _this3 = this;
+
+      if (!Array.isArray(newItems)) {
+        return;
+      }
+      var position = this.buffer.indexOf(wrapper);
+      if (!newItems.reverse().some(function (newItem) {
+        return newItem === wrapper.item;
+      })) {
+        wrapper.op = 'remove';
+        if (position === 0 && !newItems.length) {
+          wrapper._op = 'isTop'; // to catch "first" edge case on remove
+        }
+      }
+      newItems.forEach(function (newItem) {
+        if (newItem === wrapper.item) {
+          position--;
+        } else {
+          // 3 parameter (isTop) is to catch "first" edge case on insert
+          _this3.buffer.insert(position + 1, newItem, position === -1);
+        }
+      });
+    }
+  }, {
+    key: 'calculateProperties',
+    value: function calculateProperties() {
+      var rowTop = null,
+          topHeight = 0;
+      var topDone = false,
+          bottomDone = false;
+      var length = this.buffer.length;
+
+      for (var i = 0; i < length; i++) {
+        var item = this.buffer[i];
+        var itemTop = item.element.offset().top;
+
+        if (rowTop !== itemTop) {
+          // a new row condition
+          var itemHeight = item.element.outerHeight(true);
+          var top = this.viewport.topDataPos() + topHeight + itemHeight;
+
+          if (!topDone && top > this.viewport.topVisiblePos()) {
+            topDone = true;
+            this['topVisible'] = item.item;
+            this['topVisibleElement'] = item.element;
+            this['topVisibleScope'] = item.scope;
           }
+          if (!bottomDone && (top >= this.viewport.bottomVisiblePos() || i === length - 1 && this.isEOF())) {
+            bottomDone = true;
+            this['bottomVisible'] = item.item;
+            this['bottomVisibleElement'] = item.element;
+            this['bottomVisibleScope'] = item.scope;
+          }
+          topHeight += itemHeight;
+        }
+        rowTop = itemTop;
+
+        if (topDone && bottomDone) {
+          break;
         }
       }
     }
+  }]);
 
-    function processUpdates() {
-      var updates = updateDOM();
+  return Adapter;
+}();
 
-      // We need the item bindings to be processed before we can do adjustments
-      !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
-
-      updates.inserted.forEach(function (w) {
-        return elementRoutines.showElement(w);
-      });
-      updates.prepended.forEach(function (w) {
-        return elementRoutines.showElement(w);
-      });
-      return updates;
-    }
-
-    function adjustBuffer(rid) {
-      if (!rid) {
-        // dismiss pending requests
-        pending = [];
-        rid = ++ridActual;
-      }
-
-      var updates = processUpdates();
-
-      if (isInvalid(rid)) {
-        return;
-      }
-
-      updatePaddings(rid, updates);
-      enqueueFetch(rid);
-
-      if (!pending.length) {
-        adapter.calculateProperties();
-      }
-    }
-
-    function adjustBufferAfterFetch(rid) {
-      var updates = processUpdates();
-
-      viewport.onAfterPrepend(updates);
-
-      if (isInvalid(rid)) {
-        return;
-      }
-
-      updatePaddings(rid, updates);
-      onRenderHandlersRunner();
-      enqueueFetch(rid, updates);
-      pending.shift();
-
-      if (pending.length) fetch(rid);else {
-        adapter.loading(false);
-        bindEvents();
-        adapter.calculateProperties();
-      }
-    }
-
-    function fetch(rid) {
-      if (pending[0]) {
-        // scrolling down
-        if (buffer.length && !viewport.shouldLoadBottom()) {
-          adjustBufferAfterFetch(rid);
-        } else {
-          fetchNext(function (result) {
-            if (isInvalid(rid)) {
-              return;
-            }
-
-            if (result.length < bufferSize) {
-              buffer.eof = true;
-            }
-
-            if (result.length > 0) {
-              viewport.clipTop();
-              buffer.append(result);
-            }
-
-            adjustBufferAfterFetch(rid);
-          });
-        }
-      } else {
-        // scrolling up
-        if (buffer.length && !viewport.shouldLoadTop()) {
-          adjustBufferAfterFetch(rid);
-        } else {
-          fetchPrevious(function (result) {
-            if (isInvalid(rid)) {
-              return;
-            }
-
-            if (result.length < bufferSize) {
-              buffer.bof = true;
-              // log 'bof is reached'
-            }
-
-            if (result.length > 0) {
-              if (buffer.length) {
-                viewport.clipBottom();
-              }
-              buffer.prepend(result);
-            }
-
-            adjustBufferAfterFetch(rid);
-          });
-        }
-      }
-    }
-
-    function resizeAndScrollHandler() {
-      if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
-
-        enqueueFetch(ridActual);
-
-        if (pending.length) {
-          unbindEvents();
-        } else {
-          adapter.calculateProperties();
-          !$scope.$$phase && $scope.$digest();
-        }
-      }
-    }
-
-    function wheelHandler(event) {
-      if (!adapter.disabled) {
-        var scrollTop = viewport[0].scrollTop;
-        var yMax = viewport[0].scrollHeight - viewport[0].clientHeight;
-
-        if (scrollTop === 0 && !buffer.bof || scrollTop === yMax && !buffer.eof) {
-          event.preventDefault();
-        }
-      }
-    }
-  }
-}]);
+exports.default = Adapter;
 
 /***/ })
 /******/ ]);
