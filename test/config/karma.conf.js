@@ -37,7 +37,7 @@ module.exports = function (config) {
     keepalive: ENV === 'development',
 
     browsers: process.env.TRAVIS ?
-      ['Firefox', chrome] :
+      ['Firefox'] :
       [chrome],
 
     captureTimeout: 60000,
