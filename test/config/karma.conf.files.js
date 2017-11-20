@@ -1,26 +1,31 @@
-var scrollerPath = '../../temp/'
-
-var files = [
-  'http://code.jquery.com/jquery-1.9.1.js',
-  'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js',
-  'https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular-mocks.js',
+const files = [
+  'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js',
+  'https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular.js',
+  'https://ajax.googleapis.com/ajax/libs/angularjs/1.6.5/angular-mocks.js',
   '../misc/test.css',
   '../misc/datasources.js',
   '../misc/scaffolding*.js',
   '../misc/helpers.js',
-  '../*Spec.js',
   {
-    pattern: scrollerPath + '*.js.map',
-    included: false
+    pattern: '../*Spec.js',
+    watched: false,
+    served: true,
+    included: true
   }
 ];
 
-module.exports.defaultFiles = files.concat([
-  scrollerPath + 'ui-scroll.js',
-  scrollerPath + 'ui-scroll-grid.js'
-]);
+module.exports.development = [
+  ...files,
+  '../../src/ui-scroll.js',
+  '../../src/ui-scroll-grid.js'
+];
 
-module.exports.compressedFiles = files.concat([
-  scrollerPath + 'ui-scroll.min.js',
-  scrollerPath + 'ui-scroll-grid.min.js'
-]);
+module.exports.production = [
+  ...files,
+  '../../dist/ui-scroll.min.js',
+  '../../dist/ui-scroll-grid.min.js',
+  {
+    pattern: '../../dist/*.js.map',
+    included: false
+  }
+];

@@ -1,7 +1,7 @@
 /*!
- * angular-ui-scroll (uncompressed)
+ * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.6 -- 2017-11-17T18:27:05.558Z
+ * Version: 1.7.0-rc.6 -- 2017-11-19T07:39:04.374Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -39,9 +39,6 @@
 /******/ 	// expose the module cache
 /******/ 	__webpack_require__.c = installedModules;
 /******/
-/******/ 	// identity function for calling harmony imports with the correct context
-/******/ 	__webpack_require__.i = function(value) { return value; };
-/******/
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
@@ -69,12 +66,12 @@
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 6);
+/******/ 	return __webpack_require__(__webpack_require__.s = 7);
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ 6:
+/***/ 7:
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";

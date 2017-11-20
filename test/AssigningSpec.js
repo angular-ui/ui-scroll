@@ -1,4 +1,3 @@
-/*global describe, beforeEach, module, it, expect */
 describe('uiScroll', function () {
     'use strict';
 

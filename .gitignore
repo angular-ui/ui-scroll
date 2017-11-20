@@ -1,6 +1,4 @@
-.idea
-public
 node_modules
 temp
-/nbproject/private/
 *.log
+.idea
