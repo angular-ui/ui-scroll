@@ -24,23 +24,25 @@ let configEnv;
 
 if (ENV === 'development') {
   configEnv = {
-    entry: {
+    entry: isTest ? ({
       'test': glob.sync(path.resolve(__dirname, 'test/*.js'))
-    },
+    }) : ({}),
 
     output: {
       filename: '[name].js',
       publicPath: '/'
     },
 
-    rules: [{
-      enforce: 'pre',
-      test: /\.js$/,
-      include: path.resolve(__dirname, 'test'),
-      use: [{
-        loader: 'jshint-loader'
-      }]
-    }],
+    rules: [
+      isTest ? ({
+        enforce: 'pre',
+        test: /\.js$/,
+        include: path.resolve(__dirname, 'test'),
+        use: [{
+          loader: 'jshint-loader'
+        }]
+      }) : ({})
+    ],
 
     devtool: 'inline-source-map',
 
@@ -59,7 +61,7 @@ if (ENV === 'development') {
       proxy: {
         '/dist': {
           target: 'http://' + devServerHost + ':' + devServerPort,
-          pathRewrite: {'^/dist' : ''}
+          pathRewrite: { '^/dist': '' }
         }
       },
       inline: true,
@@ -150,7 +152,7 @@ module.exports = {
       }
     ]
   },
- 
+
   plugins: configEnv.plugins,
 
   devServer: configEnv.devServer,
