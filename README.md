@@ -136,7 +136,7 @@ Currently we have 2 regular modules which can be added to the angular-app you ar
  - __ui.scroll__ module which has
    - [uiScroll directive](#uiscroll-directive)
    - [uiScrollViewport directive](#uiscrollviewport-directive)
-   - [jqLiteExtras service](#jqliteextras-service) (with runner)
+   - [jqLiteExtras constant](#jqliteextras-constant) (with runner)
  - __ui.scroll.grid__ module which has
    - [uiScrollTh directive](#uiscrollth-and-uiscrolltd-directives)
    - [uiScrollTd directive](#uiscrollth-and-uiscrolltd-directives)
@@ -349,9 +349,9 @@ the browser window object will be used as viewport.
 -------------------
 
 
-## jqLiteExtras service
+## jqLiteExtras constant
 
-This service implements some DOM element methods of jQuery which are currently not implemented in jqLite, namely
+This constant is a class that implements some DOM element methods of jQuery which are currently not implemented in jqLite, namely
 
 * before(elem)
 * height() and height(value)
@@ -425,8 +425,7 @@ A reference to this object is injected as a property named `gridAdapter`in the s
 Please feel free to make Pull Requests. Below is the information which could be useful for local developing and contributing.
 
 The ui-scroll sources are in [./src](https://github.com/angular-ui/ui-scroll/tree/master/src) folder. They could not be run as is
-because of ES6 modules (since v1.6.0), they should be built. Build process includes jshint sources verification, webpack-based
-distributive files forming and tests running.
+because of ES6 modules (since v1.6.0), they should be built. The build process includes jshint sources verification, distributive files generating and tests running.
 
 There are some npm scripts available for developing.
 
@@ -436,10 +435,7 @@ There are some npm scripts available for developing.
 npm start
 ```
   
-  This should start development server on 5005 port over the [./demo](https://github.com/angular-ui/ui-scroll/tree/master/demo) folder.
-  The middleware is configured to provide work with temporary distributive files (./temp) despite the direct links to public distributive
-  files (./dist). So the dist-folder should stay clear until the development is finished. Dev-server watches for the source codes (./src)
-  and automatically re-build temporary distributive files.
+  This should start development server on 5005 port over the [./demo](https://github.com/angular-ui/ui-scroll/tree/master/demo) folder. The dev-server proxy is configured to provide work with temporary distributive files (which are being built in-memory each time the sources from ./src have been changed) despite the direct links to public distributive files form ./dist folder. So the dist-folder should stay clear until the development is finished.
   
  __2__. To run tests in keep-alive mode use
  
@@ -447,9 +443,7 @@ npm start
 npm test
 ```
   
-  This runs karma testing against temporary distributive files (./temp). We created a number of specifications which consist of more
-  than 160 tests. They are living at the [./test](https://github.com/angular-ui/ui-scroll/tree/master/test) folder. Karma watches for temp
-  and test folders changes and automatically re-runs tests.
+  This runs Karma testing against temporary distributive files that are being built in-memory by the Webpack. We created a number of specifications which consist of more than 200 tests. They are living at the [./test](https://github.com/angular-ui/ui-scroll/tree/master/test) folder. Karma watches both for ./src and ./test folders and automatically re-runs tests after the source code has been changed.
 
  __3__. To run both dev-server and tests in keep-alive mode use
 
@@ -457,8 +451,7 @@ npm test
 npm run dev
 ```
 
-  This is the combination of first two scripts running in concurrently mode. This allows you to work with the ui-scroll examples on 5005 port
-  during continuous tests running.
+  This is the combination of first two scripts running in concurrently mode. This allows you to work with the ui-scroll examples on 5005 port during continuous tests running.
 
  __4__. To run full build process use
  
@@ -466,13 +459,12 @@ npm run dev
 npm run build
 ```
   
-  After developing and testing complete, the build process should be run to
-  a) pass through jshint,
-  b) generate minified versions of distributive,
-  c) run tests with minified distributive files,
-  d) obtain all necessary files in the [./dist](https://github.com/angular-ui/ui-scroll/tree/master/dist) folder.
+  After developing and testing are completed, the build process should be run to
+  a) pass through jshint (both of ui-scroll and test specifications sources),
+  b) generate compressed and uncompressed versions of the ui-scroll distributive in the public [./dist](https://github.com/angular-ui/ui-scroll/tree/master/dist) folder,
+  c) run tests over minified distributive files.
 
-PR should include source code (./scr) changes, may include tests (./test) changes and may not include public distributive (./dist) changes.
+Pull Rerquest should include source code (./scr) changes, may include tests (./test) changes and may not include public distributive (./dist) changes.
   
 
 -------------------
@@ -486,7 +478,7 @@ PR should include source code (./scr) changes, may include tests (./test) change
  * Reconsidered min/max indices processing.
  * Refactored tests (removed timeouts, added helpers).
  * Added ~50 new tests.
- * Fixed a number of issues.
+ * Fixed a number of issues and other improvements.
 
 ### v1.6.2
  * Added bottomVisible, bottomVisibleElement and bottomVisibleScope properties to the Adapter.
