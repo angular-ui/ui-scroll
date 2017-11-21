@@ -2,15 +2,14 @@ describe('\njqLite: testing against jQuery\n', function () {
 	'use strict';
 
 	var sandbox = angular.element('<div/>');
-
 	var extras;
 
 	beforeEach(module('ui.scroll'));
 	beforeEach(function(){
 		angular.element(document).find('body').append(sandbox = angular.element('<div></div>'));
-		inject(function(jqLiteExtras) {
+		inject(function(JQLiteExtras) {
 			extras = function(){};
-			jqLiteExtras.registerFor(extras);
+			(new JQLiteExtras()).registerFor(extras);
 		});
 	});
 
