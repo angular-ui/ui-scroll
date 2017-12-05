@@ -1,4 +1,7 @@
+/* exported runGridTest */
+
 function createGridHtml (settings) {
+  'use strict';
   var viewportStyle = ' style="height:' + (settings.viewportHeight || 200) + 'px"';
   var columns = ['col0', 'col1', 'col2', 'col3'];
 
@@ -26,7 +29,9 @@ function createGridHtml (settings) {
   return html;
 }
 
-function finalize(scroller, options = {}, scope, $timeout) {
+function finalize(scroller, options, scope, $timeout) {
+  'use strict';
+  options = options || {};
   scroller.remove();
 
   if (typeof options.cleanupTest === 'function') {
@@ -34,7 +39,9 @@ function finalize(scroller, options = {}, scope, $timeout) {
   }
 }
 
-function runGridTest(scrollSettings, run, options = {}) {
+function runGridTest(scrollSettings, run, options) {
+  'use strict';
+  options = options || {};
   inject(function($rootScope, $compile, $window, $timeout) {
     var scroller = angular.element(createGridHtml(scrollSettings));
     var scope = $rootScope.$new();

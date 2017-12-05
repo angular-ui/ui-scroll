@@ -1,24 +1,25 @@
 {
-	"boss": true,
-	"browser": true,
-	"eqnull": true,
-	"expr": true,
-	"esversion": 6,
-	"immed": true,
-	"laxbreak": true,
-	"loopfunc": true,
-	"newcap": true,
-	"noarg": true,
-	"noempty": true,
-	"nonew": true,
-	"quotmark": true,
-	"smarttabs": true,
-	"strict": true,
-	"sub": true,
-	"trailing": true,
-	"undef": true,
-	"unused": true,
-	"globals": {
-		"angular": false
-	}
+  "emitErrors": true,
+  "boss": true,
+  "browser": true,
+  "eqnull": true,
+  "expr": true,
+  "esversion": 6,
+  "immed": true,
+  "laxbreak": true,
+  "loopfunc": true,
+  "newcap": true,
+  "noarg": true,
+  "noempty": true,
+  "nonew": true,
+  "quotmark": true,
+  "smarttabs": true,
+  "strict": false,
+  "sub": true,
+  "trailing": true,
+  "undef": true,
+  "unused": true,
+  "globals": {
+    "angular": false
+  }
 }

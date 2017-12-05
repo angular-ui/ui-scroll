@@ -1,4 +1,3 @@
-/*global describe, beforeEach, module, it, expect, runTest, Helper */
 describe('uiScroll Paddings spec.', () => {
   'use strict';
 
@@ -56,7 +55,7 @@ describe('uiScroll Paddings spec.', () => {
         }
         else {
           datasource.max--;
-        } 
+        }
       }
     }
   }

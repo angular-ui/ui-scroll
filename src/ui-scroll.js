@@ -6,9 +6,9 @@ import Adapter from './modules/adapter.js';
 
 angular.module('ui.scroll', [])
 
-  .service('jqLiteExtras', () => new JQLiteExtras())
-  .run(['jqLiteExtras', (jqLiteExtras) =>
-    !window.jQuery ? jqLiteExtras.registerFor(angular.element) : null
+  .constant('JQLiteExtras', JQLiteExtras)
+  .run(['JQLiteExtras', (JQLiteExtras) =>
+    !window.jQuery ? (new JQLiteExtras()).registerFor(angular.element) : null
   ])
 
   .directive('uiScrollViewport', function () {

@@ -1,0 +1,33 @@
+{
+  "bitwise": true,
+  "curly": true,
+  "browser": true,
+  "eqeqeq": true,
+  "expr": true,
+  "esversion": 6,
+  "forin": true,
+  "freeze": true,
+  "futurehostile": true,
+  "iterator": true,
+  "jasmine": true,
+  "jquery": true,
+  "latedef": true,
+  "noarg": true,
+  "nocomma": true,
+  "node": true,
+  "nonbsp": true,
+  "nonew": true,
+  "smarttabs": true,
+  "strict": true,
+  "sub": true,
+  "trailing": true,
+  "undef": true,
+  "unused": true,
+  "globals": {
+    "angular": false,
+    "inject": false,
+    "runTest": true,
+    "runGridTest": false,
+    "Helper": true
+  }
+}
