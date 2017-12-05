@@ -474,7 +474,7 @@ Pull Rerquest should include source code (./scr) changes, may include tests (./t
 
 ### v1.7.0
  * Reduced dygest cycles amount.
- * Refactored Adapter and Padding classes.
+ * Refactored some core classes (Adapter, Padding).
  * Reconsidered min/max indices processing.
  * Refactored tests (removed timeouts, added helpers).
  * Added ~50 new tests.

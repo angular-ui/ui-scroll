@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.0-rc.6 -- 2017-11-19T07:39:04.374Z
+ * Version: 1.7.0 -- 2017-12-05T17:50:06.228Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -98,10 +98,8 @@ var _adapter2 = _interopRequireDefault(_adapter);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-angular.module('ui.scroll', []).service('jqLiteExtras', function () {
-  return new _jqLiteExtras2.default();
-}).run(['jqLiteExtras', function (jqLiteExtras) {
-  return !window.jQuery ? jqLiteExtras.registerFor(angular.element) : null;
+angular.module('ui.scroll', []).constant('JQLiteExtras', _jqLiteExtras2.default).run(['JQLiteExtras', function (JQLiteExtras) {
+  return !window.jQuery ? new JQLiteExtras().registerFor(angular.element) : null;
 }]).directive('uiScrollViewport', function () {
   return {
     restrict: 'A',

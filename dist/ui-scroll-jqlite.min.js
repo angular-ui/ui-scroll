@@ -9,4 +9,4 @@
 
   angular.module('ui.scroll.jqlite', []);
 
-}());
+})();
