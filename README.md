@@ -479,6 +479,7 @@ Pull Rerquest should include source code (./scr) changes, may include tests (./t
  * Refactored tests (removed timeouts, added helpers).
  * Added ~50 new tests.
  * Fixed a number of issues and other improvements.
+ * Removed Grunt from the build stack, now Webpack is the only build tool.
 
 ### v1.6.2
  * Added bottomVisible, bottomVisibleElement and bottomVisibleScope properties to the Adapter.
