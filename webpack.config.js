@@ -1,3 +1,5 @@
+'use strict';
+
 const path = require('path');
 const fs = require('fs');
 const glob = require('glob');
@@ -37,6 +39,7 @@ if (ENV === 'development') {
       isTest ? ({
         enforce: 'pre',
         test: /\.js$/,
+        exclude: /node_modules/,
         include: path.resolve(__dirname, 'test'),
         use: [{
           loader: 'jshint-loader'
@@ -145,6 +148,7 @@ module.exports = {
       {
         enforce: 'pre',
         test: /\.js$/,
+        exclude: /node_modules/,
         include: path.resolve(__dirname, 'src'),
         use: [{
           loader: 'jshint-loader'
