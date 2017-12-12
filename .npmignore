@@ -2,6 +2,7 @@
 /src
 /temp
 /test
+.babelrc
 .gitignore
 .jshintrc
 .npmignore
