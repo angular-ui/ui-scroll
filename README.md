@@ -5,6 +5,9 @@
 [![Bower version](https://badge.fury.io/bo/angular-ui-scroll.svg)](http://badge.fury.io/bo/angular-ui-scroll) 
 [![Join the chat at https://gitter.im/angular-ui/ui-scroll](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/angular-ui/ui-scroll?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+<p dir="rtl">
+<small>looking for next Angular version? try <a href="https://github.com/dhilt/ngx-ui-scroll">ngx-ui-scroll</a> &#9758;</small>
+</p>
 
 ### Quick links
 
