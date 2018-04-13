@@ -475,6 +475,9 @@ Pull Rerquest should include source code (./scr) changes, may include tests (./t
 
 ## Change log
 
+### v1.7.1
+ * Fixed [Babel dependencies](https://github.com/angular-ui/ui-scroll/pull/195) and [CSS insertRule](https://github.com/angular-ui/ui-scroll/issues/201) issues.
+
 ### v1.7.0
  * Reduced dygest cycles amount.
  * Refactored some core classes (Adapter, Padding).
