@@ -6,6 +6,11 @@ import Adapter from './modules/adapter.js';
 
 angular.module('ui.scroll', [])
 
+  .service('uiScrollService', function () {
+    let instances = 0;
+    this.register = () => instances++;
+    this.count = () => instances;
+  })
   .constant('JQLiteExtras', JQLiteExtras)
   .run(['JQLiteExtras', (JQLiteExtras) =>
     !window.jQuery ? (new JQLiteExtras()).registerFor(angular.element) : null
@@ -42,7 +47,8 @@ angular.module('ui.scroll', [])
     '$interval',
     '$q',
     '$parse',
-    function (console, $injector, $rootScope, $timeout, $interval, $q, $parse) {
+    'uiScrollService',
+    function (console, $injector, $rootScope, $timeout, $interval, $q, $parse, uiScrollService) {
 
       return {
         require: ['?^uiScrollViewport'],
@@ -58,6 +64,8 @@ angular.module('ui.scroll', [])
         if (!match) {
           throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
         }
+
+        uiScrollService.register();
 
         function parseNumericAttr(value, defaultValue) {
           const result = $parse(value)($scope);
@@ -81,7 +89,7 @@ angular.module('ui.scroll', [])
         let ridActual = 0; // current data revision id
         let pending = [];
 
-        const elementRoutines = new ElementRoutines($injector, $q);
+        const elementRoutines = new ElementRoutines($injector, $q, uiScrollService);
         const buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex);
         const viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
         const adapter = new Adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
