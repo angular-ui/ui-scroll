@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.1 -- 2018-04-13T16:07:58.560Z
+ * Version: 1.7.1 -- 2018-04-13T16:09:50.195Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -99,7 +99,8 @@ var _adapter2 = _interopRequireDefault(_adapter);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 angular.module('ui.scroll', []).constant('JQLiteExtras', _jqLiteExtras2.default).run(['JQLiteExtras', function (JQLiteExtras) {
-  return !window.jQuery ? new JQLiteExtras().registerFor(angular.element) : null;
+  !window.jQuery ? new JQLiteExtras().registerFor(angular.element) : null;
+  _elementRoutines2.default.addCSSRules();
 }]).directive('uiScrollViewport', function () {
   return {
     restrict: 'A',
@@ -932,22 +933,33 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 
 var hideClassToken = 'ng-ui-scroll-hide';
 
-function addCSSRule(sheet, selector, rules, index) {
-  if ('insertRule' in sheet) {
-    sheet.insertRule(selector + '{' + rules + '}', index);
-  } else if ('addRule' in sheet) {
-    sheet.addRule(selector, rules, index);
-  }
-}
-
 var ElementRoutines = function () {
+  _createClass(ElementRoutines, null, [{
+    key: 'addCSSRules',
+    value: function addCSSRules() {
+      var selector = '.' + hideClassToken;
+      var rules = 'display: none';
+      var sheet = document.styleSheets[0];
+      var index = void 0;
+      try {
+        index = sheet.cssRules.length;
+      } catch (err) {
+        index = 0;
+      }
+      if ('insertRule' in sheet) {
+        sheet.insertRule(selector + '{' + rules + '}', index);
+      } else if ('addRule' in sheet) {
+        sheet.addRule(selector, rules, index);
+      }
+    }
+  }]);
+
   function ElementRoutines($injector, $q) {
     _classCallCheck(this, ElementRoutines);
 
     this.$animate = $injector.has && $injector.has('$animate') ? $injector.get('$animate') : null;
     this.isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
     this.$q = $q;
-    addCSSRule(document.styleSheets[0], '.' + hideClassToken, 'display: none');
   }
 
   _createClass(ElementRoutines, [{

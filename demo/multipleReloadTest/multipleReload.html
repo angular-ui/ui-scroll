@@ -4,7 +4,7 @@
 	<meta charset="utf-8">
 	<title>Multiple reload test</title>
 	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
-	<script src="../../src/ui-scroll.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
 	<script src="multipleReload.js"></script>
 	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
 </head>
@@ -17,12 +17,12 @@
 		<h1 class="page-header page-header-exapmle">Multiple reload test</h1>
 
 		<div class="actions">
-			<button ng-click="doSingleReload()"> Do single reload</button>
+			<button ng-click="show = !show"> Do single reload</button>
 			<button ng-click="doMultipleReload()"> Do multiple reload</button>
 			Loading: {{adapter.isLoading}}
 		</div>
 
-		<div class="viewport" id="viewport-scopeDatasource" ui-scroll-viewport>
+		<div class="viewport" id="viewport-scopeDatasource" ui-scroll-viewport ng-if="show">
 			<div class="item" ui-scroll="item in datasource" adapter="adapter">{{item}}</div>
 		</div>
 
