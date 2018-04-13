@@ -1,31 +1,29 @@
 const hideClassToken = 'ng-ui-scroll-hide';
 
-function addCSSRule(sheet, rules, _index) {
-  const selector = '.' + hideClassToken;
-  let index;
-  try {
-    index = sheet.cssRules.length;
-    index = _index < index && _index >= 0 ? _index : index;
-  } catch (err) {
-    index = 0;
-  }
-  if('insertRule' in sheet) {
-    sheet.insertRule(selector + '{' + rules + '}', index);
-  }
-  else if('addRule' in sheet) {
-    sheet.addRule(selector, rules, index);
-  }
-}
-
 export default class ElementRoutines {
 
-  constructor($injector, $q, uiScrollService) {
+  static addCSSRules() {
+    const selector = '.' + hideClassToken;
+    const rules = 'display: none';
+    const sheet = document.styleSheets[0];
+    let index;
+    try {
+      index = sheet.cssRules.length;
+    } catch (err) {
+      index = 0;
+    }
+    if('insertRule' in sheet) {
+      sheet.insertRule(selector + '{' + rules + '}', index);
+    }
+    else if('addRule' in sheet) {
+      sheet.addRule(selector, rules, index);
+    }
+  }
+
+  constructor($injector, $q) {
     this.$animate = ($injector.has && $injector.has('$animate')) ? $injector.get('$animate') : null;
     this.isAngularVersionLessThen1_3 = angular.version.major === 1 && angular.version.minor < 3;
     this.$q = $q;
-    if (uiScrollService.count() === 1) {
-      addCSSRule(document.styleSheets[0], 'display: none'); 
-    }
   }
 
   hideElement(wrapper) {
