@@ -7,9 +7,10 @@ import Adapter from './modules/adapter.js';
 angular.module('ui.scroll', [])
 
   .constant('JQLiteExtras', JQLiteExtras)
-  .run(['JQLiteExtras', (JQLiteExtras) =>
-    !window.jQuery ? (new JQLiteExtras()).registerFor(angular.element) : null
-  ])
+  .run(['JQLiteExtras', (JQLiteExtras) => {
+    !window.jQuery ? (new JQLiteExtras()).registerFor(angular.element) : null;
+    ElementRoutines.addCSSRules();
+  }])
 
   .directive('uiScrollViewport', function () {
     return {
