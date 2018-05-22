@@ -97,7 +97,7 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     },
 
     shouldLoadTop() {
-      return !buffer.bof && (viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding());
+      return !buffer.bof && !viewport.scrollTopSetFailed && viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding();
     },
 
     clipTop() {
@@ -187,6 +187,7 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       }
       else {
         topPadding.height(0);
+        viewport.scrollTopAdjust = paddingHeight;
         viewport.scrollTop(viewport.scrollTop() - paddingHeight);
       }
     },
