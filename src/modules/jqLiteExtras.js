@@ -255,10 +255,6 @@ export default class JQLiteExtras {
         };
       },
       scrollTop(value) {
-        if (value) {
-          this.scrollTopBeforeSet = scrollTo(this, 'top');
-          this.scrollTopValue = value;
-        }
         return scrollTo(this, 'top', value);
       },
       scrollLeft(value) {

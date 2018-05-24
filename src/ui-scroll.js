@@ -476,7 +476,9 @@ angular.module('ui.scroll', [])
         }
 
         function resizeAndScrollHandler(ev) {
-          if ($rootScope.$$phase || adapter.isLoading || adapter.disabled) return;
+          if ($rootScope.$$phase || adapter.isLoading || adapter.disabled) {
+            return;
+          }
 
           if (ev.type === 'scroll') {
             // Don't process scroll event if it was triggered by us setting scrollTop.
@@ -488,11 +490,11 @@ angular.module('ui.scroll', [])
             // of scrollTop that will be used by shouldLoadTop(). Also, try to set it again.
             viewport.scrollTopSetFailed = false;
             if (viewport.scrollTopValue != null) {
-              var curScrollTop = viewport[0].scrollTop;
+              const curScrollTop = viewport[0].scrollTop;
               if (Math.abs(curScrollTop - viewport.scrollTopValue) > Math.abs(curScrollTop - viewport.scrollTopBeforeSet)) {
                 viewport.scrollTopSetFailed = true;
                 viewport.scrollTop(curScrollTop - viewport.scrollTopAdjust);
-              } 
+              }
             }
           }
 
