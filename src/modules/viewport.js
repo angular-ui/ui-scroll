@@ -13,23 +13,25 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     'display': 'block'
   });
 
-  viewport.scrollTopOriginal = viewport.scrollTop;
+  viewport.scrollTopOriginal = viewport.scrollTopOriginal || viewport.scrollTop;
+  viewport.scrollTopBeforeSet = null;
+  viewport.scrollTopValue = null;
 
   function bufferPadding() {
     return viewport.outerHeight() * padding; // some extra space to initiate preload
   }
 
-  viewport.scrollTop = function () {
-    if (typeof arguments[0] !== 'undefined') {
-      viewport.scrollTopBeforeSet = viewport.scrollTop();
-      viewport.scrollTopValue = arguments[0];
-    }
-    return viewport.scrollTopOriginal.apply(viewport, arguments);
-  };
-
   Object.assign(viewport, {
     getScope() {
       return scope;
+    },
+
+    scrollTop() {
+      if (typeof arguments[0] !== 'undefined') {
+        viewport.scrollTopBeforeSet = viewport.scrollTop();
+        viewport.scrollTopValue = arguments[0];
+      }
+      return viewport.scrollTopOriginal.apply(viewport, arguments);
     },
 
     createPaddingElements(template) {
