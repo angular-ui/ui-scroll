@@ -475,17 +475,37 @@ angular.module('ui.scroll', [])
           }
         }
 
-        function resizeAndScrollHandler() {
-          if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
+        function resizeAndScrollHandler(ev) {
+          if ($rootScope.$$phase || adapter.isLoading || adapter.disabled) return;
 
-            enqueueFetch(ridActual);
-
-            if (pending.length) {
-              unbindEvents();
-            } else {
-              adapter.calculateProperties();
-              !$scope.$$phase && $scope.$digest();
+          if (ev.type === 'scroll') {
+            // Don't process scroll event if it was triggered by us setting scrollTop.
+            if (viewport[0].scrollTop === viewport.scrollTopValue) {
+              return false;
             }
+
+            // Check if we tried to set scrollTop and it failed. If that happens, don't prepend more items based on the stale value
+            // of scrollTop that will be used by shouldLoadTop(). Also, try to set it again.
+            viewport.scrollTopSetFailed = false;
+            if (viewport.scrollTopValue != null) {
+              var curScrollTop = viewport[0].scrollTop;
+              if (Math.abs(curScrollTop - viewport.scrollTopValue) > Math.abs(curScrollTop - viewport.scrollTopBeforeSet)) {
+                viewport.scrollTopSetFailed = true;
+                viewport.scrollTop(curScrollTop - viewport.scrollTopAdjust);
+              } 
+            }
+          }
+
+          enqueueFetch(ridActual);
+
+          // we got a real scroll event, so browser is now in charge of scrollTop
+          viewport.scrollTopValue = null;
+
+          if (pending.length) {
+            unbindEvents();
+          } else {
+            adapter.calculateProperties();
+            !$scope.$$phase && $scope.$digest();
           }
         }
 
