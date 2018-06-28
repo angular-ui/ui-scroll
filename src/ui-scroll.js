@@ -3,7 +3,6 @@ import ElementRoutines from './modules/elementRoutines.js';
 import ScrollBuffer from './modules/buffer.js';
 import Viewport from './modules/viewport.js';
 import Adapter from './modules/adapter.js';
-import { isInteger } from './modules/util.js';
 
 angular.module('ui.scroll', [])
 
@@ -111,9 +110,9 @@ angular.module('ui.scroll', [])
         function persistDatasourceIndex(datasource, propName) {
           let getter;
           // need to postpone min/maxIndexUser processing if the view is empty
-          if(isInteger(datasource[propName])) {
+          if(angular.isNumber(datasource[propName])) {
             getter = datasource[propName];
-            if(isInteger(getter)) {
+            if(angular.isNumber(getter)) {
               onRenderHandlers = onRenderHandlers.filter(handler => handler.id !== propName);
               onRenderHandlers.push({
                 id: propName,

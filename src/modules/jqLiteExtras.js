@@ -1,5 +1,3 @@
-import { isInteger } from './util.js';
-
 /*!
  globals: angular, window
  List of used element methods available in JQuery but not in JQuery Lite
@@ -201,7 +199,7 @@ export default class JQLiteExtras {
         var self;
         self = this;
         if (typeof value !== 'undefined') {
-          if (isInteger(value)) {
+          if (angular.isNumber(value)) {
             value = value + 'px';
           }
           return css.call(self, 'height', value);
