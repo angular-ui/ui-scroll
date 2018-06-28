@@ -1,3 +1,5 @@
+import { isInteger } from './util.js';
+
 export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
   const buffer = Object.create(Array.prototype);
 
@@ -67,7 +69,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
 
     // removes elements from buffer
     remove(arg1, arg2) {
-      if (Number.isInteger(arg1)) {
+      if (isInteger(arg1)) {
         // removes items from arg1 (including) through arg2 (excluding)
         for (let i = arg1; i < arg2; i++) {
           elementRoutines.removeElement(buffer[i]);
