@@ -37,7 +37,7 @@ class Adapter {
       throw error;
     }
 
-    Object.assign(adapterOnScope, this.publicContext);
+    angular.extend(adapterOnScope, this.publicContext);
     this.publicContext = adapterOnScope;
   }
 
@@ -130,7 +130,7 @@ class Adapter {
     }
     // out-of-buffer case: deletion may affect Paddings
     else if(index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
-      if(Array.isArray(newItems) && !newItems.length) {
+      if(angular.isArray(newItems) && !newItems.length) {
         this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
         if(index === this.buffer.getAbsMinIndex()) {
           this.buffer.incrementMinIndex();
@@ -143,7 +143,7 @@ class Adapter {
   }
 
   applyUpdate(wrapper, newItems) {
-    if (!Array.isArray(newItems)) {
+    if (!angular.isArray(newItems)) {
       return;
     }
     let position = this.buffer.indexOf(wrapper);

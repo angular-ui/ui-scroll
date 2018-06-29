@@ -199,7 +199,7 @@ export default class JQLiteExtras {
         var self;
         self = this;
         if (typeof value !== 'undefined') {
-          if (Number.isInteger(value)) {
+          if (angular.isNumber(value)) {
             value = value + 'px';
           }
           return css.call(self, 'height', value);

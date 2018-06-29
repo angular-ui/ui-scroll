@@ -110,9 +110,9 @@ angular.module('ui.scroll', [])
         function persistDatasourceIndex(datasource, propName) {
           let getter;
           // need to postpone min/maxIndexUser processing if the view is empty
-          if(Number.isInteger(datasource[propName])) {
+          if(angular.isNumber(datasource[propName])) {
             getter = datasource[propName];
-            if(Number.isInteger(getter)) {
+            if(angular.isNumber(getter)) {
               onRenderHandlers = onRenderHandlers.filter(handler => handler.id !== propName);
               onRenderHandlers.push({
                 id: propName,

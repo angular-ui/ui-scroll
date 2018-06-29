@@ -44,7 +44,7 @@ angular.module('ui.scroll.grid', [])
       // controller api methods
 
       this.applyLayout = function(layout) {
-        this.css = Object.assign({}, layout.css);
+        this.css = angular.extend({}, layout.css);
         this.mapTo = layout.mapTo;
         applyCss(this.header, this.css);
       };
@@ -158,7 +158,7 @@ angular.module('ui.scroll.grid', [])
         let result = [];
         columns.forEach((column, index) => result.push({
           index: index,
-          css: Object.assign({}, column.css),
+          css: angular.extend({}, column.css),
           mapTo: column.mapTo
         }));
         return result;
