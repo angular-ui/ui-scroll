@@ -67,7 +67,7 @@ angular.module('ui.scroll', [])
 
         const BUFFER_MIN = 3;
         const BUFFER_DEFAULT = 10;
-        const PADDING_MIN = 0.3;
+        const PADDING_MIN = 0.01;
         const PADDING_DEFAULT = 0.5;
         const MAX_VIEWPORT_DELAY = 500;
         const VIEWPORT_POLLING_INTERVAL = 50;
