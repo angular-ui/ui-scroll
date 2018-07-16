@@ -21,7 +21,7 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     return viewport.outerHeight() * padding; // some extra space to initiate preload
   }
 
-  Object.assign(viewport, {
+  angular.extend(viewport, {
     getScope() {
       return scope;
     },
