@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.1 -- 2018-04-13T16:09:50.195Z
+ * Version: 1.7.2 -- 2018-07-26T04:32:37.367Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -138,7 +138,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
     // controller api methods
 
     this.applyLayout = function (layout) {
-      this.css = Object.assign({}, layout.css);
+      this.css = angular.extend({}, layout.css);
       this.mapTo = layout.mapTo;
       applyCss(this.header, this.css);
     };
@@ -266,7 +266,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       columns.forEach(function (column, index) {
         return result.push({
           index: index,
-          css: Object.assign({}, column.css),
+          css: angular.extend({}, column.css),
           mapTo: column.mapTo
         });
       });
