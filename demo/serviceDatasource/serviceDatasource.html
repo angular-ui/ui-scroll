@@ -39,7 +39,11 @@ angular.module('application', ['ui.scroll'])
 		</div>
 
 		<div class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
-			<div class="item" ui-scroll="item in datasource">{{item}}</div>
+			<div class="item" ui-scroll="item in datasource">
+				<div ng-if="$index%10 === 0 && $index%20 !== 0">{{item}} ************ {{$index}}</div>
+				<div ng-if="$index%10 === 0 && $index%20 === 0">{{item}} ************ {{$index}} OOOOOOOOOOOO </div>
+				<div ng-if="$index%10 !== 0">{{item}}</div>
+			</div>
 		</div>
 
 	</div>

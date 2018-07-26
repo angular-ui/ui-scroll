@@ -412,6 +412,8 @@ describe('uiScroll', function () {
                     itemHeight: itemHeight
                 },
                 function (viewport) {
+                    viewport.trigger('scroll');
+
                     viewport.scrollTop(0); //first full, scroll to -2
                     viewport.trigger('scroll');
 
@@ -466,6 +468,8 @@ describe('uiScroll', function () {
 
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred but the document will not scroll because of viewport will be scrolled
                     expect(documentScrollBubblingCount).toBe(1);
+
+                    viewport.trigger('scroll');
 
                     viewport.scrollTop(0);
                     viewport.trigger('scroll');
@@ -523,6 +527,7 @@ describe('uiScroll', function () {
         it('should calculate bottom padding element\'s height during scroll up', function () {
             runTest(scrollSettings,
                 function (viewport) {
+                    viewport.trigger('scroll');
                     // scroll up + expectation
                     for(var i = 0; i < 6; i++) {
                         viewport.scrollTop(-5000);
@@ -766,6 +771,7 @@ describe('uiScroll', function () {
     it('should keep (-bufferSize) item at the top after one manual fetching is done', function() {
       runTest(scrollSettings,
         function (viewport, scope) {
+          viewport.trigger('scroll');
 
           viewport.scrollTop(0); // scroll to the very top
           viewport.trigger('scroll');
