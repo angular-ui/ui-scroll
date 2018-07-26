@@ -1,8 +1,8 @@
 ### UI Scroll - [AngularJS](http://angularjs.org/) directive to provide infinite scroll over a limited element buffer
 
-[![Build Status](https://travis-ci.org/angular-ui/ui-scroll.svg?branch=master)](https://travis-ci.org/angular-ui/ui-scroll) 
-[![npm version](https://badge.fury.io/js/angular-ui-scroll.svg)](http://badge.fury.io/js/angular-ui-scroll) 
-[![Bower version](https://badge.fury.io/bo/angular-ui-scroll.svg)](http://badge.fury.io/bo/angular-ui-scroll) 
+[![Build Status](https://travis-ci.org/angular-ui/ui-scroll.svg?branch=master)](https://travis-ci.org/angular-ui/ui-scroll)
+[![npm version](https://badge.fury.io/js/angular-ui-scroll.svg)](http://badge.fury.io/js/angular-ui-scroll)
+[![Bower version](https://badge.fury.io/bo/angular-ui-scroll.svg)](http://badge.fury.io/bo/angular-ui-scroll)
 [![Join the chat at https://gitter.im/angular-ui/ui-scroll](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/angular-ui/ui-scroll?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 <p dir="rtl">
@@ -81,7 +81,7 @@ viewport has to be the table or tbody. dl as a repeated tag is not supported.
 The viewport is an element representing the space where the items from the collection are to be shown. Unless specified explicitly with
 the [uiScrollViewport](#uiscrollviewport-directive) directive, browser window will be used as the viewport.
 
-_Important!_ The viewport height must be constrained. If the height of the viewport is not constrained 
+_Important!_ The viewport height must be constrained. If the height of the viewport is not constrained
 (style="height:auto") it will pull the entire content of the datasource and may throw an Error depending on the number of items
 in the datasource. Even if it does not, using the directive this way does not provide any advantages over using ng-repeat, because
 item template will be always instantiated for every item in the datasource.
@@ -143,16 +143,16 @@ Currently we have 2 regular modules which can be added to the angular-app you ar
  - __ui.scroll.grid__ module which has
    - [uiScrollTh directive](#uiscrollth-and-uiscrolltd-directives)
    - [uiScrollTd directive](#uiscrollth-and-uiscrolltd-directives)
-  
+
 Also, there is one more additional module in a separate file:
  - __ui.scroll.jqlite__ module (it is empty since it was deprecated in v1.6.0)
-  
-  
+
+
 -------------------
 
 
 ## uiScroll directive
- 
+
 
 ```html
 <div ui-scroll="item in myDatasource"
@@ -164,7 +164,7 @@ Also, there is one more additional module in a separate file:
 ```
 
 ### Parameters
- 
+
 * **uiScroll – scroll expression** – The expression indicating how to enumerate a collection. Only one format is currently supported: `variable in datasource` – where variable is the user defined loop variable and datasource is the name of the data source to enumerate.
 * **buffer-size - expression**, optional - number of items requested from the datasource in a single request. The default is 10 and the minimal value is 3.
 * **padding - expression**, optional - extra height added to the visible area for the purpose of determining when the items should be created/destroyed. The value is relative to the visible height of the area, the default is 0.5 and the minimal value is 0.3.
@@ -269,7 +269,7 @@ Adapter object implements the following methods
 
         isEmpty()
 
-    Returns `true` if the dataset is empty and the internal buffer length = 0. Returns `false` otherwise. Mind that isEmpty() will return `true` during the **first** request is pending, so maybe it should be used together with `isLoading` property. 
+    Returns `true` if the dataset is empty and the internal buffer length = 0. Returns `false` otherwise. Mind that isEmpty() will return `true` during the **first** request is pending, so maybe it should be used together with `isLoading` property.
 
 * Method `reload`
 
@@ -433,19 +433,19 @@ because of ES6 modules (since v1.6.0), they should be built. The build process i
 There are some npm scripts available for developing.
 
  __1__. To run dev-server use
- 
+
 ```
 npm start
 ```
-  
+
   This should start development server on 5005 port over the [./demo](https://github.com/angular-ui/ui-scroll/tree/master/demo) folder. The dev-server proxy is configured to provide work with temporary distributive files (which are being built in-memory each time the sources from ./src have been changed) despite the direct links to public distributive files form ./dist folder. So the dist-folder should stay clear until the development is finished.
-  
+
  __2__. To run tests in keep-alive mode use
- 
+
 ```
 npm test
 ```
-  
+
   This runs Karma testing against temporary distributive files that are being built in-memory by the Webpack. We created a number of specifications which consist of more than 200 tests. They are living at the [./test](https://github.com/angular-ui/ui-scroll/tree/master/test) folder. Karma watches both for ./src and ./test folders and automatically re-runs tests after the source code has been changed.
 
  __3__. To run both dev-server and tests in keep-alive mode use
@@ -457,29 +457,32 @@ npm run dev
   This is the combination of first two scripts running in concurrently mode. This allows you to work with the ui-scroll examples on 5005 port during continuous tests running.
 
  __4__. To run full build process use
- 
+
 ```
 npm run build
 ```
-  
+
   After developing and testing are completed, the build process should be run to
   a) pass through jshint (both of ui-scroll and test specifications sources),
   b) generate compressed and uncompressed versions of the ui-scroll distributive in the public [./dist](https://github.com/angular-ui/ui-scroll/tree/master/dist) folder,
   c) run tests over minified distributive files.
 
 Pull Rerquest should include source code (./scr) changes, may include tests (./test) changes and may not include public distributive (./dist) changes.
-  
+
 
 -------------------
 
 
 ## Change log
 
+### v1.7.2
+ * Fixed IE compatibility issues.
+
 ### v1.7.1
  * Fixed [Babel dependencies](https://github.com/angular-ui/ui-scroll/pull/195) and [CSS insertRule](https://github.com/angular-ui/ui-scroll/issues/201) issues.
 
 ### v1.7.0
- * Reduced dygest cycles amount.
+ * Reduced digest cycles amount.
  * Refactored some core classes (Adapter, Padding).
  * Reconsidered min/max indices processing.
  * Refactored tests (removed timeouts, added helpers).
