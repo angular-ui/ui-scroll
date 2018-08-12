@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.1 -- 2018-04-13T16:09:50.195Z
+ * Version: 1.7.2 -- 2018-07-26T04:32:37.367Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -190,9 +190,9 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', _jqLiteExtras2.default)
     function persistDatasourceIndex(datasource, propName) {
       var getter = void 0;
       // need to postpone min/maxIndexUser processing if the view is empty
-      if (Number.isInteger(datasource[propName])) {
+      if (angular.isNumber(datasource[propName])) {
         getter = datasource[propName];
-        if (Number.isInteger(getter)) {
+        if (angular.isNumber(getter)) {
           onRenderHandlers = onRenderHandlers.filter(function (handler) {
             return handler.id !== propName;
           });
@@ -840,7 +840,7 @@ var JQLiteExtras = function () {
           var self;
           self = this;
           if (typeof value !== 'undefined') {
-            if (Number.isInteger(value)) {
+            if (angular.isNumber(value)) {
               value = value + 'px';
             }
             return css.call(self, 'height', value);
@@ -1047,7 +1047,7 @@ exports.default = ScrollBuffer;
 function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
   var buffer = Object.create(Array.prototype);
 
-  Object.assign(buffer, {
+  angular.extend(buffer, {
     size: bufferSize,
 
     reset: function reset(startIndex) {
@@ -1113,7 +1113,7 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
 
     // removes elements from buffer
     remove: function remove(arg1, arg2) {
-      if (Number.isInteger(arg1)) {
+      if (angular.isNumber(arg1)) {
         // removes items from arg1 (including) through arg2 (excluding)
         for (var i = arg1; i < arg2; i++) {
           elementRoutines.removeElement(buffer[i]);
@@ -1226,7 +1226,7 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
     return viewport.outerHeight() * padding; // some extra space to initiate preload
   }
 
-  Object.assign(viewport, {
+  angular.extend(viewport, {
     getScope: function getScope() {
       return scope;
     },
@@ -1581,7 +1581,7 @@ var Adapter = function () {
         throw error;
       }
 
-      Object.assign(adapterOnScope, this.publicContext);
+      angular.extend(adapterOnScope, this.publicContext);
       this.publicContext = adapterOnScope;
     }
   }, {
@@ -1700,7 +1700,7 @@ var Adapter = function () {
       }
       // out-of-buffer case: deletion may affect Paddings
       else if (index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
-          if (Array.isArray(newItems) && !newItems.length) {
+          if (angular.isArray(newItems) && !newItems.length) {
             this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
             if (index === this.buffer.getAbsMinIndex()) {
               this.buffer.incrementMinIndex();
@@ -1715,7 +1715,7 @@ var Adapter = function () {
     value: function applyUpdate(wrapper, newItems) {
       var _this3 = this;
 
-      if (!Array.isArray(newItems)) {
+      if (!angular.isArray(newItems)) {
         return;
       }
       var position = this.buffer.indexOf(wrapper);
