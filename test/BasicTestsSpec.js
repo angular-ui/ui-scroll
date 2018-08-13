@@ -409,10 +409,11 @@ describe('uiScroll', function () {
                     datasource: 'myEdgeDatasource',
                     bufferSize: buffer,
                     viewportHeight: viewportHeight,
-                    itemHeight: itemHeight
+                    itemHeight: itemHeight,
+                    adapter: 'adapter'
                 },
-                function (viewport) {
-                    viewport.trigger('scroll');
+                function (viewport, scope) {
+                    scope.adapter.resetScrollTopCorrection();
 
                     viewport.scrollTop(0); //first full, scroll to -2
                     viewport.trigger('scroll');
@@ -435,7 +436,12 @@ describe('uiScroll', function () {
     });
 
     describe('prevent unwanted scroll bubbling', function () {
-        var scrollSettings = { datasource: 'myDatasourceToPreventScrollBubbling', bufferSize: 3, viewportHeight: 300 };
+        var scrollSettings = {
+            datasource: 'myDatasourceToPreventScrollBubbling',
+            bufferSize: 3,
+            viewportHeight: 300,
+            adapter: 'adapter'
+        };
         var documentScrollBubblingCount = 0;
 
         var incrementDocumentScrollCount = function (event) {
@@ -459,7 +465,7 @@ describe('uiScroll', function () {
             });
 
             runTest(scrollSettings,
-                function (viewport) {
+                function (viewport, scope) {
                     var wheelEventElement = viewport[0];
 
                     angular.element(document.body).bind('mousewheel', incrementDocumentScrollCount); //spy for wheel-events bubbling
@@ -469,7 +475,7 @@ describe('uiScroll', function () {
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred but the document will not scroll because of viewport will be scrolled
                     expect(documentScrollBubblingCount).toBe(1);
 
-                    viewport.trigger('scroll');
+                    scope.adapter.resetScrollTopCorrection();
 
                     viewport.scrollTop(0);
                     viewport.trigger('scroll');
@@ -508,7 +514,8 @@ describe('uiScroll', function () {
             datasource: 'myInfiniteDatasource',
             viewportHeight: viewportHeight,
             itemHeight: itemHeight,
-            bufferSize: bufferSize
+            bufferSize: bufferSize,
+            adapter: 'adapter'
         };
 
         it('should calculate top padding element\'s height during scroll down', function () {
@@ -526,8 +533,8 @@ describe('uiScroll', function () {
 
         it('should calculate bottom padding element\'s height during scroll up', function () {
             runTest(scrollSettings,
-                function (viewport) {
-                    viewport.trigger('scroll');
+                function (viewport, scope) {
+                    scope.adapter.resetScrollTopCorrection();
                     // scroll up + expectation
                     for(var i = 0; i < 6; i++) {
                         viewport.scrollTop(-5000);
@@ -752,7 +759,8 @@ describe('uiScroll', function () {
       datasource: 'myInfiniteDatasource',
       template: myTemplate,
       topVisible: 'topVisible',
-      bufferSize: 10
+      bufferSize: 10,
+      adapter: 'adapter'
     };
 
     it('should keep 1st item at the top after initial auto fetching is done', function() {
@@ -771,7 +779,7 @@ describe('uiScroll', function () {
     it('should keep (-bufferSize) item at the top after one manual fetching is done', function() {
       runTest(scrollSettings,
         function (viewport, scope) {
-          viewport.trigger('scroll');
+          scope.adapter.resetScrollTopCorrection();
 
           viewport.scrollTop(0); // scroll to the very top
           viewport.trigger('scroll');

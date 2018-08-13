@@ -483,7 +483,6 @@ angular.module('ui.scroll', [])
           if (ev.type === 'scroll') {
             // Don't process scroll event if it was triggered by us setting scrollTop.
             if (viewport[0].scrollTop === viewport.scrollTopValue) {
-              viewport.scrollTopValue = null;
               return false;
             }
 

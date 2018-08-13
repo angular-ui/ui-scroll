@@ -43,7 +43,7 @@ class Adapter {
 
   generatePublicContext() {
     // these methods will be accessible out of ui-scroll via user defined adapter
-    const publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty'];
+    const publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty', 'resetScrollTopCorrection'];
     for (let i = publicMethods.length - 1; i >= 0; i--) {
       this.publicContext[publicMethods[i]] = this[publicMethods[i]].bind(this);
     }
@@ -85,6 +85,11 @@ class Adapter {
 
   isEmpty() {
     return !this.buffer.length;
+  }
+
+  resetScrollTopCorrection() {
+    // is needed to scroll at negative area programmatically (e.g. tests)
+    this.viewport.scrollTopValue = null;
   }
 
   append(newItems) {
