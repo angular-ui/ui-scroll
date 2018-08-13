@@ -9,7 +9,7 @@ angular.module('application', ['ui.scroll'])
 						result.push("item #" + i);
 					}
 					success(result);
-				}, 100);
+				}, 700);
 			};
 
 			return {

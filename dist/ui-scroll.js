@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.2 -- 2018-07-26T04:32:37.367Z
+ * Version: 1.8.0-rc -- 2018-08-13T12:05:10.496Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -144,7 +144,7 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', _jqLiteExtras2.default)
 
     var BUFFER_MIN = 3;
     var BUFFER_DEFAULT = 10;
-    var PADDING_MIN = 0.3;
+    var PADDING_MIN = 0.01;
     var PADDING_DEFAULT = 0.5;
     var MAX_VIEWPORT_DELAY = 500;
     var VIEWPORT_POLLING_INTERVAL = 50;
@@ -573,17 +573,39 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', _jqLiteExtras2.default)
       }
     }
 
-    function resizeAndScrollHandler() {
-      if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
+    function resizeAndScrollHandler(ev) {
+      if ($rootScope.$$phase || adapter.isLoading || adapter.disabled) {
+        return;
+      }
 
-        enqueueFetch(ridActual);
-
-        if (pending.length) {
-          unbindEvents();
-        } else {
-          adapter.calculateProperties();
-          !$scope.$$phase && $scope.$digest();
+      if (ev.type === 'scroll') {
+        // Don't process scroll event if it was triggered by us setting scrollTop.
+        if (viewport[0].scrollTop === viewport.scrollTopValue) {
+          return false;
         }
+
+        // Check if we tried to set scrollTop and it failed. If that happens, don't prepend more items based on the stale value
+        // of scrollTop that will be used by shouldLoadTop(). Also, try to set it again.
+        viewport.scrollTopSetFailed = false;
+        if (viewport.scrollTopValue != null) {
+          var curScrollTop = viewport[0].scrollTop;
+          if (Math.abs(curScrollTop - viewport.scrollTopValue) > Math.abs(curScrollTop - viewport.scrollTopBeforeSet)) {
+            viewport.scrollTopSetFailed = true;
+            viewport.scrollTop(curScrollTop - viewport.scrollTopAdjust);
+          }
+        }
+      }
+
+      enqueueFetch(ridActual);
+
+      // we got a real scroll event, so browser is now in charge of scrollTop
+      viewport.scrollTopValue = null;
+
+      if (pending.length) {
+        unbindEvents();
+      } else {
+        adapter.calculateProperties();
+        !$scope.$$phase && $scope.$digest();
       }
     }
 
@@ -1222,6 +1244,10 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
     'display': 'block'
   });
 
+  viewport.scrollTopOriginal = viewport.scrollTopOriginal || viewport.scrollTop;
+  viewport.scrollTopBeforeSet = null;
+  viewport.scrollTopValue = null;
+
   function bufferPadding() {
     return viewport.outerHeight() * padding; // some extra space to initiate preload
   }
@@ -1229,6 +1255,13 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
   angular.extend(viewport, {
     getScope: function getScope() {
       return scope;
+    },
+    scrollTop: function scrollTop() {
+      if (typeof arguments[0] !== 'undefined') {
+        viewport.scrollTopBeforeSet = viewport.scrollTop();
+        viewport.scrollTopValue = arguments[0];
+      }
+      return viewport.scrollTopOriginal.apply(viewport, arguments);
     },
     createPaddingElements: function createPaddingElements(template) {
       topPadding = new _padding2.default(template);
@@ -1295,7 +1328,7 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       }
     },
     shouldLoadTop: function shouldLoadTop() {
-      return !buffer.bof && viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding();
+      return !buffer.bof && !viewport.scrollTopSetFailed && viewport.topDataPos() > viewport.topVisiblePos() - bufferPadding();
     },
     clipTop: function clipTop() {
       // clip the invisible items off the top
@@ -1383,6 +1416,7 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
         topPadding.height(paddingHeight);
       } else {
         topPadding.height(0);
+        viewport.scrollTopAdjust = paddingHeight;
         viewport.scrollTop(viewport.scrollTop() - paddingHeight);
       }
     },
@@ -1590,7 +1624,7 @@ var Adapter = function () {
       var _this = this;
 
       // these methods will be accessible out of ui-scroll via user defined adapter
-      var publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty'];
+      var publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty', 'resetScrollTopCorrection'];
       for (var i = publicMethods.length - 1; i >= 0; i--) {
         this.publicContext[publicMethods[i]] = this[publicMethods[i]].bind(this);
       }
@@ -1648,6 +1682,12 @@ var Adapter = function () {
     key: 'isEmpty',
     value: function isEmpty() {
       return !this.buffer.length;
+    }
+  }, {
+    key: 'resetScrollTopCorrection',
+    value: function resetScrollTopCorrection() {
+      // is needed to scroll at negative area programmatically (e.g. tests)
+      this.viewport.scrollTopValue = null;
     }
   }, {
     key: 'append',
