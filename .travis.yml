@@ -1,7 +1,7 @@
 language: node_js
 
 node_js:
-- '6'
+- '10.12.0'
 
 addons:
   firefox: latest
@@ -15,12 +15,3 @@ before_script:
 
 script:
 - npm run build
-
-deploy:
-  provider: npm
-  email: adrien.crivelli@gmail.com
-  api_key:
-    secure: Ceotf7mbzhC3glOYaarP8gDZ96SG3rWYziMYviOpyH+JfprJ8QxRwoUppAN/yY4RRu8OnybBo8Rht+PE/ibGIgpawNN33IHfapXXjtk/mpNK7mYQNTkG6RAoNWSDc4ICSTWcEJdOo4oN8SwT/AHzCUoDCKKA14seEb0Kw3WSTOhseZsd5Swxj5xDDGEyS1HAnIbFSMQvqihkrBrRv6Nzg94tiYnBHZSR2Y1bvRxvfZ9qJqaY3YHuRix/HssMN9/bU+d/f73/VJRy3COsayH/vXmmSpqJVG60OX42YRAj8+3JXG+AI55Sv2QeiMex4rBu2oI+aCgVz9v72RvCk6eHbSgqYrRntIggUoQa60uEzBRTTudHqjlZL4IGh1jFHIXtbO3sT1zB8rlm6SS7OiTW+agVdng5imCg6S/IMzTR5NoZ9GscB9Tbzl5/BCOi6A2FrDuE3x0N7dCVssagnktPZcpbCarFBNOm6P3ootHBby0XqJ58Ljo8cjZsy3vzVfe4tCefjbw3hbpDOaGY5+ahdmWtgnk3dSDlhM9U1LKuoiC796i38NsbWhrE1W/h2mg2Tdu14B8xUmOVefaP5aUfzKJy2inuBZKcUgXqo6zOChPHPHd99mYCAlmLODwf0BPGhLKO7WPFj+mxVvGriPUVC2IN+TF6g8HIZKP3ZUcH0w8=
-  on:
-    tags: true
-    repo: angular-ui/ui-scroll
