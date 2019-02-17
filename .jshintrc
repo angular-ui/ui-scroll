@@ -1,5 +1,4 @@
 {
-  "emitErrors": true,
   "boss": true,
   "browser": true,
   "eqnull": true,

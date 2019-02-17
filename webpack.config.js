@@ -1,11 +1,11 @@
 'use strict';
 
 const path = require('path');
-const fs = require('fs');
 const glob = require('glob');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
 const packageJSON = require('./package.json');
 
@@ -17,7 +17,8 @@ const getBanner = () =>
 
 const scriptName = process.env.npm_lifecycle_event;
 const ENV = scriptName.indexOf('dev') === 0 ? 'development' : 'production';
-const isTest = scriptName.indexOf('test') >= 0 ? true : false;
+const isTest = scriptName.indexOf('test') >= 0;
+
 console.log('***** webpack runs in ' + ENV + (isTest ? ' (test)' : '') + ' environment\n');
 
 const devServerPort = 5005;
@@ -35,21 +36,11 @@ if (ENV === 'development') {
       publicPath: '/'
     },
 
-    rules: [
-      isTest ? ({
-        enforce: 'pre',
-        test: /\.js$/,
-        exclude: /node_modules/,
-        include: path.resolve(__dirname, 'test'),
-        use: [{
-          loader: 'jshint-loader'
-        }]
-      }) : ({})
-    ],
-
     devtool: 'inline-source-map',
 
     plugins: [],
+
+    optimization: {},
 
     devServer: !isTest ? {
       historyApiFallback: {
@@ -95,23 +86,30 @@ if (ENV === 'production') {
       filename: '[name].js'
     },
 
-    rules: [],
-
     devtool: 'source-map',
+
+    optimization: {
+      minimizer: [
+        new UglifyJsPlugin({
+          sourceMap: true,
+          parallel: true,
+          uglifyOptions: {
+            warnings: true,
+            compress: {
+              warnings: true,
+            },
+            output: {
+              comments: false,
+            },
+          },
+          include: /\.min\.js$/
+        })
+      ]
+    },
 
     plugins: [
       new CleanWebpackPlugin('dist', {
         root: __dirname
-      }),
-      new webpack.optimize.UglifyJsPlugin({
-        sourceMap: true,
-        compress: {
-          warnings: true,
-        },
-        output: {
-          comments: false,
-        },
-        include: /\.min\.js$/
       }),
       new CopyWebpackPlugin([
         { from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.min.js' },
@@ -140,21 +138,14 @@ module.exports = {
 
   mode: ENV,
 
+  optimization: configEnv.optimization,
+
   module: {
-    rules: [...configEnv.rules,
+    rules: [
       {
         test: /\.js$/,
         exclude: /node_modules/,
         loader: 'babel-loader'
-      },
-      {
-        enforce: 'pre',
-        test: /\.js$/,
-        exclude: /node_modules/,
-        include: path.resolve(__dirname, 'src'),
-        use: [{
-          loader: 'jshint-loader'
-        }]
       }
     ]
   },

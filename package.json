@@ -23,8 +23,9 @@
     "prod-test": "karma start test/config/karma.conf.js",
     "dev-server": "webpack-dev-server --color",
     "dev-test": "karma start test/config/karma.conf.js",
-    "hint-tests": "jshint --verbose test",
-    "build": "npm run hint-tests && npm run prod-build && npm run prod-test",
+    "hint-test": "jshint --verbose test",
+    "hint-src": "jshint --verbose src",
+    "build": "npm run hint-src && npm run prod-build && npm run hint-test && npm run prod-test",
     "dev": "npm-run-all --parallel dev-server dev-test",
     "test": "npm run dev-test",
     "start": "npm run dev-server"
@@ -37,7 +38,6 @@
     "copy-webpack-plugin": "^4.2.0",
     "jasmine-core": "^2.8.0",
     "jshint": "^2.10.1",
-    "jshint-loader": "^0.8.4",
     "karma": "^4.0.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-firefox-launcher": "^1.1.0",
@@ -45,6 +45,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^3.0.5",
     "npm-run-all": "^4.1.2",
+    "uglifyjs-webpack-plugin": "^2.1.1",
     "webpack": "^4.29.4",
     "webpack-cli": "^3.2.3",
     "webpack-dev-server": "^3.1.14"
