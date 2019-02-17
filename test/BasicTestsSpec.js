@@ -710,7 +710,7 @@ describe('uiScroll', function () {
 	});
 
   describe('attributes scope binding', function () {
-    var calls = null;
+    var calls = 6;
     var bufferSize = 5;
 
     it('bufferSize scope binding should work (1)', function () {
@@ -718,8 +718,7 @@ describe('uiScroll', function () {
         var spy = spyOn(myInfiniteDatasource, 'get').and.callThrough();
         runTest({datasource: 'myInfiniteDatasource', bufferSize: bufferSize},
           function () {
-            calls = spy.calls.all().length;
-            expect(calls > 0).toBe(true);
+            expect(spy.calls.all().length).toBe(calls);
           }
         );
       });
