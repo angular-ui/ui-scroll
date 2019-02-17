@@ -138,6 +138,8 @@ module.exports = {
 
   devtool: configEnv.devtool,
 
+  mode: ENV,
+
   module: {
     rules: [...configEnv.rules,
       {

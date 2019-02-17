@@ -45,8 +45,9 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^3.0.5",
     "npm-run-all": "^4.1.2",
-    "webpack": "^3.8.1",
-    "webpack-dev-server": "^2.9.4"
+    "webpack": "^4.29.4",
+    "webpack-cli": "^3.2.3",
+    "webpack-dev-server": "^3.1.14"
   },
   "keywords": [
     "angular",
@@ -63,6 +64,5 @@
     "scroll",
     "scroller",
     "scrolling"
-  ],
-  "dependencies": {}
+  ]
 }
