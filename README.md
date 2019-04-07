@@ -194,7 +194,7 @@ Please notice that properties defined via `assignable expression` could be unava
 
 ```
 .controller('MyController', function($scope) {
-  $scope.contaner = { adapter: {} };
+  $scope.container = { adapter: {} };
 ```
 
 ### Datasource
@@ -231,8 +231,8 @@ exactly `count` elements unless it hit eof/bof.
 
     As the scroller receives the items requested by the `get` method, the value of minimum and maximum values of the item index are placed in the `minIndex` and `maxIndex` properties respectively. These values are used to maintain the appearance of the scrollbar. The values of the properties can be internaly changed by the ui-scroll engine in three cases:
      * reset both properties in response to a call to the adapter `reload` method;
-     * increment `minIndex` in response to deleteing the topmost element via adapter `applyUpdates` method;
-     * decrement `maxIndex` in response to deleteing anything other than the topmost element via adapter `applyUpdates` method.
+     * increment `minIndex` in response to deleting the topmost element via adapter `applyUpdates` method;
+     * decrement `maxIndex` in response to deleting anything other than the topmost element via adapter `applyUpdates` method.
 
     Values of the properties can be assigned programmatically. If the range of the index values is known in advance, assigning them programmatically would improve the usability of the scrollBar.
 
@@ -317,7 +317,7 @@ Adapter object implements the following methods
     Parameters
     * **newItems** provides an array of items to be prepended.
 
-#### Manipulating the scroller content with adapter methods
+#### Manipulating the scroller content with the adapter methods
 Adapter methods `applyUpdates`, `append` and `prepend` provide a way to update the scroller content without full reload of the content from the datasource. The updates are performed by changing the items in the scroller internal buffer after they are loaded from the datasource. Items in the buffer can be deleted or replaced with one or more items.
 
 _Important!_ Update datasource to match the scroller buffer content. Keep in mind that the modifications made by the adapter methods are only applied to the content of the buffer. As the items in response to scrolling are pushed out of the buffer, the modifications are lost. It is your responsibility to ensure that as the scroller is scrolled back and a modified item is requested from the datasource again the values returned by the datasource would reflect the updated state. In other words you have to make sure that in addition to manipulating the scroller content you also apply the modifications to the dataset underlying the datasource.
