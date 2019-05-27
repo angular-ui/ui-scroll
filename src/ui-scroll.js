@@ -61,7 +61,8 @@ angular.module('ui.scroll', [])
         }
 
         function getIntegerNumber(value, defaultValue = 1) {
-          return isNaN(value) ? defaultValue : Math.floor(value);
+          value = value === null ? defaultValue : Math.floor(value);
+          return isNaN(value) ? defaultValue : value;
         }
 
         function parseNumericAttr(value, defaultValue) {
