@@ -115,6 +115,29 @@ describe('uiScroll main/max indices', function() {
       );
     });
 
+    it('should round numbers for startIndex', () => {
+      const startIndex = 22.4;
+      runTest(Object.assign({}, scrollSettings, { startIndex }),
+        (viewport, scope) => {
+          expect(scope.adapter.topVisible).toBe('item' + Math.floor(startIndex));
+
+          const newStartIndex = 92.7;
+          scope.adapter.reload(newStartIndex);
+          expect(scope.adapter.topVisible).toBe('item' + Math.floor(newStartIndex));
+        }
+      );
+    });
+
+    it('should validate startIndex argument on reload', () => {
+      runTest(Object.assign({}, scrollSettings),
+        (viewport, scope) => {
+          const newStartIndex = 'invalid number';
+          scope.adapter.reload(newStartIndex);
+          expect(scope.adapter.topVisible).toBe('item1');
+        }
+      );
+    });
+
   });
 
   describe('Reload\n', () => {

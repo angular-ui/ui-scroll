@@ -60,9 +60,13 @@ angular.module('ui.scroll', [])
           throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
         }
 
+        function getIntegerNumber(value, defaultValue = 1) {
+          return isNaN(value) ? defaultValue : Math.floor(value);
+        }
+
         function parseNumericAttr(value, defaultValue) {
           const result = $parse(value)($scope);
-          return isNaN(result) ? defaultValue : result;
+          return getIntegerNumber(result, defaultValue);
         }
 
         const BUFFER_MIN = 3;
@@ -78,7 +82,7 @@ angular.module('ui.scroll', [])
         const viewportController = controllers[0];
         const bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
         const padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT));
-        let startIndex = parseNumericAttr($attr.startIndex, 1);
+        let startIndex = parseNumericAttr($attr.startIndex);
         let ridActual = 0; // current data revision id
         let pending = [];
 
@@ -235,7 +239,7 @@ angular.module('ui.scroll', [])
           viewport.resetTopPadding();
           viewport.resetBottomPadding();
           if (arguments.length) {
-            startIndex = arguments[0];
+            startIndex = getIntegerNumber(arguments[0]);
           }
           buffer.reset(startIndex);
           persistDatasourceIndex(datasource, 'minIndex');
