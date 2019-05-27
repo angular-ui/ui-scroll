@@ -475,6 +475,9 @@ Pull Rerquest should include source code (./scr) changes, may include tests (./t
 
 ## Change log
 
+### v1.7.3
+ * Fixed some html-attributes and Adapter.reload argument parsing.
+
 ### v1.7.2
  * Fixed IE compatibility issues.
 
