@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.2 -- 2018-07-26T04:32:37.367Z
+ * Version: 1.7.3 -- 2019-05-27T16:57:07.461Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -42,12 +42,32 @@
 /******/ 	// define getter function for harmony exports
 /******/ 	__webpack_require__.d = function(exports, name, getter) {
 /******/ 		if(!__webpack_require__.o(exports, name)) {
-/******/ 			Object.defineProperty(exports, name, {
-/******/ 				configurable: false,
-/******/ 				enumerable: true,
-/******/ 				get: getter
-/******/ 			});
+/******/ 			Object.defineProperty(exports, name, { enumerable: true, get: getter });
 /******/ 		}
+/******/ 	};
+/******/
+/******/ 	// define __esModule on exports
+/******/ 	__webpack_require__.r = function(exports) {
+/******/ 		if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 			Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 		}
+/******/ 		Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 	};
+/******/
+/******/ 	// create a fake namespace object
+/******/ 	// mode & 1: value is a module id, require it
+/******/ 	// mode & 2: merge all properties of value into the ns
+/******/ 	// mode & 4: return value when already ns object
+/******/ 	// mode & 8|1: behave like require
+/******/ 	__webpack_require__.t = function(value, mode) {
+/******/ 		if(mode & 1) value = __webpack_require__(value);
+/******/ 		if(mode & 8) return value;
+/******/ 		if((mode & 4) && typeof value === 'object' && value && value.__esModule) return value;
+/******/ 		var ns = Object.create(null);
+/******/ 		__webpack_require__.r(ns);
+/******/ 		Object.defineProperty(ns, 'default', { enumerable: true, value: value });
+/******/ 		if(mode & 2 && typeof value != 'string') for(var key in value) __webpack_require__.d(ns, key, function(key) { return value[key]; }.bind(null, key));
+/******/ 		return ns;
 /******/ 	};
 /******/
 /******/ 	// getDefaultExport function for compatibility with non-harmony modules
@@ -65,22 +85,17 @@
 /******/ 	// __webpack_public_path__
 /******/ 	__webpack_require__.p = "";
 /******/
+/******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 7);
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
 /******/ })
 /************************************************************************/
-/******/ ({
-
-/***/ 7:
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
+/******/ ([
+/* 0 */
+/***/ (function(module, exports) {
 
 angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout', function (console, $timeout) {
-
   function GridAdapter(controller) {
-
     this.getLayout = function () {
       return controller.getLayout();
     };
@@ -93,19 +108,24 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       return controller.columnFromPoint(x, y);
     };
 
-    Object.defineProperty(this, 'columns', { get: function get() {
+    Object.defineProperty(this, 'columns', {
+      get: function get() {
         return controller.getColumns();
-      } });
+      }
+    });
   }
 
   function ColumnAdapter(controller, column) {
-
-    this.css = function () /* attr, value */{
+    this.css = function ()
+    /* attr, value */
+    {
       var attr = arguments[0];
       var value = arguments[1];
+
       if (arguments.length == 1) {
         return column.header.css(attr);
       }
+
       if (arguments.length == 2) {
         column.header.css(attr, value);
         controller.forEachRow(function (row) {
@@ -123,19 +143,18 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       return controller.exchangeWith(column, index);
     };
 
-    Object.defineProperty(this, 'columnId', { get: function get() {
+    Object.defineProperty(this, 'columnId', {
+      get: function get() {
         return column.id;
-      } });
+      }
+    });
   }
 
   function ColumnController(controller, columns, header) {
-
     this.header = header;
     this.css = {};
     this.mapTo = columns.length;
-    this.id = columns.length;
-
-    // controller api methods
+    this.id = columns.length; // controller api methods
 
     this.applyLayout = function (layout) {
       this.css = angular.extend({}, layout.css);
@@ -165,6 +184,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       if (insidePoint(header, x, y)) {
         return this;
       }
+
       var result = null;
       controller.forEachRow(function (row) {
         return result = insidePoint(row[_this2.id], x, y) ? _this2 : result;
@@ -174,9 +194,8 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     this.applyCss = function (target) {
       applyCss(target, this.css);
-    };
+    }; // function definitions
 
-    // function definitions
 
     function insidePoint(element, x, y) {
       var offset = element.offset();
@@ -198,6 +217,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     function applyCss(target, css) {
       target.removeAttr('style');
+
       for (var attr in css) {
         if (css.hasOwnProperty(attr)) {
           target.css(attr, css[attr]);
@@ -211,9 +231,9 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     var columns = [];
     var rowMap = new Map();
-
     $timeout(function () {
       scrollViewport.adapter.publicContext.gridAdapter = new GridAdapter(_this3);
+
       scrollViewport.adapter.transform = function (scope, item) {
         return transform(rowMap.get(scope), item);
       };
@@ -225,13 +245,16 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 
     this.registerCell = function (scope, cell) {
       var row = rowMap.get(scope);
+
       if (!row) {
         row = [];
         rowMap.set(scope, row);
       }
+
       if (row.length >= columns.length) {
         return false;
       }
+
       row.push(cell);
       return true;
     };
@@ -240,6 +263,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       var row = rowMap.get(scope);
       var i = row.indexOf(cell);
       row.splice(i, 1);
+
       if (!row.length) {
         rowMap.delete(scope);
       }
@@ -277,6 +301,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       if (!layouts || layouts.length != columns.length) {
         throw new Error('Failed to apply layout - number of layouts should match number of columns');
       }
+
       layouts.forEach(function (layout, index) {
         return columns[index].applyLayout(layout);
       });
@@ -294,6 +319,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       if (target % 1 !== 0) {
         index = target ? columns[target.columnId].mapTo : columns.length;
       }
+
       if (index < 0 || index > columns.length) {
         return; // throw an error?
       }
@@ -301,13 +327,11 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       var mapTo = selected.mapTo,
           next = null;
       index -= mapTo < index ? 1 : 0;
-
       columns.forEach(function (c) {
         c.mapTo -= c.mapTo > mapTo ? 1 : 0;
         c.mapTo += c.mapTo >= index ? 1 : 0;
         next = c.mapTo === index + 1 ? c : next;
       });
-
       selected.mapTo = index;
       selected.moveBefore(next);
     };
@@ -316,6 +340,7 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       if (index < 0 || index >= columns.length) {
         return;
       }
+
       columns.find(function (c) {
         return c.mapTo === index;
       }).mapTo = selected.mapTo;
@@ -327,20 +352,17 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
         return col.columnFromPoint(x, y);
       });
       return column ? new ColumnAdapter(this, column) : undefined;
-    };
+    }; // function definitions
 
-    // function definitions
 
     function transform(row) {
       var parent = row[0].parent();
       var visible = [];
-
       row.forEach(function (cell, index) {
         columns[index].applyCss(cell);
         visible[columns[index].mapTo] = row[index];
         row[index].detach();
       });
-
       visible.forEach(function (cell) {
         return parent.append(cell);
       });
@@ -363,22 +385,28 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
       if (!controllers[0]) {
         return;
       }
+
       var scope = $scope;
       var tdInitializer = $scope.uiScrollTdInitializer;
+
       if (!tdInitializer) {
         tdInitializer = $scope.uiScrollTdInitializer = {
           linking: true
         };
       }
+
       if (!tdInitializer.linking) {
         scope = tdInitializer.scope;
       }
+
       var gridController = controllers[0].gridController;
+
       if (gridController.registerCell(scope, element)) {
         $scope.$on('$destroy', function () {
           return gridController.unregisterCell(scope, element);
         });
       }
+
       if (!tdInitializer.linking) {
         tdInitializer.onLink();
       }
@@ -387,6 +415,5 @@ angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout'
 });
 
 /***/ })
-
-/******/ });
+/******/ ]);
 //# sourceMappingURL=ui-scroll-grid.js.map
