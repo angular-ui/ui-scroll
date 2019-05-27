@@ -60,15 +60,23 @@ angular.module('ui.scroll', [])
           throw new Error('Expected uiScroll in form of \'_item_ in _datasource_\' but got \'' + $attr.uiScroll + '\'');
         }
 
-        function parseNumericAttr(value, defaultValue) {
+        function parseNumber(value, defaultValue, isFloat) {
+          if (!isFloat) {
+            value = value === null ? defaultValue : Math.floor(value);
+          }
+          return isNaN(value) ? defaultValue : value;
+        }
+
+        function parseNumericAttr(value, defaultValue, isFloat) {
           const result = $parse(value)($scope);
-          return isNaN(result) ? defaultValue : result;
+          return parseNumber(result, defaultValue, isFloat);
         }
 
         const BUFFER_MIN = 3;
         const BUFFER_DEFAULT = 10;
         const PADDING_MIN = 0.3;
         const PADDING_DEFAULT = 0.5;
+        const START_INDEX_DEFAULT = 1;
         const MAX_VIEWPORT_DELAY = 500;
         const VIEWPORT_POLLING_INTERVAL = 50;
 
@@ -77,8 +85,8 @@ angular.module('ui.scroll', [])
         const datasourceName = match[2];
         const viewportController = controllers[0];
         const bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
-        const padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT));
-        let startIndex = parseNumericAttr($attr.startIndex, 1);
+        const padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT, true));
+        let startIndex = parseNumericAttr($attr.startIndex, START_INDEX_DEFAULT);
         let ridActual = 0; // current data revision id
         let pending = [];
 
@@ -235,7 +243,7 @@ angular.module('ui.scroll', [])
           viewport.resetTopPadding();
           viewport.resetBottomPadding();
           if (arguments.length) {
-            startIndex = arguments[0];
+            startIndex = parseNumber(arguments[0], START_INDEX_DEFAULT, false);
           }
           buffer.reset(startIndex);
           persistDatasourceIndex(datasource, 'minIndex');

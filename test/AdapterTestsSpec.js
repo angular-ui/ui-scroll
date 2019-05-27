@@ -1096,6 +1096,45 @@ describe('uiScroll', function () {
       );
     });
 
+    it('should round numbers for startIndex', () => {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          scope.adapter.reload(23.4);
+          expect(scope.adapter.topVisible).toBe('item23');
+
+          scope.adapter.reload(-56.9);
+          expect(scope.adapter.topVisible).toBe('item-57');
+        }
+      );
+    });
+
+    it('should correctly convert string to number and round', () => {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          scope.adapter.reload('1001.14');
+          expect(scope.adapter.topVisible).toBe('item1001');
+
+          scope.adapter.reload('0');
+          expect(scope.adapter.topVisible).toBe('item0');
+        }
+      );
+    });
+
+    it('should set startIndex to default if number is invalid', () => {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          scope.adapter.reload('invalid number');
+          expect(scope.adapter.topVisible).toBe('item1');
+
+          scope.adapter.reload({});
+          expect(scope.adapter.topVisible).toBe('item1');
+
+          scope.adapter.reload(null);
+          expect(scope.adapter.topVisible).toBe('item1');
+        }
+      );
+    });
+
   });
 
   describe('adapter bof/eof/empty', function () {
