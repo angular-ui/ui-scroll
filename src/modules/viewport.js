@@ -1,6 +1,6 @@
 import Padding from './padding';
 
-export default function Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding) {
+export default function Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding, rowHeight) {
   let topPadding = null;
   let bottomPadding = null;
   const viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
@@ -23,8 +23,8 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     },
 
     createPaddingElements(template) {
-      topPadding = new Padding(template);
-      bottomPadding = new Padding(template);
+      topPadding = new Padding(template,rowHeight);
+      bottomPadding = new Padding(template,rowHeight);
       element.before(topPadding.element);
       element.after(bottomPadding.element);
       topPadding.height(0);
@@ -78,8 +78,10 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       let itemHeight = 0;
       let emptySpaceHeight = viewport.bottomDataPos() - viewport.bottomVisiblePos() - bufferPadding();
 
+      // Simple calculation now using the fixed rowHeight if available.
+      // Might be optimized if needed
       for (let i = buffer.length - 1; i >= 0; i--) {
-        itemHeight = buffer[i].element.outerHeight(true);
+        itemHeight = rowHeight ? rowHeight : buffer[i].element.outerHeight(true);
         if (overageHeight + itemHeight > emptySpaceHeight) {
           break;
         }
@@ -107,8 +109,10 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       let itemHeight = 0;
       let emptySpaceHeight = viewport.topVisiblePos() - viewport.topDataPos() - bufferPadding();
 
+      // Simple calculation now using the fixed rowHeight if available.
+      // Might be optimized if needed
       for (let i = 0; i < buffer.length; i++) {
-        itemHeight = buffer[i].element.outerHeight(true);
+        itemHeight = rowHeight ? rowHeight : buffer[i].element.outerHeight(true);
         if (overageHeight + itemHeight > emptySpaceHeight) {
           break;
         }
@@ -133,12 +137,17 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       }
 
       // precise heights calculation based on items that are in buffer or that were in buffer once
-      const visibleItemsHeight = buffer.reduce((summ, item) => summ + item.element.outerHeight(true), 0);
+      //    outerHeight(true) == [height+ padding + border + margin]
+      // The calculation bellow can certainly be replaced by:
+      //   const visibleItemsHeight = rowHeight ? rowHeight * buffer.length
+      //                                        : buffer.reduce((summ, item) => summ + item.element.outerHeight(true), 0);
+      const visibleItemsHeight = buffer.reduce((summ, item) => summ + (rowHeight ? rowHeight : item.element.outerHeight(true)), 0);
 
+      // Sinlarly, the calculation of the paddings (top & bottom) can certanly be optimizez
       let topPaddingHeight = 0, topCount = 0;
       topPadding.cache.forEach(item => {
         if(item.index < buffer.first) {
-          topPaddingHeight += item.height;
+          topPaddingHeight += item.height; // outerHeight(true) is actually stored in this data member
           topCount++;
         }
       });
@@ -146,7 +155,7 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       let bottomPaddingHeight = 0, bottomCount = 0;
       bottomPadding.cache.forEach(item => {
         if(item.index >= buffer.next) {
-          bottomPaddingHeight += item.height;
+          bottomPaddingHeight += item.height; // outerHeight(true) is actually stored in this data member
           bottomCount++;
         }
       });

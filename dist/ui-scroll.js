@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.3 -- 2019-05-27T16:57:07.461Z
+ * Version: 1.7.3 -- 2019-06-04T19:21:29.441Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -683,14 +683,14 @@ function () {
     value: function add(item) {
       for (var i = this.length - 1; i >= 0; i--) {
         if (this[i].index === item.scope.$index) {
-          this[i].height = item.element.outerHeight();
+          this[i].height = this.rowHeight || item.element.outerHeight();
           return;
         }
       }
 
       this.push({
         index: item.scope.$index,
-        height: item.element.outerHeight()
+        height: this.rowHeight || item.element.outerHeight()
       });
       this.sort(function (a, b) {
         return a.index < b.index ? -1 : a.index > b.index ? 1 : 0;
@@ -769,16 +769,18 @@ function generateElement(template) {
 var Padding =
 /*#__PURE__*/
 function () {
-  function Padding(template) {
+  function Padding(template, rowHeight) {
     padding_classCallCheck(this, Padding);
 
     this.element = generateElement(template);
     this.cache = new Cache();
+    this.cache.rowHeight = rowHeight;
   }
 
   padding_createClass(Padding, [{
     key: "height",
     value: function height() {
+      // When called wit a parameter, this sets the height of the padding
       return this.element.height.apply(this.element, arguments);
     }
   }]);
@@ -789,7 +791,7 @@ function () {
 /* harmony default export */ var modules_padding = (Padding);
 // CONCATENATED MODULE: ./src/modules/viewport.js
 
-function Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding) {
+function Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding, rowHeight) {
   var topPadding = null;
   var bottomPadding = null;
   var viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
@@ -810,8 +812,8 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       return scope;
     },
     createPaddingElements: function createPaddingElements(template) {
-      topPadding = new modules_padding(template);
-      bottomPadding = new modules_padding(template);
+      topPadding = new modules_padding(template, rowHeight);
+      bottomPadding = new modules_padding(template, rowHeight);
       element.before(topPadding.element);
       element.after(bottomPadding.element);
       topPadding.height(0);
@@ -856,10 +858,11 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       var overage = 0;
       var overageHeight = 0;
       var itemHeight = 0;
-      var emptySpaceHeight = viewport.bottomDataPos() - viewport.bottomVisiblePos() - bufferPadding();
+      var emptySpaceHeight = viewport.bottomDataPos() - viewport.bottomVisiblePos() - bufferPadding(); // Simple calculation now using the fixed rowHeight if available.
+      // Might be optimized if needed
 
       for (var i = buffer.length - 1; i >= 0; i--) {
-        itemHeight = buffer[i].element.outerHeight(true);
+        itemHeight = rowHeight ? rowHeight : buffer[i].element.outerHeight(true);
 
         if (overageHeight + itemHeight > emptySpaceHeight) {
           break;
@@ -885,10 +888,11 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       var overage = 0;
       var overageHeight = 0;
       var itemHeight = 0;
-      var emptySpaceHeight = viewport.topVisiblePos() - viewport.topDataPos() - bufferPadding();
+      var emptySpaceHeight = viewport.topVisiblePos() - viewport.topDataPos() - bufferPadding(); // Simple calculation now using the fixed rowHeight if available.
+      // Might be optimized if needed
 
       for (var i = 0; i < buffer.length; i++) {
-        itemHeight = buffer[i].element.outerHeight(true);
+        itemHeight = rowHeight ? rowHeight : buffer[i].element.outerHeight(true);
 
         if (overageHeight + itemHeight > emptySpaceHeight) {
           break;
@@ -912,16 +916,22 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       if (!buffer.length) {
         return;
       } // precise heights calculation based on items that are in buffer or that were in buffer once
+      //    outerHeight(true) == [height+ padding + border + margin]
+      // The calculation bellow can certainly be replaced by:
+      //   const visibleItemsHeight = rowHeight ? rowHeight * buffer.length
+      //                                        : buffer.reduce((summ, item) => summ + item.element.outerHeight(true), 0);
 
 
       var visibleItemsHeight = buffer.reduce(function (summ, item) {
-        return summ + item.element.outerHeight(true);
-      }, 0);
+        return summ + (rowHeight ? rowHeight : item.element.outerHeight(true));
+      }, 0); // Sinlarly, the calculation of the paddings (top & bottom) can certanly be optimizez
+
       var topPaddingHeight = 0,
           topCount = 0;
       topPadding.cache.forEach(function (item) {
         if (item.index < buffer.first) {
-          topPaddingHeight += item.height;
+          topPaddingHeight += item.height; // outerHeight(true) is actually stored in this data member
+
           topCount++;
         }
       });
@@ -929,7 +939,8 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
           bottomCount = 0;
       bottomPadding.cache.forEach(function (item) {
         if (item.index >= buffer.next) {
-          bottomPaddingHeight += item.height;
+          bottomPaddingHeight += item.height; // outerHeight(true) is actually stored in this data member
+
           bottomCount++;
         }
       });
@@ -1299,26 +1310,41 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
       return parseNumber(result, defaultValue, isFloat);
     }
 
-    var BUFFER_MIN = 3;
-    var BUFFER_DEFAULT = 10;
-    var PADDING_MIN = 0.3;
-    var PADDING_DEFAULT = 0.5;
-    var START_INDEX_DEFAULT = 1;
-    var MAX_VIEWPORT_DELAY = 500;
-    var VIEWPORT_POLLING_INTERVAL = 50;
+    var BUFFER_MIN = 3; // Minimum size of the data source request
+
+    var BUFFER_DEFAULT = 10; // Default datasource request size
+
+    var PADDING_MIN = 0.3; // Mininum # of rows in the padding area
+
+    var PADDING_DEFAULT = 0.5; // Default # of rows in the padding area
+
+    var START_INDEX_DEFAULT = 1; // Default start index when requestng the first data block
+
+    var MAX_VIEWPORT_DELAY = 500; // Max time wait (ms) to get the viewport with an height>0
+
+    var VIEWPORT_POLLING_INTERVAL = 50; // Interval used to check the initial viewport height
+
     var datasource = null;
-    var itemName = match[1];
-    var datasourceName = match[2];
-    var viewportController = controllers[0];
+    var itemName = match[1]; // Name of the index variable to publish
+
+    var datasourceName = match[2]; // Name of the datasource to request the rows from
+
+    var viewportController = controllers[0]; // ViewportController, as specified in the require option (http://websystique.com/angularjs/angularjs-custom-directives-controllers-require-option-guide/)
+
     var bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
     var padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT, true));
-    var startIndex = parseNumericAttr($attr.startIndex, START_INDEX_DEFAULT);
+    var startIndex = parseNumericAttr($attr.startIndex, START_INDEX_DEFAULT); // PHIL: Provide a fixed row height
+    // 
+
+    var rowHeight = parseNumericAttr($attr.rowheight, null, false); // Revision IDs
+    // 
+
     var ridActual = 0; // current data revision id
 
     var pending = [];
     var elementRoutines = new ElementRoutines($injector, $q);
     var buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex);
-    var viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
+    var viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding, rowHeight);
     var adapter = new modules_adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
 
     if (viewportController) {
@@ -1496,6 +1522,10 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     }
 
     function isElementVisible(wrapper) {
+      if (rowHeight) {
+        return true;
+      }
+
       return wrapper.element.height() && wrapper.element[0].offsetParent;
     }
 
@@ -1599,7 +1629,9 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
         inserted: inserted,
         animated: promises
       };
-    }
+    } // Adjust the viewport paddings
+    // 
+
 
     function updatePaddings(rid, updates) {
       // schedule another doAdjust after animation completion
@@ -1747,7 +1779,11 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
           unbindEvents();
         } else {
           adapter.calculateProperties();
-          !$scope.$$phase && $scope.$digest();
+
+          if (!rowHeight) {
+            // The digest is forced to calculate the height, which is not necessary when the height is knowm
+            !$scope.$$phase && $scope.$digest();
+          }
         }
       }
     }

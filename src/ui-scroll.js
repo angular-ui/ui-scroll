@@ -72,27 +72,34 @@ angular.module('ui.scroll', [])
           return parseNumber(result, defaultValue, isFloat);
         }
 
-        const BUFFER_MIN = 3;
-        const BUFFER_DEFAULT = 10;
-        const PADDING_MIN = 0.3;
-        const PADDING_DEFAULT = 0.5;
-        const START_INDEX_DEFAULT = 1;
-        const MAX_VIEWPORT_DELAY = 500;
-        const VIEWPORT_POLLING_INTERVAL = 50;
+        const BUFFER_MIN = 3; // Minimum size of the data source request
+        const BUFFER_DEFAULT = 10; // Default datasource request size
+        const PADDING_MIN = 0.3; // Mininum # of rows in the padding area
+        const PADDING_DEFAULT = 0.5; // Default # of rows in the padding area
+        const START_INDEX_DEFAULT = 1; // Default start index when requestng the first data block
+        const MAX_VIEWPORT_DELAY = 500; // Max time wait (ms) to get the viewport with an height>0
+        const VIEWPORT_POLLING_INTERVAL = 50; // Interval used to check the initial viewport height
 
         let datasource = null;
-        const itemName = match[1];
-        const datasourceName = match[2];
-        const viewportController = controllers[0];
-        const bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
+        const itemName = match[1]; // Name of the index variable to publish
+        const datasourceName = match[2]; // Name of the datasource to request the rows from
+        const viewportController = controllers[0]; // ViewportController, as specified in the require option (http://websystique.com/angularjs/angularjs-custom-directives-controllers-require-option-guide/)
+        const bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT)); 
         const padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT, true));
         let startIndex = parseNumericAttr($attr.startIndex, START_INDEX_DEFAULT);
+
+        // PHIL: Provide a fixed row height
+        // 
+        const rowHeight = parseNumericAttr($attr.rowheight,null,false);
+
+        // Revision IDs
+        // 
         let ridActual = 0; // current data revision id
         let pending = [];
 
         const elementRoutines = new ElementRoutines($injector, $q);
         const buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex);
-        const viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
+        const viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding, rowHeight);
         const adapter = new Adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
 
         if (viewportController) {
@@ -252,6 +259,9 @@ angular.module('ui.scroll', [])
         }
 
         function isElementVisible(wrapper) {
+          if(rowHeight) {
+            return true;
+          }
           return wrapper.element.height() && wrapper.element[0].offsetParent;
         }
 
@@ -346,6 +356,8 @@ angular.module('ui.scroll', [])
 
         }
 
+        // Adjust the viewport paddings
+        // 
         function updatePaddings(rid, updates) {
           // schedule another doAdjust after animation completion
           if (updates.animated.length) {
@@ -492,7 +504,10 @@ angular.module('ui.scroll', [])
               unbindEvents();
             } else {
               adapter.calculateProperties();
-              !$scope.$$phase && $scope.$digest();
+              if(!rowHeight) {
+                // The digest is forced to calculate the height, which is not necessary when the height is knowm
+                !$scope.$$phase && $scope.$digest();
+              }
             }
           }
         }

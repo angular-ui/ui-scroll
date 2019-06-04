@@ -4,13 +4,13 @@ class CacheProto {
   add(item) {
     for (let i = this.length - 1; i >= 0; i--) {
       if (this[i].index === item.scope.$index) {
-        this[i].height = item.element.outerHeight();
+        this[i].height = this.rowHeight || item.element.outerHeight();
         return;
       }
     }
     this.push({
       index: item.scope.$index,
-      height: item.element.outerHeight()
+      height: this.rowHeight || item.element.outerHeight()
     });
     this.sort((a, b) => ((a.index < b.index) ? -1 : ((a.index > b.index) ? 1 : 0)));
   }
@@ -71,12 +71,14 @@ function generateElement(template) {
 }
 
 class Padding {
-  constructor(template) {
+  constructor(template,rowHeight) {
     this.element = generateElement(template);
     this.cache = new Cache();
+    this.cache.rowHeight = rowHeight;
   }
 
   height() {
+    // When called wit a parameter, this sets the height of the padding
     return this.element.height.apply(this.element, arguments);
   }
 }
