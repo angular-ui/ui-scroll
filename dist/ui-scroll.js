@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.3 -- 2019-06-04T19:21:29.441Z
+ * Version: 1.7.3 -- 2019-06-04T19:31:22.331Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1670,7 +1670,10 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     function processUpdates() {
       var updates = updateDOM(); // We need the item bindings to be processed before we can do adjustments
 
-      !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+      if (!rowHeight) {
+        !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+      }
+
       updates.inserted.forEach(function (w) {
         return elementRoutines.showElement(w);
       });
