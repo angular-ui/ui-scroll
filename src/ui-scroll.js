@@ -90,7 +90,7 @@ angular.module('ui.scroll', [])
 
         // PHIL: Provide a fixed row height
         // 
-        const rowHeight = parseNumericAttr($attr.rowheight,null,false);
+        const rowHeight = parseNumericAttr($attr.rowHeight, null, false);
 
         // Revision IDs
         // 
@@ -259,9 +259,6 @@ angular.module('ui.scroll', [])
         }
 
         function isElementVisible(wrapper) {
-          if(rowHeight) {
-            return true;
-          }
           return wrapper.element.height() && wrapper.element[0].offsetParent;
         }
 
@@ -281,10 +278,12 @@ angular.module('ui.scroll', [])
 
         function insertWrapperContent(wrapper, insertAfter) {
           createElement(wrapper, insertAfter, viewport.insertElement);
-          if (!isElementVisible(wrapper)) {
+          if (!rowHeight && !isElementVisible(wrapper)) {
             wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(() => visibilityWatcher(wrapper));
           }
-          elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
+          if (!rowHeight) {
+            elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
+          }
         }
 
         function createElement(wrapper, insertAfter, insertElement) {
@@ -396,12 +395,13 @@ angular.module('ui.scroll', [])
           const updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustments
-          if(!rowHeight) {
-            !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+          !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+
+          if (!rowHeight) {
+            updates.inserted.forEach(w => elementRoutines.showElement(w));
+            updates.prepended.forEach(w => elementRoutines.showElement(w));
           }
-          
-          updates.inserted.forEach(w => elementRoutines.showElement(w));
-          updates.prepended.forEach(w => elementRoutines.showElement(w));
+
           return updates;
         }
 
