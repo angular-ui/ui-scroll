@@ -32,7 +32,7 @@
     </div>
 
     <div class="viewport" ui-scroll-viewport>
-      <div ui-scroll="item in datasource" buffer-size="10" row-height="25" adapter="adapter">
+      <div ui-scroll="item in datasource" buffer-size="10" row-height="25" allow-visibility-watch="false" adapter="adapter">
         <div class="item" ng-style="{'height': '25px'}">
 
           {{item.text}}

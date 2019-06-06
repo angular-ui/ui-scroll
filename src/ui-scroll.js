@@ -92,6 +92,9 @@ angular.module('ui.scroll', [])
         // 
         const rowHeight = parseNumericAttr($attr.rowHeight, null, false);
 
+        // PHIL: Read the visibility watch option, true by default
+        const allowVisibilityWatch = $attr.allowVisibilityWatch!=='false';
+
         // Revision IDs
         // 
         let ridActual = 0; // current data revision id
@@ -259,7 +262,7 @@ angular.module('ui.scroll', [])
         }
 
         function isElementVisible(wrapper) {
-          return wrapper.element.height() && wrapper.element[0].offsetParent;
+          return (rowHeight || wrapper.element.height()) && wrapper.element[0].offsetParent;
         }
 
         function visibilityWatcher(wrapper) {
@@ -278,10 +281,10 @@ angular.module('ui.scroll', [])
 
         function insertWrapperContent(wrapper, insertAfter) {
           createElement(wrapper, insertAfter, viewport.insertElement);
-          if (!rowHeight && !isElementVisible(wrapper)) {
+          if (allowVisibilityWatch && !isElementVisible(wrapper)) {
             wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(() => visibilityWatcher(wrapper));
           }
-          if (!rowHeight) {
+          if (allowVisibilityWatch) {
             elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
           }
         }
@@ -397,7 +400,7 @@ angular.module('ui.scroll', [])
           // We need the item bindings to be processed before we can do adjustments
           !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
 
-          if (!rowHeight) {
+          if (allowVisibilityWatch) {
             updates.inserted.forEach(w => elementRoutines.showElement(w));
             updates.prepended.forEach(w => elementRoutines.showElement(w));
           }

@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.3 -- 2019-06-04T19:31:22.331Z
+ * Version: 1.7.3 -- 2019-06-06T21:24:29.934Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1336,7 +1336,9 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     var startIndex = parseNumericAttr($attr.startIndex, START_INDEX_DEFAULT); // PHIL: Provide a fixed row height
     // 
 
-    var rowHeight = parseNumericAttr($attr.rowheight, null, false); // Revision IDs
+    var rowHeight = parseNumericAttr($attr.rowHeight, null, false); // PHIL: Read the visibility watch option, true by default
+
+    var allowVisibilityWatch = $attr.allowVisibilityWatch !== 'false'; // Revision IDs
     // 
 
     var ridActual = 0; // current data revision id
@@ -1522,11 +1524,7 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     }
 
     function isElementVisible(wrapper) {
-      if (rowHeight) {
-        return true;
-      }
-
-      return wrapper.element.height() && wrapper.element[0].offsetParent;
+      return (rowHeight || wrapper.element.height()) && wrapper.element[0].offsetParent;
     }
 
     function visibilityWatcher(wrapper) {
@@ -1549,13 +1547,15 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     function insertWrapperContent(wrapper, insertAfter) {
       createElement(wrapper, insertAfter, viewport.insertElement);
 
-      if (!isElementVisible(wrapper)) {
+      if (allowVisibilityWatch && !isElementVisible(wrapper)) {
         wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function () {
           return visibilityWatcher(wrapper);
         });
       }
 
-      elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
+      if (allowVisibilityWatch) {
+        elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
+      }
     }
 
     function createElement(wrapper, insertAfter, insertElement) {
@@ -1670,16 +1670,17 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     function processUpdates() {
       var updates = updateDOM(); // We need the item bindings to be processed before we can do adjustments
 
-      if (!rowHeight) {
-        !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+      !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+
+      if (allowVisibilityWatch) {
+        updates.inserted.forEach(function (w) {
+          return elementRoutines.showElement(w);
+        });
+        updates.prepended.forEach(function (w) {
+          return elementRoutines.showElement(w);
+        });
       }
 
-      updates.inserted.forEach(function (w) {
-        return elementRoutines.showElement(w);
-      });
-      updates.prepended.forEach(function (w) {
-        return elementRoutines.showElement(w);
-      });
       return updates;
     }
 
