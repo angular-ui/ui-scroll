@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.3 -- 2019-06-13T19:28:34.153Z
+ * Version: 1.7.3 -- 2019-06-14T00:15:18.289Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1040,7 +1040,8 @@ function () {
     value: function generatePublicContext() {
       var _this = this;
 
-      // these methods will be accessible out of ui-scroll via user defined adapter
+      this.hasPublicAttr = false; // these methods will be accessible out of ui-scroll via user defined adapter
+
       var publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty'];
 
       for (var i = publicMethods.length - 1; i >= 0; i--) {
@@ -1066,6 +1067,7 @@ function () {
             }
           }
         });
+        if (attr) _this.hasPublicAttr = true;
       };
 
       for (var _i = publicProps.length - 1; _i >= 0; _i--) {
@@ -1250,7 +1252,7 @@ function () {
 
 
 angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtras).run(['JQLiteExtras', function (JQLiteExtras) {
-  !(angular.element.fn && angular.element.fn.jquery) ? new JQLiteExtras().registerFor(angular.element) : null;
+  !window.jQuery ? new JQLiteExtras().registerFor(angular.element) : null;
   ElementRoutines.addCSSRules();
 }]).directive('uiScrollViewport', function () {
   return {
@@ -1319,7 +1321,11 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     var elementRoutines = new ElementRoutines($injector, $q);
     var buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex);
     var viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
-    var adapter = new modules_adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
+    var adapter = new modules_adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload); // See https://github.com/angular-ui/ui-scroll/pull/221
+    // We need to run $digest on a scroll event to set the desired position properties, if desired by the user
+    // Note that the use of these properties is not advised, and a developer should prefer the adapter one
+
+    var forceDigestOnScroll = adapter.hasPublicAttr;
 
     if (viewportController) {
       viewportController.adapter = adapter;
@@ -1747,7 +1753,10 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
           unbindEvents();
         } else {
           adapter.calculateProperties();
-          !$scope.$$phase && $scope.$digest();
+
+          if (forceDigestOnScroll) {
+            !$scope.$$phase && $scope.$digest();
+          }
         }
       }
     }

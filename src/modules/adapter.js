@@ -42,6 +42,8 @@ class Adapter {
   }
 
   generatePublicContext() {
+    this.hasPublicAttr = false;
+
     // these methods will be accessible out of ui-scroll via user defined adapter
     const publicMethods = ['reload', 'applyUpdates', 'append', 'prepend', 'isBOF', 'isEOF', 'isEmpty'];
     for (let i = publicMethods.length - 1; i >= 0; i--) {
@@ -62,6 +64,7 @@ class Adapter {
           }
         }
       });
+      if(attr) this.hasPublicAttr = true;
     }
 
     // non-read-only public property

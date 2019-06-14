@@ -95,6 +95,11 @@ angular.module('ui.scroll', [])
         const viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
         const adapter = new Adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
 
+        // See https://github.com/angular-ui/ui-scroll/pull/221
+        // We need to run $digest on a scroll event to set the desired position properties, if desired by the user
+        // Note that the use of these properties is not advised, and a developer should prefer the adapter one
+        const forceDigestOnScroll = adapter.hasPublicAttr;
+
         if (viewportController) {
           viewportController.adapter = adapter;
         }
@@ -492,7 +497,9 @@ angular.module('ui.scroll', [])
               unbindEvents();
             } else {
               adapter.calculateProperties();
-              !$scope.$$phase && $scope.$digest();
+              if(forceDigestOnScroll) {
+                !$scope.$$phase && $scope.$digest();
+              }
             }
           }
         }
