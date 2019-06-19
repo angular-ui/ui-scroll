@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+		<title>jQuery</title>
+		<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.8/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="jquery.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-controller="mainController" ng-app="application">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">jQuery</h1>
+
+		<div class="description">
+			In case the Angular App works with jQuery, the ui-scroll should use jQuery.
+			Otherwise, the ui-scroll should use jqLiteExtras.
+		</div>
+		
+		<div class="actions">
+			<span ng-if="jqueryVersion">jQuery version is {{jqueryVersion}}</span>
+			<span ng-if="!jqueryVersion">jQuery is not loaded</span>
+		</div>
+
+		<div class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
+			<div class="item" ui-scroll="item in datasource" adapter="adapter">{{item}}</div>
+		</div>
+
+	</div>
+
+</body>
+</html>

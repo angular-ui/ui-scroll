@@ -8,7 +8,8 @@ angular.module('ui.scroll', [])
 
   .constant('JQLiteExtras', JQLiteExtras)
   .run(['JQLiteExtras', (JQLiteExtras) => {
-    !(angular.element.fn && angular.element.fn.jquery) ? new JQLiteExtras().registerFor(angular.element) : null;
+    const elt = angular.element;
+    !(window.jQuery && elt.fn && elt.fn.jquery) ? (new JQLiteExtras()).registerFor(elt) : null;
     ElementRoutines.addCSSRules();
   }])
 
