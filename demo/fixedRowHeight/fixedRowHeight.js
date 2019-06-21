@@ -1,6 +1,16 @@
 angular.module('application', ['ui.scroll'])
 
-  .controller('MainCtrl', ($scope) => {
+  .directive( 'hello', function() {
+	  return {
+		  restrict: "E",
+		  scope:{
+			  content: '@'
+		  },
+		  template: '<div>{{"ct="+content}}</div>'
+	  }
+  })
+
+  .controller('MainCtrl', ($scope,$timeout) => {
     $scope.hello = 'Hello Main Controller!';
 
     let min = -150, max = 200, delay = 0, inputs = 10;
@@ -26,7 +36,11 @@ angular.module('application', ['ui.scroll'])
     $scope.datasource = {
       get: (index, count, success) => {
         console.log('Getting ' + count + ' items started from ' + index + '...');
-        setTimeout(() => {
+        $timeout(() => {
+          if(index<0) {
+            count = Math.max(0,count+index);
+            index = 0;
+          }
           const result = [];
           const start = Math.max(min, index);
           const end = Math.min(index + count - 1, max);
@@ -40,7 +54,7 @@ angular.module('application', ['ui.scroll'])
           }
           console.log('Got ' + result.length + ' items [' + start + '..' + end + ']');
           success(result);
-        }, delay);
+        }, 500);
       }
     };
 

@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <title>Fixed Row Height</title>
-  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.5/angular.js"></script>
   <script src="../../dist/ui-scroll.js"></script>
   <script src="fixedRowHeight.js"></script>
   <link rel="stylesheet" href="../css/style.css" type="text/css" />
@@ -31,33 +31,17 @@
       <input ng-model="perfSlowCount" size="4" /> performance decrease coefficient (0 - fastest)
     </div>
 
-    <div class="viewport" ui-scroll-viewport>
-      <div ui-scroll="item in datasource" buffer-size="10" row-height="25" allow-visibility-watch="false" adapter="adapter">
-        <div class="item" ng-style="{'height': '25px'}">
-
-          {{item.text}}
-          <span ng-repeat="(key, value) in item.input track by $index">
-            <input ng-model="value.value" size="2" />
+    <div class="viewport" ui-scroll-viewport style="height: 500px">
+      <div ui-scroll="item in datasource" start-index="0"  buffer-size="5" padding="0.3" row-height="25" allow-visibility-watch="false" adapter="adapter">
+          <div>
+            {{item}}
+          <span ng-repeat="value in item">
+            {{value}}
           </span>
-          {{getSum(item)}}
-          {{getMul(item)}}
-          {{getText(item)}}
-
-          <span ng-repeat="(key, value) in perfSlowCountList track by $index">
-            <div style="height: 1px; width: 1px; overflow: hidden;">
-              {{item.text}}
-              <span ng-repeat="(key, value) in item.input track by $index">
-                <input ng-model="value.value" size="2" />
-              </span>
-              {{getSum(item)}}
-              {{getMul(item)}}
-              {{getText(item)}}
-            </div>
-          </span>
-
         </div>
       </div>
     </div>
+  </div>
 
 </body>
 
