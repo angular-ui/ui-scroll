@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.3 -- 2019-06-06T21:24:29.934Z
+ * Version: 1.7.3 -- 2019-06-21T02:53:37.275Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -509,7 +509,7 @@ function () {
 
 
 // CONCATENATED MODULE: ./src/modules/buffer.js
-function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
+function ScrollBuffer(elementRoutines, bufferSize, startIndex, rowHeight) {
   var buffer = Object.create(Array.prototype);
   angular.extend(buffer, {
     size: bufferSize,
@@ -653,7 +653,7 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         if (wrapper.element[0].offsetParent) {
           // element style is not display:none
           top = Math.min(top, wrapper.element.offset().top);
-          bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
+          bottom = Math.max(bottom, wrapper.element.offset().top + (rowHeight ? rowHeight : wrapper.element.outerHeight(true)));
         }
       });
       return Math.max(0, bottom - top);
@@ -1261,7 +1261,8 @@ function () {
 
 
 angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtras).run(['JQLiteExtras', function (JQLiteExtras) {
-  !window.jQuery ? new JQLiteExtras().registerFor(angular.element) : null;
+  !(angular.element.fn && angular.element.fn.jquery) ? new JQLiteExtras().registerFor(angular.element) : null; //!window.jQuery ? (new JQLiteExtras()).registerFor(angular.element) : null;
+
   ElementRoutines.addCSSRules();
 }]).directive('uiScrollViewport', function () {
   return {
@@ -1345,7 +1346,7 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
 
     var pending = [];
     var elementRoutines = new ElementRoutines($injector, $q);
-    var buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex);
+    var buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex, rowHeight);
     var viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding, rowHeight);
     var adapter = new modules_adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
 

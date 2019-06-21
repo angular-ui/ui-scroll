@@ -101,7 +101,7 @@ angular.module('ui.scroll', [])
         let pending = [];
 
         const elementRoutines = new ElementRoutines($injector, $q);
-        const buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex);
+        const buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex, rowHeight);
         const viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding, rowHeight);
         const adapter = new Adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
 

@@ -1,4 +1,4 @@
-export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
+export default function ScrollBuffer(elementRoutines, bufferSize, startIndex, rowHeight) {
   const buffer = Object.create(Array.prototype);
 
   angular.extend(buffer, {
@@ -140,7 +140,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         if (wrapper.element[0].offsetParent) {
           // element style is not display:none
           top = Math.min(top, wrapper.element.offset().top);
-          bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
+          bottom = Math.max(bottom, wrapper.element.offset().top + (rowHeight ? rowHeight : wrapper.element.outerHeight(true)));
         }
       });
       return Math.max(0, bottom - top);
