@@ -64,6 +64,14 @@ class Adapter {
       });
     }
 
+    // read-only immediately calculated public properties
+    const publicPropsImmediate = ['bufferFirst', 'bufferLast', 'bufferLength'];
+    for (let i = publicPropsImmediate.length - 1; i >= 0; i--) {
+      Object.defineProperty(this.publicContext, publicPropsImmediate[i], {
+        get: () => this[publicPropsImmediate[i]]
+      });
+    }
+
     // non-read-only public property
     Object.defineProperty(this.publicContext, 'disabled', {
       get: () => this.disabled,
@@ -85,6 +93,18 @@ class Adapter {
 
   isEmpty() {
     return !this.buffer.length;
+  }
+
+  get bufferLength() {
+    return this.buffer.getItems().length;
+  }
+
+  get bufferFirst() {
+    return this.buffer.getFirstItem();
+  }
+
+  get bufferLast() {
+    return this.buffer.getLastItem();
   }
 
   append(newItems) {
