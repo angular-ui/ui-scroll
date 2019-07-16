@@ -15,3 +15,11 @@ before_script:
 
 script:
 - npm run build
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $github_token
+  local_dir: demo
+  on:
+    branch: master
