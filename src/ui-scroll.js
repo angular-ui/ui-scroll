@@ -241,6 +241,7 @@ angular.module('ui.scroll', [])
         }
 
         function reload() {
+          unbindEvents();
           viewport.resetTopPadding();
           viewport.resetBottomPadding();
           if (arguments.length) {
