@@ -1,7 +1,7 @@
 {
   "name": "angular-ui-scroll",
   "description": "AngularJS infinite scrolling module",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "src": "./src/",
   "public": "./dist/",
   "main": "./dist/ui-scroll.js",
