@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Buffer first, last, length</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.1/angular.js"></script>
+  <script src="../../dist/ui-scroll.js"></script>
+  <script src="bufferItems.js"></script>
+  <link rel="stylesheet" href="../css/style.css" type="text/css" />
+</head>
+
+<body ng-app="application" ng-controller="mainController">
+
+  <div class="cont cont-global">
+
+    <a class="back" href="../index.html">browse other examples</a>
+
+    <h1 class="page-header page-header-exapmle">Buffer first, last, length</h1>
+
+    <div class="description">
+      The ui-scroll Adapter has 3 read-only properties which provide information of current ui-scroll Buffer state.
+      The buffer contains some visible items and some items that are out of visible part of the viewport.
+      So with these properties we can get the topmost and the bottommost items that the ui-scroll is dealing with at the moment.
+      At the template's layer it may look like
+
+      <div class="code">
+        <pre>{{adapter.bufferFirst}<!---->}
+{{adapter.bufferLast}<!---->}
+{{adapter.bufferLength}<!---->}
+
+&lt;li ui-scroll="item in datasource" adapter="adapter"&gt;{{item}<!---->}&lt;/li&gt;</pre>
+      </div>
+    </div>
+
+    <div class="info">
+      <div class="info-item"><span class="info-item-label">First buffer</span> {{adapter.bufferFirst}}</div>
+      <div class="info-item"><span class="info-item-label">Last buffer</span> {{adapter.bufferLast}}</div>
+      <div class="info-item"><span class="info-item-label">Buffer length:</span> {{adapter.bufferLength}}</div>
+    </div>
+
+    <div class="viewport" id="viewport-listScroller" ui-scroll-viewport>
+      <ul>
+        <li ui-scroll="item in datasource" adapter="adapter">{{item}}</li>
+      </ul>
+    </div>
+
+  </div>
+
+</body>
+
+</html>

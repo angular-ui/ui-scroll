@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.4 -- 2019-07-31T12:43:10.830Z
+ * Version: 1.7.5 -- 2019-08-03T14:30:38.178Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -657,6 +657,29 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         }
       });
       return Math.max(0, bottom - top);
+    },
+    getItems: function getItems() {
+      return buffer.filter(function (item) {
+        return item.op === 'none';
+      });
+    },
+    getFirstItem: function getFirstItem() {
+      var list = buffer.getItems();
+
+      if (!list.length) {
+        return null;
+      }
+
+      return list[0].item;
+    },
+    getLastItem: function getLastItem() {
+      var list = buffer.getItems();
+
+      if (!list.length) {
+        return null;
+      }
+
+      return list[list.length - 1].item;
     }
   });
   buffer.reset(startIndex);
@@ -1070,6 +1093,21 @@ function () {
 
       for (var _i = publicProps.length - 1; _i >= 0; _i--) {
         _loop(_i);
+      } // read-only immediately calculated public properties
+
+
+      var publicPropsImmediate = ['bufferFirst', 'bufferLast', 'bufferLength'];
+
+      var _loop2 = function _loop2(_i2) {
+        Object.defineProperty(_this.publicContext, publicPropsImmediate[_i2], {
+          get: function get() {
+            return _this[publicPropsImmediate[_i2]];
+          }
+        });
+      };
+
+      for (var _i2 = publicPropsImmediate.length - 1; _i2 >= 0; _i2--) {
+        _loop2(_i2);
       } // non-read-only public property
 
 
@@ -1236,6 +1274,21 @@ function () {
           break;
         }
       }
+    }
+  }, {
+    key: "bufferLength",
+    get: function get() {
+      return this.buffer.getItems().length;
+    }
+  }, {
+    key: "bufferFirst",
+    get: function get() {
+      return this.buffer.getFirstItem();
+    }
+  }, {
+    key: "bufferLast",
+    get: function get() {
+      return this.buffer.getLastItem();
     }
   }]);
 

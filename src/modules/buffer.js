@@ -144,6 +144,26 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         }
       });
       return Math.max(0, bottom - top);
+    },
+
+    getItems() {
+      return buffer.filter(item => item.op === 'none');
+    },
+
+    getFirstItem() {
+      const list = buffer.getItems();
+      if (!list.length) {
+        return null;
+      }
+      return list[0].item;
+    },
+
+    getLastItem() {
+      const list = buffer.getItems();
+      if (!list.length) {
+        return null;
+      }
+      return list[list.length - 1].item;
     }
 
   });

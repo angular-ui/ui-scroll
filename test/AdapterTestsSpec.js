@@ -1300,4 +1300,32 @@ describe('uiScroll', function () {
 
   });
 
+  describe('adapter bufferFirst, bufferLast, bufferLength', function () {
+    var scrollSettings = { datasource: 'myMultipageDatasource', adapter: 'adapter', viewportHeight: 80, itemHeight: 20 };
+
+    it('without scroll', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          expect(scope.adapter.bufferFirst).toBe('item1');
+          expect(scope.adapter.bufferLast).toBe('item10');
+          expect(scope.adapter.bufferLength).toBe(10);
+        }
+      );
+    });
+
+    it('scroll to the bottom', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {          
+          viewport.scrollTop(10000);
+          viewport.trigger('scroll');
+
+          expect(scope.adapter.bufferFirst).toBe('item5');
+          expect(scope.adapter.bufferLast).toBe('item20');
+          expect(scope.adapter.bufferLength).toBe(16);
+        }
+      );
+    });
+
+  });
+
 });

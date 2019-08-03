@@ -249,6 +249,8 @@ Adapter object implements the following properties:
 * `topVisible`/`bottomVisible` - a read only reference to the item currently in the topmost/bottommost visible position.
 * `topVisibleElement`/`bottomVisibleElement` - a read only reference to the DOM element currently in the topmost/bottommost visible position.
 * `topVisibleScope`/`bottomVisibleScope` - a read only reference to the scope created for the item currently in the topmost/bottommost visible position.
+* `bufferLength` - a number of items currently in the ui-scroll buffer; equal to a number of DOM elements that are present in visible and invisible parts of the ui-scroll viewport.
+* `bufferFirst`/`bufferLast` - a read only reference to the first/last item currently in the ui-scroll buffer.
 * `disabled` - setting `disabled` to `true` disables scroller's scroll/resize events handlers. This can be useful if you have multiple scrollers within the same scrollViewport and you want to prevent some of them from responding to the events.
 
 Adapter object implements the following methods
@@ -474,6 +476,10 @@ Pull Rerquest should include source code (./scr) changes, may include tests (./t
 
 
 ## Change log
+
+### v1.7.5
+ * Added bufferFirst, bufferLast, bufferLength read-only properties to the Adapter.
+ * Fixed reload unsubscribe issue [226](https://github.com/angular-ui/ui-scroll/issues/226).
 
 ### v1.7.4
  * Fixed jqLite/jQuery confrontation.
