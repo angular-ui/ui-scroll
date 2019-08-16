@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.4 -- 2019-07-31T12:43:10.830Z
+ * Version: 1.7.4 -- 2019-08-16T21:00:27.398Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -509,7 +509,7 @@ function () {
 
 
 // CONCATENATED MODULE: ./src/modules/buffer.js
-function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
+function ScrollBuffer(elementRoutines, bufferSize, startIndex, rowHeight) {
   var buffer = Object.create(Array.prototype);
   angular.extend(buffer, {
     size: bufferSize,
@@ -519,10 +519,22 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
       buffer.bof = false;
       buffer.first = startIndex;
       buffer.next = startIndex;
-      buffer.minIndex = startIndex;
+      buffer.minIndex = startIndex; // Calculated when data is effectively accessed
+
       buffer.maxIndex = startIndex;
-      buffer.minIndexUser = null;
+      buffer.minIndexUser = null; // as set by the user (datasource)
+
       buffer.maxIndexUser = null;
+    },
+    // PHIL: set the new index to be displayed without resettng the sroll and the calculated min/max
+    // Note that this actually make sense with a fixed rowHeight when the scroll value can be calculated
+    // for a # of rows
+    resetStartIndex: function resetStartIndex(startIndex) {
+      buffer.remove(0, buffer.length);
+      buffer.eof = buffer.eof && startIndex == buffer.maxIndex;
+      buffer.bof = buffer.bof && startIndex == buffer.maxIndex;
+      buffer.first = startIndex;
+      buffer.next = startIndex;
     },
     append: function append(items) {
       items.forEach(function (item) {
@@ -653,10 +665,33 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         if (wrapper.element[0].offsetParent) {
           // element style is not display:none
           top = Math.min(top, wrapper.element.offset().top);
-          bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
+          bottom = Math.max(bottom, wrapper.element.offset().top + (rowHeight || wrapper.element.outerHeight(true)));
         }
       });
       return Math.max(0, bottom - top);
+    },
+    getItems: function getItems() {
+      return buffer.filter(function (item) {
+        return item.op === 'none';
+      });
+    },
+    getFirstItem: function getFirstItem() {
+      var list = buffer.getItems();
+
+      if (!list.length) {
+        return null;
+      }
+
+      return list[0].item;
+    },
+    getLastItem: function getLastItem() {
+      var list = buffer.getItems();
+
+      if (!list.length) {
+        return null;
+      }
+
+      return list[list.length - 1].item;
     }
   });
   buffer.reset(startIndex);
@@ -764,21 +799,30 @@ function generateElement(template) {
   }
 
   return element;
-}
+} //
+// Padding represents the dummy element added to both the top and the bottom of the scrolling container
+// It holds the element, as well as a cache for the items (rows) height. In case of a fixed rowHeight, the 
+// cache is not used and thus is not created.
+//
+
 
 var Padding =
 /*#__PURE__*/
 function () {
-  function Padding(template) {
+  function Padding(template, useCache) {
     padding_classCallCheck(this, Padding);
 
     this.element = generateElement(template);
-    this.cache = new Cache();
+
+    if (useCache) {
+      this.cache = new Cache();
+    }
   }
 
   padding_createClass(Padding, [{
     key: "height",
     value: function height() {
+      // When called with a parameter, this sets the height of the padding
       return this.element.height.apply(this.element, arguments);
     }
   }]);
@@ -789,7 +833,7 @@ function () {
 /* harmony default export */ var modules_padding = (Padding);
 // CONCATENATED MODULE: ./src/modules/viewport.js
 
-function Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding) {
+function Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding, rowHeight) {
   var topPadding = null;
   var bottomPadding = null;
   var viewport = viewportController && viewportController.viewport ? viewportController.viewport : angular.element(window);
@@ -803,15 +847,41 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
 
   function bufferPadding() {
     return viewport.outerHeight() * padding; // some extra space to initiate preload
-  }
+  } // 
+  //   Viewport measurements
+  //
+  //     +----------------+  0
+  //     |      top       |
+  //     |    padding     |
+  //     +----------------+  topDataPos() [=topPadding.height]
+  //     |   not visible  |
+  //     |      items     |
+  //     +----------------+  topVisiblePos() [=viewport.scrollTop]
+  //     |                |
+  //     |     visible    |
+  //     |      items     |
+  //     |                |
+  //     +----------------+  bottomVisiblePos() [=viewport.scrollTop+viewport.height]
+  //     |   not visible  |
+  //     |      items     |
+  //     +----------------+  bottomDataPos() [=scrollHeight-bottomPadding.height]
+  //     |    bottom      |
+  //     |    padding     |
+  //     +----------------+  scrollHeight 
+  //
+  // bufferPadding is some extra space we have top & bottom to allow infinite scrolling
+  //          bufferPadding = viewport.outerHeight() * padding
+  //
+  //  bottomVisiblePos() - topVisiblePos() == viewport.outerHeight()
+
 
   angular.extend(viewport, {
     getScope: function getScope() {
       return scope;
     },
     createPaddingElements: function createPaddingElements(template) {
-      topPadding = new modules_padding(template);
-      bottomPadding = new modules_padding(template);
+      topPadding = new modules_padding(template, !rowHeight);
+      bottomPadding = new modules_padding(template, !rowHeight);
       element.before(topPadding.element);
       element.after(bottomPadding.element);
       topPadding.height(0);
@@ -854,20 +924,25 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
     clipBottom: function clipBottom() {
       // clip the invisible items off the bottom
       var overage = 0;
-      var overageHeight = 0;
-      var itemHeight = 0;
       var emptySpaceHeight = viewport.bottomDataPos() - viewport.bottomVisiblePos() - bufferPadding();
 
-      for (var i = buffer.length - 1; i >= 0; i--) {
-        itemHeight = buffer[i].element.outerHeight(true);
+      if (rowHeight) {
+        overage = Math.min(buffer.length, Math.floor(emptySpaceHeight / rowHeight));
+      } else {
+        var itemHeight = 0;
+        var overageHeight = 0;
 
-        if (overageHeight + itemHeight > emptySpaceHeight) {
-          break;
+        for (var i = buffer.length - 1; i >= 0; i--) {
+          itemHeight = buffer[i].element.outerHeight(true);
+
+          if (overageHeight + itemHeight > emptySpaceHeight) {
+            break;
+          }
+
+          bottomPadding.cache.add(buffer[i]);
+          overageHeight += itemHeight;
+          overage++;
         }
-
-        bottomPadding.cache.add(buffer[i]);
-        overageHeight += itemHeight;
-        overage++;
       }
 
       if (overage > 0) {
@@ -884,19 +959,25 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       // clip the invisible items off the top
       var overage = 0;
       var overageHeight = 0;
-      var itemHeight = 0;
       var emptySpaceHeight = viewport.topVisiblePos() - viewport.topDataPos() - bufferPadding();
 
-      for (var i = 0; i < buffer.length; i++) {
-        itemHeight = buffer[i].element.outerHeight(true);
+      if (rowHeight) {
+        overage = Math.min(buffer.length, Math.floor(emptySpaceHeight / rowHeight));
+        overageHeight = overage * rowHeight;
+      } else {
+        var itemHeight = 0;
 
-        if (overageHeight + itemHeight > emptySpaceHeight) {
-          break;
+        for (var i = 0; i < buffer.length; i++) {
+          itemHeight = buffer[i].element.outerHeight(true);
+
+          if (overageHeight + itemHeight > emptySpaceHeight) {
+            break;
+          }
+
+          topPadding.cache.add(buffer[i]);
+          overageHeight += itemHeight;
+          overage++;
         }
-
-        topPadding.cache.add(buffer[i]);
-        overageHeight += itemHeight;
-        overage++;
       }
 
       if (overage > 0) {
@@ -908,7 +989,37 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
         buffer.first += overage;
       }
     },
+    // PHIL: remove all the entries in the buffer without changing the scrollbar, nor the scroll position
+    // and update the padding accordingly
+    // It is designed to work with non fixed rowHeight, although it will need more tests in this area...
+    scrollTo: function scrollTo(first) {
+      if (rowHeight) {
+        first = Math.min(first, buffer.maxIndex);
+        first = Math.max(first, buffer.minIndex);
+        var min = buffer.getAbsMinIndex();
+        var max = buffer.getAbsMaxIndex(); // Adjust the paddings before removing the elements to avoid touching the scroll top position
+
+        topPadding.height((first - min) * rowHeight);
+        bottomPadding.height((max + 1 - first) * rowHeight);
+        buffer.resetStartIndex(first);
+      } else {
+        buffer.resetStartIndex(first);
+        viewport.adjustPaddings();
+      }
+    },
     adjustPaddings: function adjustPaddings() {
+      if (rowHeight) {
+        var min = buffer.getAbsMinIndex();
+        var max = buffer.getAbsMaxIndex();
+        topPadding.height((buffer.first - min) * rowHeight); // PHIL: next points to the next possible item, while max is the index of the last one.
+        // In order to make them compatible, we should add one to max
+        // Also, it looks like buffer is not changing maxIndex when an element is inserted/appended
+        // Not sure if this can have a consequence or not....
+
+        bottomPadding.height((max + 1 - buffer.next) * rowHeight);
+        return;
+      }
+
       if (!buffer.length) {
         return;
       } // precise heights calculation based on items that are in buffer or that were in buffer once
@@ -970,15 +1081,26 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
     },
     resetTopPadding: function resetTopPadding() {
       topPadding.height(0);
-      topPadding.cache.clear();
+
+      if (topPadding.cache) {
+        topPadding.cache.clear();
+      }
     },
     resetBottomPadding: function resetBottomPadding() {
       bottomPadding.height(0);
-      bottomPadding.cache.clear();
+
+      if (bottomPadding.cache) {
+        bottomPadding.cache.clear();
+      }
     },
     removeCacheItem: function removeCacheItem(item, isTop) {
-      topPadding.cache.remove(item, isTop);
-      bottomPadding.cache.remove(item, isTop);
+      if (topPadding.cache) {
+        topPadding.cache.remove(item, isTop);
+      }
+
+      if (bottomPadding.cache) {
+        bottomPadding.cache.remove(item, isTop);
+      }
     },
     removeItem: function removeItem(item) {
       this.removeCacheItem(item);
@@ -1070,6 +1192,21 @@ function () {
 
       for (var _i = publicProps.length - 1; _i >= 0; _i--) {
         _loop(_i);
+      } // read-only immediately calculated public properties
+
+
+      var publicPropsImmediate = ['bufferFirst', 'bufferLast', 'bufferLength'];
+
+      var _loop2 = function _loop2(_i2) {
+        Object.defineProperty(_this.publicContext, publicPropsImmediate[_i2], {
+          get: function get() {
+            return _this[publicPropsImmediate[_i2]];
+          }
+        });
+      };
+
+      for (var _i2 = publicPropsImmediate.length - 1; _i2 >= 0; _i2--) {
+        _loop2(_i2);
       } // non-read-only public property
 
 
@@ -1120,29 +1257,31 @@ function () {
     }
   }, {
     key: "applyUpdates",
-    value: function applyUpdates(arg1, arg2) {
+    value: function applyUpdates(arg1, arg2, arg3) {
       if (typeof arg1 === 'function') {
-        this.applyUpdatesFunc(arg1);
+        this.applyUpdatesFunc(arg1, arg2);
       } else {
-        this.applyUpdatesIndex(arg1, arg2);
+        this.applyUpdatesIndex(arg1, arg2, arg3);
       }
 
       this.doAdjust();
     }
   }, {
     key: "applyUpdatesFunc",
-    value: function applyUpdatesFunc(cb) {
+    value: function applyUpdatesFunc(cb, options) {
       var _this2 = this;
 
       this.buffer.slice(0).forEach(function (wrapper) {
         // we need to do it on the buffer clone, because buffer content
         // may change as we iterate through
-        _this2.applyUpdate(wrapper, cb(wrapper.item, wrapper.scope, wrapper.element));
+        _this2.applyUpdate(wrapper, cb(wrapper.item, wrapper.scope, wrapper.element), options);
       });
     }
   }, {
     key: "applyUpdatesIndex",
     value: function applyUpdatesIndex(index, newItems) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
       if (index % 1 !== 0) {
         throw new Error('applyUpdates - ' + index + ' is not a valid index (should be an integer)');
       }
@@ -1151,13 +1290,13 @@ function () {
 
 
       if (_index >= 0 && _index < this.buffer.length) {
-        this.applyUpdate(this.buffer[_index], newItems);
+        this.applyUpdate(this.buffer[_index], newItems, options);
       } // out-of-buffer case: deletion may affect Paddings
       else if (index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
           if (angular.isArray(newItems) && !newItems.length) {
-            this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
+            this.viewport.removeCacheItem(index, !options.immutableTop && index === this.buffer.minIndex);
 
-            if (index === this.buffer.getAbsMinIndex()) {
+            if (!options.immutableTop && index === this.buffer.getAbsMinIndex()) {
               this.buffer.incrementMinIndex();
             } else {
               this.buffer.decrementMaxIndex();
@@ -1170,6 +1309,8 @@ function () {
     value: function applyUpdate(wrapper, newItems) {
       var _this3 = this;
 
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
       if (!angular.isArray(newItems)) {
         return;
       }
@@ -1181,7 +1322,7 @@ function () {
       })) {
         wrapper.op = 'remove';
 
-        if (position === 0 && !newItems.length) {
+        if (!options.immutableTop && position === 0 && !newItems.length) {
           wrapper._op = 'isTop'; // to catch "first" edge case on remove
         }
       }
@@ -1191,7 +1332,7 @@ function () {
           position--;
         } else {
           // 3 parameter (isTop) is to catch "first" edge case on insert
-          _this3.buffer.insert(position + 1, newItem, position === -1);
+          _this3.buffer.insert(position + 1, newItem, !options.immutableTop && position === -1);
         }
       });
     }
@@ -1236,6 +1377,21 @@ function () {
           break;
         }
       }
+    }
+  }, {
+    key: "bufferLength",
+    get: function get() {
+      return this.buffer.getItems().length;
+    }
+  }, {
+    key: "bufferFirst",
+    get: function get() {
+      return this.buffer.getFirstItem();
+    }
+  }, {
+    key: "bufferLast",
+    get: function get() {
+      return this.buffer.getLastItem();
     }
   }]);
 
@@ -1300,31 +1456,52 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
       return parseNumber(result, defaultValue, isFloat);
     }
 
-    var BUFFER_MIN = 3;
-    var BUFFER_DEFAULT = 10;
-    var PADDING_MIN = 0.3;
-    var PADDING_DEFAULT = 0.5;
-    var START_INDEX_DEFAULT = 1;
-    var MAX_VIEWPORT_DELAY = 500;
-    var VIEWPORT_POLLING_INTERVAL = 50;
+    var BUFFER_MIN = 3; // Minimum size of the data source request
+
+    var BUFFER_DEFAULT = 10; // Default datasource request size
+
+    var PADDING_MIN = 0.3; // Mininum # of rows in the padding area
+
+    var PADDING_DEFAULT = 0.5; // Default # of rows in the padding area
+
+    var START_INDEX_DEFAULT = 1; // Default start index when requestng the first data block
+
+    var MAX_VIEWPORT_DELAY = 500; // Max time wait (ms) to get the viewport with an height>0
+
+    var VIEWPORT_POLLING_INTERVAL = 50; // Interval used to check the initial viewport height
+
     var datasource = null;
-    var itemName = match[1];
-    var datasourceName = match[2];
-    var viewportController = controllers[0];
+    var itemName = match[1]; // Name of the index variable to publish
+
+    var datasourceName = match[2]; // Name of the datasource to request the rows from
+
+    var viewportController = controllers[0]; // ViewportController, as specified in the require option (http://websystique.com/angularjs/angularjs-custom-directives-controllers-require-option-guide/)
+
     var bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
     var padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT, true));
-    var startIndex = parseNumericAttr($attr.startIndex, START_INDEX_DEFAULT);
+    var startIndex = parseNumericAttr($attr.startIndex, START_INDEX_DEFAULT); // PHIL: Provide a fixed row height
+    // 
+
+    var rowHeight = parseNumericAttr($attr.rowHeight, null, false); // PHIL: Read the visibility watch option, true by default
+
+    var allowVisibilityWatch = $attr.allowVisibilityWatch !== 'false'; // Revision IDs
+    // 
+
     var ridActual = 0; // current data revision id
 
     var pending = [];
     var elementRoutines = new ElementRoutines($injector, $q);
-    var buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex);
-    var viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
+    var buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex, rowHeight);
+    var viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding, rowHeight);
     var adapter = new modules_adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
 
     if (viewportController) {
       viewportController.adapter = adapter;
-    }
+    } // Currently, we only debounce the scroll events when a fixed rowHeight is provided
+    // as the unit tests will have to be adapted to support this feature
+
+
+    var scPreviousScrollTop = -1;
 
     var isDatasourceValid = function isDatasourceValid() {
       return Object.prototype.toString.call(datasource) === '[object Object]' && typeof datasource.get === 'function';
@@ -1474,7 +1651,12 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
 
     function bindEvents() {
       viewport.bind('resize', resizeAndScrollHandler);
-      viewport.bind('scroll', resizeAndScrollHandler);
+      viewport.bind('scroll', resizeAndScrollHandler); // If a scroll event happened while the handler was not bounded, emit the scroll
+
+      if (isPendingScroll()) {
+        // Do it immediately
+        _resizeAndScrollHandler();
+      }
     }
 
     function unbindEvents() {
@@ -1492,13 +1674,21 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
       }
 
       buffer.reset(startIndex);
+      scPreviousScrollTop = -1; // Avoid isScrollPending() to be true
+
       persistDatasourceIndex(datasource, 'minIndex');
       persistDatasourceIndex(datasource, 'maxIndex');
       doAdjust();
     }
 
+    function scrollTo(first) {
+      unbindEvents();
+      viewport.scrollTo(first);
+      doAdjust();
+    }
+
     function isElementVisible(wrapper) {
-      return wrapper.element.height() && wrapper.element[0].offsetParent;
+      return (rowHeight || wrapper.element.height()) && wrapper.element[0].offsetParent;
     }
 
     function visibilityWatcher(wrapper) {
@@ -1521,13 +1711,15 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     function insertWrapperContent(wrapper, insertAfter) {
       createElement(wrapper, insertAfter, viewport.insertElement);
 
-      if (!isElementVisible(wrapper)) {
+      if (allowVisibilityWatch && !isElementVisible(wrapper)) {
         wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(function () {
           return visibilityWatcher(wrapper);
         });
       }
 
-      elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
+      if (allowVisibilityWatch) {
+        elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
+      }
     }
 
     function createElement(wrapper, insertAfter, insertElement) {
@@ -1601,7 +1793,9 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
         inserted: inserted,
         animated: promises
       };
-    }
+    } // Adjust the viewport paddings
+    // 
+
 
     function updatePaddings(rid, updates) {
       // schedule another doAdjust after animation completion
@@ -1616,6 +1810,14 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     }
 
     function enqueueFetch(rid, updates) {
+      // If there is a scroll pending, we don't enqueue the fetch as the scroll might be an absolute scroll
+      // So we don't need to load top or bottom
+      // This happens when there is a scroll frenzi, and the $digest is slow enough, so it stacks the calls without
+      // giving a chance to the scroll event to be emitted and processed.
+      if (isPendingScroll()) {
+        return;
+      }
+
       if (viewport.shouldLoadBottom()) {
         if (!updates || buffer.effectiveHeight(updates.inserted) > 0) {
           // this means that at least one item appended in the last batch has height > 0
@@ -1639,14 +1841,23 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
 
     function processUpdates() {
       var updates = updateDOM(); // We need the item bindings to be processed before we can do adjustments
+      // If there  are no changes and the row-height is static, then ignore it!
 
-      !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
-      updates.inserted.forEach(function (w) {
-        return elementRoutines.showElement(w);
-      });
-      updates.prepended.forEach(function (w) {
-        return elementRoutines.showElement(w);
-      });
+      var changes = updates.animated.length + updates.inserted.length + updates.prepended.length + updates.removed.length;
+
+      if (changes || !rowHeight) {
+        !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+      }
+
+      if (allowVisibilityWatch) {
+        updates.inserted.forEach(function (w) {
+          return elementRoutines.showElement(w);
+        });
+        updates.prepended.forEach(function (w) {
+          return elementRoutines.showElement(w);
+        });
+      }
+
       return updates;
     }
 
@@ -1741,15 +1952,64 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
       }
     }
 
+    function isPendingScroll() {
+      if (rowHeight) {
+        // Maybe the scroll changed but the event has *not* yet being dispatched
+        // because of the $digest running and taking to long
+        var sc = viewport.scrollTop();
+
+        if (sc != scPreviousScrollTop && scPreviousScrollTop >= 0) {
+          return true;
+        }
+      }
+
+      return false;
+    } // Deboucing the scroll events avois intermediate $digest when scrolling fast
+
+
+    var scTimer;
+
     function resizeAndScrollHandler() {
+      if (rowHeight) {
+        if (scTimer) clearTimeout(scTimer);
+        scTimer = setTimeout(_resizeAndScrollHandler, 20);
+      } else {
+        _resizeAndScrollHandler();
+      }
+    }
+
+    function _resizeAndScrollHandler() {
       if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
+        // Absolute positioning currently only works when a fixed rowHeight is provided
+        // We might isolate the averegaRowHeight calculation in the viewport to provide an estimate
+        // and provide a reasonable behavior with variable height as well
+        if (rowHeight) {
+          scPreviousScrollTop = viewport.scrollTop();
+          var newFirst = Math.floor(viewport.scrollTop() / rowHeight) + buffer.minIndex;
+          newFirst = Math.max(buffer.minIndex, Math.min(buffer.maxIndex, newFirst)); // Bound the scroll
+
+          if (newFirst < buffer.first - bufferSize) {
+            scrollTo(newFirst);
+            return;
+          }
+
+          if (newFirst >= buffer.next) {
+            scrollTo(newFirst);
+            return;
+          }
+        }
+
         enqueueFetch(ridActual);
 
         if (pending.length) {
           unbindEvents();
         } else {
           adapter.calculateProperties();
-          !$scope.$$phase && $scope.$digest();
+
+          if (!rowHeight) {
+            // The digest is forced to calculate the height, which is not necessary when the height is knowm
+            !$scope.$$phase && $scope.$digest();
+          }
         }
       }
     }

@@ -73,32 +73,46 @@ angular.module('ui.scroll', [])
           return parseNumber(result, defaultValue, isFloat);
         }
 
-        const BUFFER_MIN = 3;
-        const BUFFER_DEFAULT = 10;
-        const PADDING_MIN = 0.3;
-        const PADDING_DEFAULT = 0.5;
-        const START_INDEX_DEFAULT = 1;
-        const MAX_VIEWPORT_DELAY = 500;
-        const VIEWPORT_POLLING_INTERVAL = 50;
+        const BUFFER_MIN = 3; // Minimum size of the data source request
+        const BUFFER_DEFAULT = 10; // Default datasource request size
+        const PADDING_MIN = 0.3; // Mininum # of rows in the padding area
+        const PADDING_DEFAULT = 0.5; // Default # of rows in the padding area
+        const START_INDEX_DEFAULT = 1; // Default start index when requestng the first data block
+        const MAX_VIEWPORT_DELAY = 500; // Max time wait (ms) to get the viewport with an height>0
+        const VIEWPORT_POLLING_INTERVAL = 50; // Interval used to check the initial viewport height
 
         let datasource = null;
-        const itemName = match[1];
-        const datasourceName = match[2];
-        const viewportController = controllers[0];
-        const bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
+        const itemName = match[1]; // Name of the index variable to publish
+        const datasourceName = match[2]; // Name of the datasource to request the rows from
+        const viewportController = controllers[0]; // ViewportController, as specified in the require option (http://websystique.com/angularjs/angularjs-custom-directives-controllers-require-option-guide/)
+        const bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT)); 
         const padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT, true));
         let startIndex = parseNumericAttr($attr.startIndex, START_INDEX_DEFAULT);
+
+        // PHIL: Provide a fixed row height
+        // 
+        const rowHeight = parseNumericAttr($attr.rowHeight, null, false);
+
+        // PHIL: Read the visibility watch option, true by default
+        const allowVisibilityWatch = $attr.allowVisibilityWatch!=='false';
+
+        // Revision IDs
+        // 
         let ridActual = 0; // current data revision id
         let pending = [];
 
         const elementRoutines = new ElementRoutines($injector, $q);
-        const buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex);
-        const viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding);
+        const buffer = new ScrollBuffer(elementRoutines, bufferSize, startIndex, rowHeight);
+        const viewport = new Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding, rowHeight);
         const adapter = new Adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload);
 
         if (viewportController) {
           viewportController.adapter = adapter;
         }
+
+        // Currently, we only debounce the scroll events when a fixed rowHeight is provided
+        // as the unit tests will have to be adapted to support this feature
+        let scPreviousScrollTop=-1;
 
         const isDatasourceValid = () =>
           Object.prototype.toString.call(datasource) === '[object Object]' && typeof datasource.get === 'function';
@@ -233,6 +247,11 @@ angular.module('ui.scroll', [])
         function bindEvents() {
           viewport.bind('resize', resizeAndScrollHandler);
           viewport.bind('scroll', resizeAndScrollHandler);
+          // If a scroll event happened while the handler was not bounded, emit the scroll
+          if(isPendingScroll()) {
+            // Do it immediately
+            _resizeAndScrollHandler();
+          }
         }
 
         function unbindEvents() {
@@ -248,13 +267,20 @@ angular.module('ui.scroll', [])
             startIndex = parseNumber(arguments[0], START_INDEX_DEFAULT, false);
           }
           buffer.reset(startIndex);
+          scPreviousScrollTop = -1; // Avoid isScrollPending() to be true
           persistDatasourceIndex(datasource, 'minIndex');
           persistDatasourceIndex(datasource, 'maxIndex');
           doAdjust();
         }
 
+        function scrollTo(first) {
+          unbindEvents();
+          viewport.scrollTo(first);
+          doAdjust();
+        }
+
         function isElementVisible(wrapper) {
-          return wrapper.element.height() && wrapper.element[0].offsetParent;
+          return (rowHeight || wrapper.element.height()) && wrapper.element[0].offsetParent;
         }
 
         function visibilityWatcher(wrapper) {
@@ -273,10 +299,12 @@ angular.module('ui.scroll', [])
 
         function insertWrapperContent(wrapper, insertAfter) {
           createElement(wrapper, insertAfter, viewport.insertElement);
-          if (!isElementVisible(wrapper)) {
+          if (allowVisibilityWatch && !isElementVisible(wrapper)) {
             wrapper.unregisterVisibilityWatcher = wrapper.scope.$watch(() => visibilityWatcher(wrapper));
           }
-          elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
+          if (allowVisibilityWatch) {
+            elementRoutines.hideElement(wrapper); // hide inserted elements before data binding
+          }
         }
 
         function createElement(wrapper, insertAfter, insertElement) {
@@ -348,6 +376,8 @@ angular.module('ui.scroll', [])
 
         }
 
+        // Adjust the viewport paddings
+        // 
         function updatePaddings(rid, updates) {
           // schedule another doAdjust after animation completion
           if (updates.animated.length) {
@@ -361,6 +391,14 @@ angular.module('ui.scroll', [])
         }
 
         function enqueueFetch(rid, updates) {
+          // If there is a scroll pending, we don't enqueue the fetch as the scroll might be an absolute scroll
+          // So we don't need to load top or bottom
+          // This happens when there is a scroll frenzi, and the $digest is slow enough, so it stacks the calls without
+          // giving a chance to the scroll event to be emitted and processed.
+          if(isPendingScroll()) {
+            return;
+          }
+
           if (viewport.shouldLoadBottom()) {
             if (!updates || buffer.effectiveHeight(updates.inserted) > 0) {
               // this means that at least one item appended in the last batch has height > 0
@@ -386,10 +424,17 @@ angular.module('ui.scroll', [])
           const updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustments
-          !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+          // If there  are no changes and the row-height is static, then ignore it!
+          const changes = updates.animated.length+updates.inserted.length+updates.prepended.length+updates.removed.length;
+          if(changes || !rowHeight) {
+            !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+          }
 
-          updates.inserted.forEach(w => elementRoutines.showElement(w));
-          updates.prepended.forEach(w => elementRoutines.showElement(w));
+          if (allowVisibilityWatch) {
+            updates.inserted.forEach(w => elementRoutines.showElement(w));
+            updates.prepended.forEach(w => elementRoutines.showElement(w));
+          }
+
           return updates;
         }
 
@@ -484,9 +529,48 @@ angular.module('ui.scroll', [])
             }
           }
         }
+    
+        function isPendingScroll() {
+          if(rowHeight) {
+            // Maybe the scroll changed but the event has *not* yet being dispatched
+            // because of the $digest running and taking to long
+            var sc = viewport.scrollTop();
+            if(sc!=scPreviousScrollTop && scPreviousScrollTop>=0) {
+              return true;
+            }
+          }
+          return false;
+        }
 
+        // Deboucing the scroll events avois intermediate $digest when scrolling fast
+        let scTimer;
         function resizeAndScrollHandler() {
+          if (rowHeight) {
+            if (scTimer) clearTimeout(scTimer);
+            scTimer = setTimeout(_resizeAndScrollHandler, 20);
+          } else {
+            _resizeAndScrollHandler();
+          }
+        }
+
+        function _resizeAndScrollHandler() {
           if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
+            // Absolute positioning currently only works when a fixed rowHeight is provided
+            // We might isolate the averegaRowHeight calculation in the viewport to provide an estimate
+            // and provide a reasonable behavior with variable height as well
+            if(rowHeight) {
+              scPreviousScrollTop = viewport.scrollTop();
+              let newFirst = Math.floor(viewport.scrollTop() / rowHeight) + buffer.minIndex;
+              newFirst = Math.max(buffer.minIndex, Math.min(buffer.maxIndex,newFirst)); // Bound the scroll
+              if (newFirst<buffer.first-bufferSize) {
+                scrollTo(newFirst);
+                return;
+              }         
+              if (newFirst>=buffer.next) {
+                scrollTo(newFirst);
+                return;
+              }         
+            }
 
             enqueueFetch(ridActual);
 
@@ -494,7 +578,10 @@ angular.module('ui.scroll', [])
               unbindEvents();
             } else {
               adapter.calculateProperties();
-              !$scope.$$phase && $scope.$digest();
+              if(!rowHeight) {
+                // The digest is forced to calculate the height, which is not necessary when the height is knowm
+                !$scope.$$phase && $scope.$digest();
+              }
             }
           }
         }

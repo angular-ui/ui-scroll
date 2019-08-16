@@ -1,9 +1,8 @@
 angular.module('application', ['ui.scroll'])
-	.controller('mainController', [
-		'$scope', '$log', '$timeout', function ($scope, console, $timeout) {
-			var datasource = {};
+	.factory('datasource', ['$log', '$timeout',
+		function (console, $timeout) {
 
-			datasource.get = function (index, count, success) {
+			var get = function (index, count, success) {
 				$timeout(function () {
 					var result = [];
 					for (var i = index; i <= index + count - 1; i++) {
@@ -13,6 +12,8 @@ angular.module('application', ['ui.scroll'])
 				}, 100);
 			};
 
-			$scope.datasource = datasource;
+			return {
+				get: get
+			};
 		}
 	]);

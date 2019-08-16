@@ -1,4 +1,4 @@
-export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
+export default function ScrollBuffer(elementRoutines, bufferSize, startIndex, rowHeight) {
   const buffer = Object.create(Array.prototype);
 
   angular.extend(buffer, {
@@ -10,10 +10,21 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
       buffer.bof = false;
       buffer.first = startIndex;
       buffer.next = startIndex;
-      buffer.minIndex = startIndex;
+      buffer.minIndex = startIndex; // Calculated when data is effectively accessed
       buffer.maxIndex = startIndex;
-      buffer.minIndexUser = null;
+      buffer.minIndexUser = null; // as set by the user (datasource)
       buffer.maxIndexUser = null;
+    },
+    
+    // PHIL: set the new index to be displayed without resettng the sroll and the calculated min/max
+    // Note that this actually make sense with a fixed rowHeight when the scroll value can be calculated
+    // for a # of rows
+    resetStartIndex: function resetStartIndex(startIndex) {
+      buffer.remove(0, buffer.length);
+      buffer.eof = buffer.eof && startIndex==buffer.maxIndex;
+      buffer.bof = buffer.bof && startIndex==buffer.maxIndex;
+      buffer.first = startIndex;
+      buffer.next = startIndex;
     },
 
     append(items) {
@@ -140,10 +151,30 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         if (wrapper.element[0].offsetParent) {
           // element style is not display:none
           top = Math.min(top, wrapper.element.offset().top);
-          bottom = Math.max(bottom, wrapper.element.offset().top + wrapper.element.outerHeight(true));
+          bottom = Math.max(bottom, wrapper.element.offset().top + (rowHeight || wrapper.element.outerHeight(true)));
         }
       });
       return Math.max(0, bottom - top);
+    },
+
+    getItems() {
+      return buffer.filter(item => item.op === 'none');
+    },
+
+    getFirstItem() {
+      const list = buffer.getItems();
+      if (!list.length) {
+        return null;
+      }
+      return list[0].item;
+    },
+
+    getLastItem() {
+      const list = buffer.getItems();
+      if (!list.length) {
+        return null;
+      }
+      return list[list.length - 1].item;
     }
 
   });

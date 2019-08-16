@@ -26,6 +26,7 @@
     "hint-test": "jshint --verbose test",
     "hint-src": "jshint --verbose src",
     "build": "npm run hint-src && npm run prod-build && npm run hint-test && npm run prod-test",
+    "build-dev": "npm run hint-src && npm run prod-build",
     "dev": "npm-run-all --parallel dev-server dev-test",
     "test": "npm run dev-test",
     "start": "npm run dev-server"
