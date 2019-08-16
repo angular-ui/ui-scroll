@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.5 -- 2019-08-03T14:30:38.178Z
+ * Version: 1.7.5 -- 2019-08-16T00:32:35.657Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1158,29 +1158,31 @@ function () {
     }
   }, {
     key: "applyUpdates",
-    value: function applyUpdates(arg1, arg2) {
+    value: function applyUpdates(arg1, arg2, arg3) {
       if (typeof arg1 === 'function') {
-        this.applyUpdatesFunc(arg1);
+        this.applyUpdatesFunc(arg1, arg2);
       } else {
-        this.applyUpdatesIndex(arg1, arg2);
+        this.applyUpdatesIndex(arg1, arg2, arg3);
       }
 
       this.doAdjust();
     }
   }, {
     key: "applyUpdatesFunc",
-    value: function applyUpdatesFunc(cb) {
+    value: function applyUpdatesFunc(cb, options) {
       var _this2 = this;
 
       this.buffer.slice(0).forEach(function (wrapper) {
         // we need to do it on the buffer clone, because buffer content
         // may change as we iterate through
-        _this2.applyUpdate(wrapper, cb(wrapper.item, wrapper.scope, wrapper.element));
+        _this2.applyUpdate(wrapper, cb(wrapper.item, wrapper.scope, wrapper.element), options);
       });
     }
   }, {
     key: "applyUpdatesIndex",
     value: function applyUpdatesIndex(index, newItems) {
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
       if (index % 1 !== 0) {
         throw new Error('applyUpdates - ' + index + ' is not a valid index (should be an integer)');
       }
@@ -1189,13 +1191,13 @@ function () {
 
 
       if (_index >= 0 && _index < this.buffer.length) {
-        this.applyUpdate(this.buffer[_index], newItems);
+        this.applyUpdate(this.buffer[_index], newItems, options);
       } // out-of-buffer case: deletion may affect Paddings
       else if (index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
           if (angular.isArray(newItems) && !newItems.length) {
-            this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
+            this.viewport.removeCacheItem(index, !options.immutableTop && index === this.buffer.minIndex);
 
-            if (index === this.buffer.getAbsMinIndex()) {
+            if (!options.immutableTop && index === this.buffer.getAbsMinIndex()) {
               this.buffer.incrementMinIndex();
             } else {
               this.buffer.decrementMaxIndex();
@@ -1208,6 +1210,8 @@ function () {
     value: function applyUpdate(wrapper, newItems) {
       var _this3 = this;
 
+      var options = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
+
       if (!angular.isArray(newItems)) {
         return;
       }
@@ -1219,7 +1223,7 @@ function () {
       })) {
         wrapper.op = 'remove';
 
-        if (position === 0 && !newItems.length) {
+        if (!options.immutableTop && position === 0 && !newItems.length) {
           wrapper._op = 'isTop'; // to catch "first" edge case on remove
         }
       }
@@ -1229,7 +1233,7 @@ function () {
           position--;
         } else {
           // 3 parameter (isTop) is to catch "first" edge case on insert
-          _this3.buffer.insert(position + 1, newItem, position === -1);
+          _this3.buffer.insert(position + 1, newItem, !options.immutableTop && position === -1);
         }
       });
     }
