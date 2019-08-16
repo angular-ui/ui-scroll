@@ -110,6 +110,10 @@ angular.module('ui.scroll', [])
           viewportController.adapter = adapter;
         }
 
+        // Currently, we only debounce the scroll events when a fixed rowHeight is provided
+        // as the unit tests will have to be adapted to support this feature
+        let scPreviousScrollTop=-1;
+
         const isDatasourceValid = () =>
           Object.prototype.toString.call(datasource) === '[object Object]' && typeof datasource.get === 'function';
 
@@ -243,6 +247,11 @@ angular.module('ui.scroll', [])
         function bindEvents() {
           viewport.bind('resize', resizeAndScrollHandler);
           viewport.bind('scroll', resizeAndScrollHandler);
+          // If a scroll event happened while the handler was not bounded, emit the scroll
+          if(isPendingScroll()) {
+            // Do it immediately
+            _resizeAndScrollHandler();
+          }
         }
 
         function unbindEvents() {
@@ -251,14 +260,22 @@ angular.module('ui.scroll', [])
         }
 
         function reload() {
+          unbindEvents();
           viewport.resetTopPadding();
           viewport.resetBottomPadding();
           if (arguments.length) {
             startIndex = parseNumber(arguments[0], START_INDEX_DEFAULT, false);
           }
           buffer.reset(startIndex);
+          scPreviousScrollTop = -1; // Avoid isScrollPending() to be true
           persistDatasourceIndex(datasource, 'minIndex');
           persistDatasourceIndex(datasource, 'maxIndex');
+          doAdjust();
+        }
+
+        function scrollTo(first) {
+          unbindEvents();
+          viewport.scrollTo(first);
           doAdjust();
         }
 
@@ -374,6 +391,14 @@ angular.module('ui.scroll', [])
         }
 
         function enqueueFetch(rid, updates) {
+          // If there is a scroll pending, we don't enqueue the fetch as the scroll might be an absolute scroll
+          // So we don't need to load top or bottom
+          // This happens when there is a scroll frenzi, and the $digest is slow enough, so it stacks the calls without
+          // giving a chance to the scroll event to be emitted and processed.
+          if(isPendingScroll()) {
+            return;
+          }
+
           if (viewport.shouldLoadBottom()) {
             if (!updates || buffer.effectiveHeight(updates.inserted) > 0) {
               // this means that at least one item appended in the last batch has height > 0
@@ -399,7 +424,11 @@ angular.module('ui.scroll', [])
           const updates = updateDOM();
 
           // We need the item bindings to be processed before we can do adjustments
-          !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+          // If there  are no changes and the row-height is static, then ignore it!
+          const changes = updates.animated.length+updates.inserted.length+updates.prepended.length+updates.removed.length;
+          if(changes || !rowHeight) {
+            !$scope.$$phase && !$rootScope.$$phase && $scope.$digest();
+          }
 
           if (allowVisibilityWatch) {
             updates.inserted.forEach(w => elementRoutines.showElement(w));
@@ -500,9 +529,48 @@ angular.module('ui.scroll', [])
             }
           }
         }
+    
+        function isPendingScroll() {
+          if(rowHeight) {
+            // Maybe the scroll changed but the event has *not* yet being dispatched
+            // because of the $digest running and taking to long
+            var sc = viewport.scrollTop();
+            if(sc!=scPreviousScrollTop && scPreviousScrollTop>=0) {
+              return true;
+            }
+          }
+          return false;
+        }
 
+        // Deboucing the scroll events avois intermediate $digest when scrolling fast
+        let scTimer;
         function resizeAndScrollHandler() {
+          if (rowHeight) {
+            if (scTimer) clearTimeout(scTimer);
+            scTimer = setTimeout(_resizeAndScrollHandler, 20);
+          } else {
+            _resizeAndScrollHandler();
+          }
+        }
+
+        function _resizeAndScrollHandler() {
           if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
+            // Absolute positioning currently only works when a fixed rowHeight is provided
+            // We might isolate the averegaRowHeight calculation in the viewport to provide an estimate
+            // and provide a reasonable behavior with variable height as well
+            if(rowHeight) {
+              scPreviousScrollTop = viewport.scrollTop();
+              let newFirst = Math.floor(viewport.scrollTop() / rowHeight) + buffer.minIndex;
+              newFirst = Math.max(buffer.minIndex, Math.min(buffer.maxIndex,newFirst)); // Bound the scroll
+              if (newFirst<buffer.first-bufferSize) {
+                scrollTo(newFirst);
+                return;
+              }         
+              if (newFirst>=buffer.next) {
+                scrollTo(newFirst);
+                return;
+              }         
+            }
 
             enqueueFetch(ridActual);
 

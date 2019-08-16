@@ -4,13 +4,13 @@ class CacheProto {
   add(item) {
     for (let i = this.length - 1; i >= 0; i--) {
       if (this[i].index === item.scope.$index) {
-        this[i].height = this.rowHeight || item.element.outerHeight();
+        this[i].height = item.element.outerHeight();
         return;
       }
     }
     this.push({
       index: item.scope.$index,
-      height: this.rowHeight || item.element.outerHeight()
+      height: item.element.outerHeight()
     });
     this.sort((a, b) => ((a.index < b.index) ? -1 : ((a.index > b.index) ? 1 : 0)));
   }
@@ -70,15 +70,21 @@ function generateElement(template) {
   return element;
 }
 
+//
+// Padding represents the dummy element added to both the top and the bottom of the scrolling container
+// It holds the element, as well as a cache for the items (rows) height. In case of a fixed rowHeight, the 
+// cache is not used and thus is not created.
+//
 class Padding {
-  constructor(template,rowHeight) {
+  constructor(template,useCache) {
     this.element = generateElement(template);
-    this.cache = new Cache();
-    this.cache.rowHeight = rowHeight;
+    if(useCache) {
+      this.cache = new Cache();
+    }
   }
 
   height() {
-    // When called wit a parameter, this sets the height of the padding
+    // When called with a parameter, this sets the height of the padding
     return this.element.height.apply(this.element, arguments);
   }
 }
