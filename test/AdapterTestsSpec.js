@@ -189,60 +189,115 @@ describe('uiScroll', function () {
       );
     });
 
-    it('should delete selected (middle) row', function () {
+    it('should delete selected (first) row with immutableTop option', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
 
           scope.adapter.applyUpdates(
             function (item) {
-              if (item === 'two') {
+              if (item === 'one') {
                 return [];
               }
-            }
+            },
+            { immutableTop: true }
           );
 
           expect(viewport.children().length).toBe(4);
 
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
+          var row2 = viewport.children()[1];
           expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: three');
+          expect(row2.innerHTML).toBe('1: two');
+
+          var row3 = viewport.children()[2];
+          expect(row3.tagName.toLowerCase()).toBe('div');
+          expect(row3.innerHTML).toBe('2: three');
 
           expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: two');
           expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: three');
         }
       );
     });
 
+    var deleteMiddleRow = function (viewport, scope, options) {
+
+      scope.adapter.applyUpdates(
+        function (item) {
+          if (item === 'two') {
+            return [];
+          }
+        },
+        options
+      );
+
+      expect(viewport.children().length).toBe(4);
+
+      var row1 = viewport.children()[1];
+      expect(row1.tagName.toLowerCase()).toBe('div');
+      expect(row1.innerHTML).toBe('1: one');
+
+      var row2 = viewport.children()[2];
+      expect(row2.tagName.toLowerCase()).toBe('div');
+      expect(row2.innerHTML).toBe('2: three');
+
+      expect(scope.adapter).toBeTruthy();
+      expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+      expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: three');
+    };
+
+    it('should delete selected (middle) row', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          deleteMiddleRow(viewport, scope);
+        }
+      );
+    });
+
+    it('should delete selected (middle) row with immutableTop option', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          deleteMiddleRow(viewport, scope, { immutableTop: true });
+        }
+      );
+    });
+
+    var deleteLastRow = function (viewport, scope, options) {
+      scope.adapter.applyUpdates(
+        function (item) {
+          if (item === 'three') {
+            return [];
+          }
+        },
+        options
+      );
+
+      expect(viewport.children().length).toBe(4);
+
+      var row1 = viewport.children()[1];
+      expect(row1.tagName.toLowerCase()).toBe('div');
+      expect(row1.innerHTML).toBe('1: one');
+
+      var row2 = viewport.children()[2];
+      expect(row2.tagName.toLowerCase()).toBe('div');
+      expect(row2.innerHTML).toBe('2: two');
+
+      expect(scope.adapter).toBeTruthy();
+      expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+      expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: two');
+    };
+
     it('should delete selected (last) row', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
+          deleteLastRow(viewport, scope);
+        }
+      );
+    });
 
-          scope.adapter.applyUpdates(
-            function (item) {
-              if (item === 'three') {
-                return [];
-              }
-            }
-          );
-
-          expect(viewport.children().length).toBe(4);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: two');
+    it('should delete selected (last) row with immutableTop option', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          deleteLastRow(viewport, scope, { immutableTop: true });
         }
       );
     });
@@ -284,28 +339,28 @@ describe('uiScroll', function () {
       );
     });
 
-    it('should insert a new element after selected (first) row', function () {
-      var scrollSettings = {datasource: 'myObjectDatasource', adapter: 'adapter', template: '{{$index}}: {{item.text}}'};
+    it('should insert a new element before selected (first) row with immutableTop option', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
 
           scope.adapter.applyUpdates(
             function (item) {
-              if (item.text === 'one') {
-                return [item, {text: 'after one'}];
+              if (item === 'one') {
+                return ['before one', item];
               }
-            }
+            },
+            { immutableTop: true }
           );
 
           expect(viewport.children().length).toBe(6);
 
           var row0 = viewport.children()[1];
           expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('1: one');
+          expect(row0.innerHTML).toBe('1: before one');
 
           var row1 = viewport.children()[2];
           expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: after one');
+          expect(row1.innerHTML).toBe('2: one');
 
           var row2 = viewport.children()[3];
           expect(row2.tagName.toLowerCase()).toBe('div');
@@ -316,82 +371,157 @@ describe('uiScroll', function () {
           expect(row3.innerHTML).toBe('4: three');
 
           expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: before one');
           expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
         }
       );
     });
+
+    var insertAfterFirst = function (viewport, scope, options) {
+      scope.adapter.applyUpdates(
+        function (item) {
+          if (item.text === 'one') {
+            return [item, { text: 'after one' }];
+          }
+        },
+        options
+      );
+
+      expect(viewport.children().length).toBe(6);
+
+      var row0 = viewport.children()[1];
+      expect(row0.tagName.toLowerCase()).toBe('div');
+      expect(row0.innerHTML).toBe('1: one');
+
+      var row1 = viewport.children()[2];
+      expect(row1.tagName.toLowerCase()).toBe('div');
+      expect(row1.innerHTML).toBe('2: after one');
+
+      var row2 = viewport.children()[3];
+      expect(row2.tagName.toLowerCase()).toBe('div');
+      expect(row2.innerHTML).toBe('3: two');
+
+      var row3 = viewport.children()[4];
+      expect(row3.tagName.toLowerCase()).toBe('div');
+      expect(row3.innerHTML).toBe('4: three');
+
+      expect(scope.adapter).toBeTruthy();
+      expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+      expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
+    };
+
+    it('should insert a new element after selected (first) row', function () {
+      var scrollSettings = { datasource: 'myObjectDatasource', adapter: 'adapter', template: '{{$index}}: {{item.text}}' };
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          insertAfterFirst(viewport, scope);
+        }
+      );
+    });
+
+    it('should insert a new element after selected (first) row with immutableTop option', function () {
+      var scrollSettings = { datasource: 'myObjectDatasource', adapter: 'adapter', template: '{{$index}}: {{item.text}}' };
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          insertAfterFirst(viewport, scope, { immutableTop: true });
+        }
+      );
+    });
+
+    var insertBeforeSecond = function (viewport, scope, options) {
+      scope.adapter.applyUpdates(
+        function (item) {
+          if (item === 'two') {
+            return ['before two', item];
+          }
+        },
+        options
+      );
+
+      expect(viewport.children().length).toBe(6);
+
+      var row0 = viewport.children()[1];
+      expect(row0.tagName.toLowerCase()).toBe('div');
+      expect(row0.innerHTML).toBe('1: one');
+
+      var row1 = viewport.children()[2];
+      expect(row1.tagName.toLowerCase()).toBe('div');
+      expect(row1.innerHTML).toBe('2: before two');
+
+      var row2 = viewport.children()[3];
+      expect(row2.tagName.toLowerCase()).toBe('div');
+      expect(row2.innerHTML).toBe('3: two');
+
+      var row3 = viewport.children()[4];
+      expect(row3.tagName.toLowerCase()).toBe('div');
+      expect(row3.innerHTML).toBe('4: three');
+
+      expect(scope.adapter).toBeTruthy();
+      expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+      expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
+    };
 
     it('should insert a new element before selected (middle) row', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
-
-          scope.adapter.applyUpdates(
-            function (item) {
-              if (item === 'two') {
-                return ['before two', item];
-              }
-            }
-          );
-
-          expect(viewport.children().length).toBe(6);
-
-          var row0 = viewport.children()[1];
-          expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('1: one');
-
-          var row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: before two');
-
-          var row2 = viewport.children()[3];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('3: two');
-
-          var row3 = viewport.children()[4];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('4: three');
-
-          expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
+          insertBeforeSecond(viewport, scope);
         }
       );
     });
 
+    it('should insert a new element before selected (middle) row with immutableTop option', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          insertBeforeSecond(viewport, scope, { immutableTop: true });
+        }
+      );
+    });
+
+    var insertAfterLast = function (viewport, scope, options) {
+      scope.adapter.applyUpdates(
+        function (item) {
+          if (item === 'three') {
+            return [item, 'after three'];
+          }
+        },
+        options
+      );
+
+      expect(viewport.children().length).toBe(6);
+
+      var row0 = viewport.children()[1];
+      expect(row0.tagName.toLowerCase()).toBe('div');
+      expect(row0.innerHTML).toBe('1: one');
+
+      var row1 = viewport.children()[2];
+      expect(row1.tagName.toLowerCase()).toBe('div');
+      expect(row1.innerHTML).toBe('2: two');
+
+      var row2 = viewport.children()[3];
+      expect(row2.tagName.toLowerCase()).toBe('div');
+      expect(row2.innerHTML).toBe('3: three');
+
+      var row3 = viewport.children()[4];
+      expect(row3.tagName.toLowerCase()).toBe('div');
+      expect(row3.innerHTML).toBe('4: after three');
+
+      expect(scope.adapter).toBeTruthy();
+      expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+      expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: after three');
+    };
+
     it('should insert a new element after selected (last) row', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
+          insertAfterLast(viewport, scope);
+        }
+      );
+    });
 
-          scope.adapter.applyUpdates(
-            function (item) {
-              if (item === 'three') {
-                return [item, 'after three'];
-              }
-            }
-          );
-
-          expect(viewport.children().length).toBe(6);
-
-          var row0 = viewport.children()[1];
-          expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('1: one');
-
-          var row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: two');
-
-          var row2 = viewport.children()[3];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('3: three');
-
-          var row3 = viewport.children()[4];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('4: after three');
-
-          expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: after three');
+    it('should insert a new element after selected (last) row with immutableTop option', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          insertAfterLast(viewport, scope, { immutableTop: true });
         }
       );
     });
@@ -558,50 +688,89 @@ describe('uiScroll', function () {
       );
     });
 
-    it('should delete selected (middle) row', function () {
+    it('should delete selected (first) row with immutableTop option', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
 
-          scope.adapter.applyUpdates(2, []);
+          expect(viewport.children().length).toBe(5);
+
+          scope.adapter.applyUpdates(1, [], { immutableTop: true });
 
           expect(viewport.children().length).toBe(4);
 
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
+          var row2 = viewport.children()[1];
           expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: three');
+          expect(row2.innerHTML).toBe('1: two');
+
+          var row3 = viewport.children()[2];
+          expect(row3.tagName.toLowerCase()).toBe('div');
+          expect(row3.innerHTML).toBe('2: three');
 
           expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: two');
           expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: three');
         }
       );
     });
 
+    var deleteMiddleRow = function (viewport, scope, options) {
+      scope.adapter.applyUpdates(2, [], options);
+
+      expect(viewport.children().length).toBe(4);
+
+      var row1 = viewport.children()[1];
+      expect(row1.tagName.toLowerCase()).toBe('div');
+      expect(row1.innerHTML).toBe('1: one');
+
+      var row2 = viewport.children()[2];
+      expect(row2.tagName.toLowerCase()).toBe('div');
+      expect(row2.innerHTML).toBe('2: three');
+
+      expect(scope.adapter).toBeTruthy();
+      expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+      expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: three');
+    };
+
+    it('should delete selected (middle) row', function () {
+      runTest(scrollSettings, function (viewport, scope) {
+        deleteMiddleRow(viewport, scope);
+      });
+    });
+
+    it('should delete selected (middle) row with immutableTop option', function () {
+      runTest(scrollSettings, function (viewport, scope) {
+        deleteMiddleRow(viewport, scope, { immutableTop: true });
+      });
+    });
+
+    var deleteLastRow = function (viewport, scope) {
+      scope.adapter.applyUpdates(3, []);
+
+      expect(viewport.children().length).toBe(4);
+
+      var row1 = viewport.children()[1];
+      expect(row1.tagName.toLowerCase()).toBe('div');
+      expect(row1.innerHTML).toBe('1: one');
+
+      var row2 = viewport.children()[2];
+      expect(row2.tagName.toLowerCase()).toBe('div');
+      expect(row2.innerHTML).toBe('2: two');
+
+      expect(scope.adapter).toBeTruthy();
+      expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+      expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: two');
+    };
+
     it('should delete selected (last) row', function () {
-      runTest(scrollSettings,
-        function (viewport, scope) {
+      runTest(scrollSettings, function (viewport, scope) {
+        deleteLastRow(viewport, scope);
+      });
+    });
 
-          scope.adapter.applyUpdates(3, []);
-
-          expect(viewport.children().length).toBe(4);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: two');
-        }
-      );
+    it('should delete selected (last) row with immutableTop option', function () {
+      runTest(scrollSettings, function (viewport, scope) {
+        deleteLastRow(viewport, scope, { immutableTop: true });
+      });
     });
 
     it('should insert a new element before selected (first) row', function () {
@@ -635,96 +804,161 @@ describe('uiScroll', function () {
       );
     });
 
+    it('should insert a new element before selected (first) row with immutableTop option', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+
+          expect(viewport.children().length).toBe(5);
+
+          scope.adapter.applyUpdates(1, ['before one', 'one'], { immutableTop: true });
+
+          expect(viewport.children().length).toBe(6);
+
+          var row0 = viewport.children()[1];
+          expect(row0.tagName.toLowerCase()).toBe('div');
+          expect(row0.innerHTML).toBe('1: before one');
+
+          var row1 = viewport.children()[2];
+          expect(row1.tagName.toLowerCase()).toBe('div');
+          expect(row1.innerHTML).toBe('2: one');
+
+          var row2 = viewport.children()[3];
+          expect(row2.tagName.toLowerCase()).toBe('div');
+          expect(row2.innerHTML).toBe('3: two');
+
+          var row3 = viewport.children()[4];
+          expect(row3.tagName.toLowerCase()).toBe('div');
+          expect(row3.innerHTML).toBe('4: three');
+
+          expect(scope.adapter).toBeTruthy();
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: before one');
+          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
+        }
+      );
+    });
+
+    var insertAfterFirst = function (viewport, scope, options) {
+      scope.adapter.applyUpdates(1, ['one', 'after one'], options);
+
+      expect(viewport.children().length).toBe(6);
+
+      var row0 = viewport.children()[1];
+      expect(row0.tagName.toLowerCase()).toBe('div');
+      expect(row0.innerHTML).toBe('1: one');
+
+      var row1 = viewport.children()[2];
+      expect(row1.tagName.toLowerCase()).toBe('div');
+      expect(row1.innerHTML).toBe('2: after one');
+
+      var row2 = viewport.children()[3];
+      expect(row2.tagName.toLowerCase()).toBe('div');
+      expect(row2.innerHTML).toBe('3: two');
+
+      var row3 = viewport.children()[4];
+      expect(row3.tagName.toLowerCase()).toBe('div');
+      expect(row3.innerHTML).toBe('4: three');
+
+      expect(scope.adapter).toBeTruthy();
+      expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+      expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
+    };
+
     it('should insert a new element after selected (first) row', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
-
-          scope.adapter.applyUpdates(1, ['one', 'after one']);
-
-          expect(viewport.children().length).toBe(6);
-
-          var row0 = viewport.children()[1];
-          expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('1: one');
-
-          var row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: after one');
-
-          var row2 = viewport.children()[3];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('3: two');
-
-          var row3 = viewport.children()[4];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('4: three');
-
-          expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
+          insertAfterFirst(viewport, scope);
         }
       );
     });
 
-    it('should insert a new element before selected (middle) row', function () {
-
+    it('should insert a new element after selected (first) row with immutableTop option', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
-
-          scope.adapter.applyUpdates(2, ['before two', 'two']);
-
-          expect(viewport.children().length).toBe(6);
-
-          var row0 = viewport.children()[1];
-          expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('1: one');
-
-          var row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: before two');
-
-          var row2 = viewport.children()[3];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('3: two');
-
-          var row3 = viewport.children()[4];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('4: three');
-
-          expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
+          insertAfterFirst(viewport, scope, { immutableTop: true });
         }
       );
     });
+
+    var insertBeforeSecond = function (viewport, scope, options) {
+      scope.adapter.applyUpdates(2, ['before two', 'two'], options);
+
+      expect(viewport.children().length).toBe(6);
+
+      var row0 = viewport.children()[1];
+      expect(row0.tagName.toLowerCase()).toBe('div');
+      expect(row0.innerHTML).toBe('1: one');
+
+      var row1 = viewport.children()[2];
+      expect(row1.tagName.toLowerCase()).toBe('div');
+      expect(row1.innerHTML).toBe('2: before two');
+
+      var row2 = viewport.children()[3];
+      expect(row2.tagName.toLowerCase()).toBe('div');
+      expect(row2.innerHTML).toBe('3: two');
+
+      var row3 = viewport.children()[4];
+      expect(row3.tagName.toLowerCase()).toBe('div');
+      expect(row3.innerHTML).toBe('4: three');
+
+      expect(scope.adapter).toBeTruthy();
+      expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+      expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: three');
+    };
+
+    it('should insert a new element before selected (middle) row', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          insertBeforeSecond(viewport, scope);
+        }
+      );
+    });
+
+    it('should insert a new element before selected (middle) row with immutableTop option', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          insertBeforeSecond(viewport, scope, { immutableTop: true });
+        }
+      );
+    });
+
+    var insretAfterLast = function (viewport, scope, options) {
+      scope.adapter.applyUpdates(3, ['three', 'after three'], options);
+
+      expect(viewport.children().length).toBe(6);
+
+      var row0 = viewport.children()[1];
+      expect(row0.tagName.toLowerCase()).toBe('div');
+      expect(row0.innerHTML).toBe('1: one');
+
+      var row1 = viewport.children()[2];
+      expect(row1.tagName.toLowerCase()).toBe('div');
+      expect(row1.innerHTML).toBe('2: two');
+
+      var row2 = viewport.children()[3];
+      expect(row2.tagName.toLowerCase()).toBe('div');
+      expect(row2.innerHTML).toBe('3: three');
+
+      var row3 = viewport.children()[4];
+      expect(row3.tagName.toLowerCase()).toBe('div');
+      expect(row3.innerHTML).toBe('4: after three');
+
+      expect(scope.adapter).toBeTruthy();
+      expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
+      expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: after three');
+    };
 
     it('should insert a new element after selected (last) row', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
+          insretAfterLast(viewport, scope);
+        }
+      );
+    });
 
-          scope.adapter.applyUpdates(3, ['three', 'after three']);
-
-          expect(viewport.children().length).toBe(6);
-
-          var row0 = viewport.children()[1];
-          expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('1: one');
-
-          var row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: two');
-
-          var row2 = viewport.children()[3];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('3: three');
-
-          var row3 = viewport.children()[4];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('4: after three');
-
-          expect(scope.adapter).toBeTruthy();
-          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
-          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('4: after three');
+    it('should insert a new element after selected (last) row with immutableTop option', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          insretAfterLast(viewport, scope, { immutableTop: true });
         }
       );
     });
