@@ -311,12 +311,13 @@ Adapter object implements the following methods
 
 * Method `prepend`
 
-            prepend(newItems)
+            prepend(newItems, options)
 
-    Adds new items before the first item in the buffer.
+    Adds new items before the first item in the buffer. Works exactly as inserting new item(s) before the topmost one via `applyUpdates` method.
 
     Parameters
     * **newItems** provides an array of items to be prepended.
+    * **options** the same object as the last argument of `applyUpdates` method; `options.immutableTop` set to `true` will make min index unchangeable, max index will be increased. Otherwise (`options.immutableTop = false`, the default case), min index will be increased.
 
 #### Manipulating the scroller content with the adapter methods
 Adapter methods `applyUpdates`, `append` and `prepend` provide a way to update the scroller content without full reload of the content from the datasource. The updates are performed by changing the items in the scroller internal buffer after they are loaded from the datasource. Items in the buffer can be deleted or replaced with one or more items.
