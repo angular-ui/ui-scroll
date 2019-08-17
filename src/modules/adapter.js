@@ -114,8 +114,8 @@ class Adapter {
     this.viewport.clipBottom();
   }
 
-  prepend(newItems) {
-    this.buffer.prepend(newItems);
+  prepend(newItems, options = {}) {
+    this.buffer.prepend(newItems, options.immutableTop);
     this.doAdjust();
     this.viewport.clipTop();
     this.viewport.clipBottom();

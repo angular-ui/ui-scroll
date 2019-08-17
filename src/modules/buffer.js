@@ -24,9 +24,14 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
       buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
     },
 
-    prepend(items) {
+    prepend(items, immutableTop) {
       items.reverse().forEach((item) => {
-        --buffer.first;
+        if (immutableTop) {
+          ++buffer.next;
+        }
+        else {
+          --buffer.first;
+        }
         buffer.insert('prepend', item);
       });
       buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
