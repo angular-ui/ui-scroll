@@ -1,10 +1,19 @@
 describe('uiScroll', function () {
   'use strict';
 
+  let datasource;
   beforeEach(module('ui.scroll'));
   beforeEach(module('ui.scroll.test.datasources'));
 
+  const injectDatasource = (datasourceToken) =>
+    beforeEach(
+      inject([datasourceToken, function (_datasource) {
+        datasource = _datasource;
+      }])
+    );
+
   describe('applyUpdates tests\n', function () {
+    injectDatasource('myOnePageDatasource');
     var scrollSettings = {datasource: 'myOnePageDatasource', adapter: 'adapter'};
 
     it('should create adapter object', function () {
@@ -192,6 +201,8 @@ describe('uiScroll', function () {
     it('should delete selected (first) row with immutableTop option', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
+
+          datasource;
 
           scope.adapter.applyUpdates(
             function (item) {
@@ -1216,7 +1227,7 @@ describe('uiScroll', function () {
   describe('prepend tests\n', function () {
 
     it('should prepend two rows to the dataset', function () {
-      runTest({datasource: 'myOnePageDatasource', adapter: 'adapter'},
+      runTest({ datasource: 'myOnePageDatasource', adapter: 'adapter' },
         function (viewport, scope) {
 
           scope.adapter.prepend(['prepended one', 'prepended two']);
@@ -1250,8 +1261,28 @@ describe('uiScroll', function () {
       );
     });
 
+    it('should prepend two rows to the dataset with immutableTop option', function () {
+      runTest({ datasource: 'myOnePageDatasource', adapter: 'adapter' },
+        function (viewport, scope) {
+
+          scope.adapter.prepend(['prepended one', 'prepended two'], { immutableTop: true });
+
+          expect(viewport.children().length).toBe(7);
+          expect(viewport.children()[1].innerHTML).toBe('1: prepended one');
+          expect(viewport.children()[2].innerHTML).toBe('2: prepended two');
+          expect(viewport.children()[3].innerHTML).toBe('3: one');
+          expect(viewport.children()[4].innerHTML).toBe('4: two');
+          expect(viewport.children()[5].innerHTML).toBe('5: three');
+
+          expect(scope.adapter).toBeTruthy();
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: prepended one');
+          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('5: three');
+        }
+      );
+    });
+
     it('should prepend two rows to the empty dataset', function () {
-      runTest({datasource: 'myEmptyDatasource', adapter: 'adapter'},
+      runTest({ datasource: 'myEmptyDatasource', adapter: 'adapter' },
         function (viewport, scope) {
 
           scope.adapter.prepend(['prepended one', 'prepended two']);
@@ -1269,6 +1300,23 @@ describe('uiScroll', function () {
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: prepended one');
           expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('0: prepended two');
+        }
+      );
+    });
+
+    it('should prepend two rows to the empty dataset with immutableTop option', function () {
+      runTest({ datasource: 'myEmptyDatasource', adapter: 'adapter' },
+        function (viewport, scope) {
+
+          scope.adapter.prepend(['prepended one', 'prepended two'], { immutableTop: true });
+
+          expect(viewport.children().length).toBe(4);
+          expect(viewport.children()[1].innerHTML).toBe('1: prepended one');
+          expect(viewport.children()[2].innerHTML).toBe('2: prepended two');
+
+          expect(scope.adapter).toBeTruthy();
+          expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: prepended one');
+          expect(scope.adapter.bottomVisibleElement[0].innerHTML).toBe('2: prepended two');
         }
       );
     });
