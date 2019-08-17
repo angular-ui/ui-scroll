@@ -114,31 +114,31 @@ class Adapter {
     this.viewport.clipBottom();
   }
 
-  prepend(newItems) {
-    this.buffer.prepend(newItems);
+  prepend(newItems, options = {}) {
+    this.buffer.prepend(newItems, options.immutableTop);
     this.doAdjust();
     this.viewport.clipTop();
     this.viewport.clipBottom();
   }
 
-  applyUpdates(arg1, arg2) {
+  applyUpdates(arg1, arg2, arg3) {
     if (typeof arg1 === 'function') {
-      this.applyUpdatesFunc(arg1);
+      this.applyUpdatesFunc(arg1, arg2);
     } else {
-      this.applyUpdatesIndex(arg1, arg2);
+      this.applyUpdatesIndex(arg1, arg2, arg3);
     }
     this.doAdjust();
   }
 
-  applyUpdatesFunc(cb) {
+  applyUpdatesFunc(cb, options = {}) {
     this.buffer.slice(0).forEach((wrapper) => {
       // we need to do it on the buffer clone, because buffer content
       // may change as we iterate through
-      this.applyUpdate(wrapper, cb(wrapper.item, wrapper.scope, wrapper.element));
+      this.applyUpdate(wrapper, cb(wrapper.item, wrapper.scope, wrapper.element), options);
     });
   }
 
-  applyUpdatesIndex(index, newItems) {
+  applyUpdatesIndex(index, newItems, options = {}) {
     if (index % 1 !== 0) {
       throw new Error('applyUpdates - ' + index + ' is not a valid index (should be an integer)');
     }
@@ -146,13 +146,13 @@ class Adapter {
 
     // apply updates only within buffer
     if (_index >= 0 && _index < this.buffer.length) {
-      this.applyUpdate(this.buffer[_index], newItems);
+      this.applyUpdate(this.buffer[_index], newItems, options);
     }
     // out-of-buffer case: deletion may affect Paddings
     else if(index >= this.buffer.getAbsMinIndex() && index <= this.buffer.getAbsMaxIndex()) {
       if(angular.isArray(newItems) && !newItems.length) {
-        this.viewport.removeCacheItem(index, index === this.buffer.minIndex);
-        if(index === this.buffer.getAbsMinIndex()) {
+        this.viewport.removeCacheItem(index, !options.immutableTop && index === this.buffer.minIndex);
+        if (!options.immutableTop && index === this.buffer.getAbsMinIndex()) {
           this.buffer.incrementMinIndex();
         }
         else {
@@ -162,14 +162,14 @@ class Adapter {
     }
   }
 
-  applyUpdate(wrapper, newItems) {
+  applyUpdate(wrapper, newItems, options = {}) {
     if (!angular.isArray(newItems)) {
       return;
     }
     let position = this.buffer.indexOf(wrapper);
     if (!newItems.reverse().some(newItem => newItem === wrapper.item)) {
       wrapper.op = 'remove';
-      if(position === 0 && !newItems.length) {
+      if (!options.immutableTop && position === 0 && !newItems.length) {
         wrapper._op = 'isTop'; // to catch "first" edge case on remove
       }
     }
@@ -178,7 +178,7 @@ class Adapter {
         position--;
       } else {
         // 3 parameter (isTop) is to catch "first" edge case on insert
-        this.buffer.insert(position + 1, newItem, position === -1);
+        this.buffer.insert(position + 1, newItem, !options.immutableTop && position === -1);
       }
     });
   }

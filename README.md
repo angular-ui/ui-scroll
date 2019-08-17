@@ -229,13 +229,7 @@ exactly `count` elements unless it hit eof/bof.
 
 * Properties `minIndex` and  `maxIndex`
 
-    As the scroller receives the items requested by the `get` method, the value of minimum and maximum values of the item index are placed in the `minIndex` and `maxIndex` properties respectively. These values are used to maintain the appearance of the scrollbar. The values of the properties can be internaly changed by the ui-scroll engine in three cases:
-     * reset both properties in response to a call to the adapter `reload` method;
-     * increment `minIndex` in response to deleting the topmost element via adapter `applyUpdates` method;
-     * decrement `maxIndex` in response to deleting anything other than the topmost element via adapter `applyUpdates` method.
-
-    Values of the properties can be assigned programmatically. If the range of the index values is known in advance, assigning them programmatically would improve the usability of the scrollBar.
-
+    If the boundaries of the dataset are known, we may virtualize all the dataset by assigning appropriate values to `minIndex` and  `maxIndex` datasource properties. This would improve the usability of the scroll bar: the uiScroll will maintain forward and backward padding elements of the viewport assuming the dataset consists of (maxIndex - minIndex) items. So it will be possible to jump to any position immediately.
 
 ### Adapter
 
@@ -286,7 +280,7 @@ Adapter object implements the following methods
 
 * Method `applyUpdates`
 
-            applyUpdates(index, newItems)
+            applyUpdates(index, newItems, options)
 
     Replaces the item in the buffer at the given index with the new items.
 
@@ -294,12 +288,17 @@ Adapter object implements the following methods
     * **index** provides position of the item to be affected in the dataset (not in the buffer). If the item with the given index currently is not in the buffer no updates will be applied. `$index` property of the item $scope can be used to access the index value for a given item
     * **newItems** is an array of items to replace the affected item. If the array is empty (`[]`) the item will be deleted, otherwise the items in the array replace the item. If the newItem array contains the old item, the old item stays in place.
 
-            applyUpdates(updater)
+            applyUpdates(updater, options)
 
     Updates scroller content as determined by the updater function
 
     Parameters
     * **updater** is a function to be applied to every item currently in the buffer. The function will receive 3 parameters: `item`, `scope`, and `element`. Here `item` is the item to be affected, `scope` is the item $scope, and `element` is the html element for the item. The return value of the function should be an array of items. Similarly to the `newItem` parameter (see above), if the array is empty(`[]`), the item is deleted, otherwise the item is replaced by the items in the array. If the return value is not an array, the item remains unaffected, unless some updates were made to the item in the updater function. This can be thought of as in place update.
+
+    Options for both signatures, an object with following fields
+    * **immutableTop** is a boolean flag with `false` defalt value. This option has an impact on removing/inserting items procedure. If it's `false`, deleting the topmost item will lead to incrementing min index, also inserting new item(s) before the topmost one will lead to decrementing min index. If it's `true`, min index will not be affected, max index will be shifted instead. If it's `true`, no matter which item is going to be removed/inserted, max index will be reduced/increased respectively.
+
+    Let's discuss a little sample. We have `{{$index}}: {{item}}` template and three rows: `1: item1`, `2: item2`, `3: item3`. Then we want to remove the first item. Without `immutableTop` we'll get `2: item2`, `3: item3`. With `immutableTop` we'll get `1: item2`, `2: item3`. The same for inserting, say, `item0` before `item1`. Without `immutableTop` we'll get `0: item0`, `1: item1`, `2: item2`, `3: item3`. With `immutableTop` we'll get `1: item0`, `2: item1`, `3: item2`, `4: item3`.
 
 * Method `append`
 
@@ -312,12 +311,13 @@ Adapter object implements the following methods
 
 * Method `prepend`
 
-            prepend(newItems)
+            prepend(newItems, options)
 
-    Adds new items before the first item in the buffer.
+    Adds new items before the first item in the buffer. Works exactly as inserting new item(s) before the topmost one via `applyUpdates` method.
 
     Parameters
     * **newItems** provides an array of items to be prepended.
+    * **options** the same object as the last argument of `applyUpdates` method; `options.immutableTop` set to `true` will make min index unchangeable, max index will be increased. Otherwise (`options.immutableTop = false`, the default case), min index will be increased.
 
 #### Manipulating the scroller content with the adapter methods
 Adapter methods `applyUpdates`, `append` and `prepend` provide a way to update the scroller content without full reload of the content from the datasource. The updates are performed by changing the items in the scroller internal buffer after they are loaded from the datasource. Items in the buffer can be deleted or replaced with one or more items.
@@ -476,6 +476,9 @@ Pull Rerquest should include source code (./scr) changes, may include tests (./t
 
 
 ## Change log
+
+### v1.7.6
+ * Added immutableTop option for applyUpdates and prepend Adapter methods.
 
 ### v1.7.5
  * Added bufferFirst, bufferLast, bufferLength read-only properties to the Adapter.
