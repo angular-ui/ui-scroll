@@ -130,7 +130,7 @@ class Adapter {
     this.doAdjust();
   }
 
-  applyUpdatesFunc(cb, options) {
+  applyUpdatesFunc(cb, options = {}) {
     this.buffer.slice(0).forEach((wrapper) => {
       // we need to do it on the buffer clone, because buffer content
       // may change as we iterate through
