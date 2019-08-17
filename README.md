@@ -477,6 +477,9 @@ Pull Rerquest should include source code (./scr) changes, may include tests (./t
 
 ## Change log
 
+### v1.7.6
+ * Added immutableTop option for applyUpdates and prepend Adapter methods.
+
 ### v1.7.5
  * Added bufferFirst, bufferLast, bufferLength read-only properties to the Adapter.
  * Fixed reload unsubscribe issue [226](https://github.com/angular-ui/ui-scroll/issues/226).
