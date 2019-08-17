@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.5 -- 2019-08-16T00:32:35.657Z
+ * Version: 1.7.6 -- 2019-08-17T00:42:28.970Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -531,9 +531,14 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
       });
       buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
     },
-    prepend: function prepend(items) {
+    prepend: function prepend(items, immutableTop) {
       items.reverse().forEach(function (item) {
-        --buffer.first;
+        if (immutableTop) {
+          ++buffer.next;
+        } else {
+          --buffer.first;
+        }
+
         buffer.insert('prepend', item);
       });
       buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
@@ -1151,7 +1156,8 @@ function () {
   }, {
     key: "prepend",
     value: function prepend(newItems) {
-      this.buffer.prepend(newItems);
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+      this.buffer.prepend(newItems, options.immutableTop);
       this.doAdjust();
       this.viewport.clipTop();
       this.viewport.clipBottom();
@@ -1169,9 +1175,10 @@ function () {
     }
   }, {
     key: "applyUpdatesFunc",
-    value: function applyUpdatesFunc(cb, options) {
+    value: function applyUpdatesFunc(cb) {
       var _this2 = this;
 
+      var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       this.buffer.slice(0).forEach(function (wrapper) {
         // we need to do it on the buffer clone, because buffer content
         // may change as we iterate through
