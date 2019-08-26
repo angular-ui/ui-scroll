@@ -22,7 +22,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex, ro
     resetStartIndex: function resetStartIndex(startIndex) {
       buffer.remove(0, buffer.length);
       buffer.eof = buffer.eof && startIndex==buffer.maxIndex;
-      buffer.bof = buffer.bof && startIndex==buffer.maxIndex;
+      buffer.bof = buffer.bof && startIndex==buffer.minIndex;
       buffer.first = startIndex;
       buffer.next = startIndex;
     },
@@ -100,8 +100,9 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex, ro
         buffer.next--;
       }
       if(!buffer.length) {
-        buffer.first = 1;
-        buffer.next = 1;
+        buffer.first = buffer.minIndex%1 ? buffer.minIndex : startIndex;
+        buffer.next = buffer.first;
+        buffer.eof = buffer.eof && buffer.first==buffer.maxIndex;
       }
 
       return elementRoutines.removeElementAnimated(arg1);

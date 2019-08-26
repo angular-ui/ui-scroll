@@ -169,10 +169,9 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     // It is designed to work with non fixed rowHeight, although it will need more tests in this area...
     scrollTo(first) {
       if(rowHeight) {
-        first = Math.min(first, buffer.maxIndex);
-        first = Math.max(first, buffer.minIndex);
         const min = buffer.getAbsMinIndex(); 
         const max = buffer.getAbsMaxIndex();
+        first = Math.min(Math.max(first, min),max);
         // Adjust the paddings before removing the elements to avoid touching the scroll top position
         topPadding.height((first-min)*rowHeight);
         bottomPadding.height(((max+1)-first)*rowHeight);

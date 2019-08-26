@@ -124,8 +124,10 @@ class Adapter {
   applyUpdates(arg1, arg2, arg3) {
     if (typeof arg1 === 'function') {
       this.applyUpdatesFunc(arg1, arg2);
+      if(arg2 && arg2.noAdjust) return;
     } else {
       this.applyUpdatesIndex(arg1, arg2, arg3);
+      if(arg3 && arg3.noAdjust) return;
     }
     this.doAdjust();
   }

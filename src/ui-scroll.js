@@ -395,7 +395,10 @@ angular.module('ui.scroll', [])
           // So we don't need to load top or bottom
           // This happens when there is a scroll frenzi, and the $digest is slow enough, so it stacks the calls without
           // giving a chance to the scroll event to be emitted and processed.
-          if(isPendingScroll()) {
+          // We also do that if it leads to an absolute scroll
+          if(isPendingScroll() && calculateAbsoluteScroll()!==undefined) {
+            // Looks like the event is swallowed on some browsers (FF) on some scroll configuration
+            resizeAndScrollHandler();
             return;
           }
 
@@ -529,7 +532,7 @@ angular.module('ui.scroll', [])
             }
           }
         }
-    
+
         function isPendingScroll() {
           if(rowHeight) {
             // Maybe the scroll changed but the event has *not* yet being dispatched
@@ -547,7 +550,7 @@ angular.module('ui.scroll', [])
         function resizeAndScrollHandler() {
           if (rowHeight) {
             if (scTimer) clearTimeout(scTimer);
-            scTimer = setTimeout(_resizeAndScrollHandler, 20);
+            scTimer = setTimeout(_resizeAndScrollHandler, 50);
           } else {
             _resizeAndScrollHandler();
           }
@@ -559,17 +562,11 @@ angular.module('ui.scroll', [])
             // We might isolate the averegaRowHeight calculation in the viewport to provide an estimate
             // and provide a reasonable behavior with variable height as well
             if(rowHeight) {
-              scPreviousScrollTop = viewport.scrollTop();
-              let newFirst = Math.floor(viewport.scrollTop() / rowHeight) + buffer.minIndex;
-              newFirst = Math.max(buffer.minIndex, Math.min(buffer.maxIndex,newFirst)); // Bound the scroll
-              if (newFirst<buffer.first-bufferSize) {
+              const newFirst = calculateAbsoluteScroll();
+              if(newFirst!==undefined) {
                 scrollTo(newFirst);
                 return;
-              }         
-              if (newFirst>=buffer.next) {
-                scrollTo(newFirst);
-                return;
-              }         
+              }
             }
 
             enqueueFetch(ridActual);
@@ -584,6 +581,21 @@ angular.module('ui.scroll', [])
               }
             }
           }
+        }
+
+        function calculateAbsoluteScroll() {
+            if(rowHeight) {
+              scPreviousScrollTop = viewport.scrollTop();
+              let newFirst = Math.floor(viewport.scrollTop() / rowHeight) + buffer.getAbsMinIndex();
+              newFirst = Math.max(buffer.getAbsMinIndex(), Math.min(buffer.getAbsMaxIndex(),newFirst)); // Bound the scroll
+              if (newFirst<buffer.first-bufferSize) {
+                return newFirst;
+              }         
+              if (newFirst>buffer.next+bufferSize) {
+                return newFirst;
+              }         
+            }
+            return undefined;
         }
 
         function wheelHandler(event) {
