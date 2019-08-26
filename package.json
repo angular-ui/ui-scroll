@@ -1,7 +1,7 @@
 {
   "name": "angular-ui-scroll",
   "description": "AngularJS infinite scrolling module",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "src": "./src/",
   "public": "./dist/",
   "main": "./dist/ui-scroll.js",
@@ -26,6 +26,7 @@
     "hint-test": "jshint --verbose test",
     "hint-src": "jshint --verbose src",
     "build": "npm run hint-src && npm run prod-build && npm run hint-test && npm run prod-test",
+    "build-dev": "npm run hint-src && npm run prod-build",
     "dev": "npm-run-all --parallel dev-server dev-test",
     "test": "npm run dev-test",
     "start": "npm run dev-server"

@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <title>Fixed Row Height</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.js"></script>
+  <script src="../../dist/ui-scroll.js"></script>
+  <script src="fixedRowHeight.js"></script>
+  <link rel="stylesheet" href="../css/style.css" type="text/css" />
+</head>
+
+<body ng-app="application">
+
+  <div class="cont cont-global" ng-controller="MainCtrl">
+
+    <a class="back" href="../index.html">browse other examples</a>
+
+    <h1 class="page-header page-header-exapmle">Fixed Row Height</h1>
+
+    <div class="description">
+      <p>
+        If the height of all the viewport rows is known and not going to be changed,
+        it might be passed as "row-height" attribute.
+        This reduces inner calculations and browser reflows,
+        which leads to a performance increase.
+      </p>
+    </div>
+
+    <div class="actions">
+      <input ng-model="perfSlowCount" size="4" /> performance decrease coefficient (0 - fastest)
+    </div>
+
+    <div class="viewport" ui-scroll-viewport>
+      <div ui-scroll="item in datasource" buffer-size="10" row-height="25" adapter="adapter">
+        <div class="item" ng-style="{'height': '25px'}">
+
+          {{item.text}}
+          <span ng-repeat="(key, value) in item.input track by $index">
+            <input ng-model="value.value" size="2" />
+          </span>
+          {{getSum(item)}}
+          {{getMul(item)}}
+          {{getText(item)}}
+
+          <span ng-repeat="(key, value) in perfSlowCountList track by $index">
+            <div style="height: 1px; width: 1px; overflow: hidden;">
+              {{item.text}}
+              <span ng-repeat="(key, value) in item.input track by $index">
+                <input ng-model="value.value" size="2" />
+              </span>
+              {{getSum(item)}}
+              {{getMul(item)}}
+              {{getText(item)}}
+            </div>
+          </span>
+
+        </div>
+      </div>
+    </div>
+
+</body>
+
+</html>

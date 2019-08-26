@@ -14,5 +14,8 @@ angular.module('application', ['ui.scroll'])
 			};
 
 			$scope.datasource = datasource;
+			
+			$scope.jqueryVersion = window.jQuery && angular.element.fn && angular.element.fn.jquery;
+
 		}
 	]);

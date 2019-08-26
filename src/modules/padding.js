@@ -70,13 +70,21 @@ function generateElement(template) {
   return element;
 }
 
+//
+// Padding represents the dummy element added to both the top and the bottom of the scrolling container
+// It holds the element, as well as a cache for the items (rows) height. In case of a fixed rowHeight, the 
+// cache is not used and thus is not created.
+//
 class Padding {
-  constructor(template) {
+  constructor(template,useCache) {
     this.element = generateElement(template);
-    this.cache = new Cache();
+    if(useCache) {
+      this.cache = new Cache();
+    }
   }
 
   height() {
+    // When called with a parameter, this sets the height of the padding
     return this.element.height.apply(this.element, arguments);
   }
 }
