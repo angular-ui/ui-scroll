@@ -15,16 +15,16 @@ class CacheProto {
     this.sort((a, b) => ((a.index < b.index) ? -1 : ((a.index > b.index) ? 1 : 0)));
   }
 
-  remove(argument, _isTop) {
+  remove(argument, _shiftTop) {
     const index = argument % 1 === 0 ? argument : argument.scope.$index;
-    const isTop = argument % 1 === 0 ? _isTop : argument._op === 'isTop';
+    const shiftTop = argument % 1 === 0 ? _shiftTop : argument.shiftTop;
     for (let i = this.length - 1; i >= 0; i--) {
       if (this[i].index === index) {
         this.splice(i, 1);
         break;
       }
     }
-    if(!isTop) {
+    if (!shiftTop) {
       for (let i = this.length - 1; i >= 0; i--) {
         if (this[i].index > index) {
           this[i].index--;
@@ -50,7 +50,7 @@ Object.getOwnPropertyNames(CacheProto.prototype).forEach(methodName =>
 );
 
 function generateElement(template) {
-  if(template.nodeType !== Node.ELEMENT_NODE) {
+  if (template.nodeType !== Node.ELEMENT_NODE) {
     throw new Error('ui-scroll directive requires an Element node for templating the view');
   }
   let element;
