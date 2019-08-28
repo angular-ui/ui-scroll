@@ -4,7 +4,7 @@
   "browser": true,
   "eqeqeq": true,
   "expr": true,
-  "esversion": 6,
+  "esversion": 9,
   "forin": true,
   "freeze": true,
   "futurehostile": true,
