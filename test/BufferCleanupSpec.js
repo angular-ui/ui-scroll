@@ -115,34 +115,94 @@ describe('uiScroll', function () {
       });
     });
 
-    var shouldWorkWhenBOF = function (viewport, scope, options) {
-      expect(scope.adapter.isBOF()).toBe(true);
-      expect(scope.adapter.isEOF()).toBe(false);
-      expect(scope.adapter.bufferFirst).toBe('item-5');
-      expect(scope.adapter.bufferLast).toBe('item1');
+    it('should be consistent on backward direction when bof with immutableTop', function () {
+      var scrollSettings = getSettings();
+      scrollSettings.startIndex = -3;
+      scrollSettings.padding = 0.5;
+      runTest(scrollSettings, function (viewport, scope) {
+        expect(scope.adapter.isBOF()).toBe(true);
+        expect(scope.adapter.isEOF()).toBe(false);
+        expect(scope.adapter.bufferFirst).toBe('item-5');
+        expect(scope.adapter.bufferLast).toBe('item1');
 
-      // remove items -5..1 items form -5..6 datasource
-      cleanBuffer(scope, options);
+        // remove items -5..1 items form -5..6 datasource
+        cleanBuffer(scope, { immutableTop: true });
 
-      // result [2..6]
-      expect(scope.adapter.isBOF()).toBe(true);
-      expect(scope.adapter.isEOF()).toBe(true);
-      expect(Helper.getRow(viewport, 1)).toBe('2: item2');
-      expect(Helper.getRow(viewport, 2)).toBe('3: item3');
-      expect(Helper.getRow(viewport, 3)).toBe('4: item4');
-      expect(Helper.getRow(viewport, 4)).toBe('5: item5');
-      expect(Helper.getRow(viewport, 5)).toBe('6: item6');
-      expect(scope.adapter.bufferLength).toBe(5);
-    };
+        // result [2..6]
+        expect(scope.adapter.isBOF()).toBe(true);
+        expect(scope.adapter.isEOF()).toBe(true);
+        expect(Helper.getRow(viewport, 1)).toBe('-5: item2');
+        expect(Helper.getRow(viewport, 2)).toBe('-4: item3');
+        expect(Helper.getRow(viewport, 3)).toBe('-3: item4');
+        expect(Helper.getRow(viewport, 4)).toBe('-2: item5');
+        expect(Helper.getRow(viewport, 5)).toBe('-1: item6');
+        expect(scope.adapter.bufferLength).toBe(5);
+      });
+    });
 
     it('should be consistent on backward direction when bof without immutableTop', function () {
       var scrollSettings = getSettings();
       scrollSettings.startIndex = -3;
       scrollSettings.padding = 0.5;
       runTest(scrollSettings, function (viewport, scope) {
-        shouldWorkWhenBOF(viewport, scope);
+        expect(scope.adapter.isBOF()).toBe(true);
+        expect(scope.adapter.isEOF()).toBe(false);
+        expect(scope.adapter.bufferFirst).toBe('item-5');
+        expect(scope.adapter.bufferLast).toBe('item1');
+
+        // remove items -5..1 items form -5..6 datasource
+        cleanBuffer(scope);
+
+        // result [2..6]
+        expect(scope.adapter.isBOF()).toBe(true);
+        expect(scope.adapter.isEOF()).toBe(true);
+        expect(Helper.getRow(viewport, 1)).toBe('2: item2');
+        expect(Helper.getRow(viewport, 2)).toBe('3: item3');
+        expect(Helper.getRow(viewport, 3)).toBe('4: item4');
+        expect(Helper.getRow(viewport, 4)).toBe('5: item5');
+        expect(Helper.getRow(viewport, 5)).toBe('6: item6');
+        expect(scope.adapter.bufferLength).toBe(5);
       });
     });
+
+    var shouldWorkWhenNotBOF = function (viewport, scope, options) {
+      expect(scope.adapter.isBOF()).toBe(false);
+      expect(scope.adapter.isEOF()).toBe(false);
+      expect(scope.adapter.bufferFirst).toBe('item-4');
+      expect(scope.adapter.bufferLast).toBe('item2');
+
+      // remove items -4..2 items form -5..6 datasource
+      cleanBuffer(scope, options);
+
+      // result [-5, 3, 4, 5, 6]
+      expect(scope.adapter.isBOF()).toBe(true);
+      expect(scope.adapter.isEOF()).toBe(true);
+      expect(Helper.getRow(viewport, 1)).toBe('-5: item-5');
+      expect(Helper.getRow(viewport, 2)).toBe('-4: item3');
+      expect(Helper.getRow(viewport, 3)).toBe('-3: item4');
+      expect(Helper.getRow(viewport, 4)).toBe('-2: item5');
+      expect(Helper.getRow(viewport, 5)).toBe('-1: item6');
+      expect(scope.adapter.bufferLength).toBe(5);
+    };
+
+    it('should be consistent on backward direction when not bof with immutableTop', function () {
+      var scrollSettings = getSettings();
+      scrollSettings.startIndex = -1;
+      scrollSettings.padding = 0.3;
+      runTest(scrollSettings, function (viewport, scope) {
+        shouldWorkWhenNotBOF(viewport, scope, { immutableTop: true });
+      });
+    });
+
+    it('should be consistent on backward direction when not bof without immutableTop', function () {
+      var scrollSettings = getSettings();
+      scrollSettings.startIndex = -1;
+      scrollSettings.padding = 0.3;
+      runTest(scrollSettings, function (viewport, scope) {
+        shouldWorkWhenNotBOF(viewport, scope);
+      });
+    });
+
   });
 
 });
