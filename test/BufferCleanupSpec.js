@@ -51,6 +51,8 @@ describe('uiScroll', function () {
         function (viewport, scope) {
           expect(scope.adapter.isBOF()).toBe(false);
           expect(scope.adapter.isEOF()).toBe(true);
+          expect(scope.adapter.bufferFirst).toBe('item0');
+          expect(scope.adapter.bufferLast).toBe('item6');
 
           // remove items 0..6 items form -5..6 datasource
           cleanBuffer(scope, { immutableTop: true });
@@ -58,8 +60,8 @@ describe('uiScroll', function () {
           // result [-5..-1]
           expect(scope.adapter.isBOF()).toBe(true);
           expect(scope.adapter.isEOF()).toBe(true);
-          expect(scope.adapter.bufferFirst).toBe('item-5');
-          expect(scope.adapter.bufferLast).toBe('item-1');
+          expect(Helper.getFirstRow(viewport)).toBe('-5: item-5');
+          expect(Helper.getLastRow(viewport)).toBe('-1: item-1');
           expect(scope.adapter.bufferLength).toBe(5);
         }
       );
@@ -73,6 +75,8 @@ describe('uiScroll', function () {
         function (viewport, scope) {
           expect(scope.adapter.isBOF()).toBe(false);
           expect(scope.adapter.isEOF()).toBe(false);
+          expect(scope.adapter.bufferFirst).toBe('item-4');
+          expect(scope.adapter.bufferLast).toBe('item1');
 
           // remove items -4..1 items form -5..6 datasource
           cleanBuffer(scope, { immutableTop: true });
@@ -80,8 +84,8 @@ describe('uiScroll', function () {
           // result [-5, 2, 3, 4]
           expect(scope.adapter.isBOF()).toBe(true);
           expect(scope.adapter.isEOF()).toBe(false);
-          expect(scope.adapter.bufferFirst).toBe('item-5');
-          expect(scope.adapter.bufferLast).toBe('item4');
+          expect(Helper.getFirstRow(viewport)).toBe('-5: item-5');
+          expect(Helper.getLastRow(viewport)).toBe('-2: item4');
           expect(scope.adapter.bufferLength).toBe(4);
         }
       );
@@ -95,6 +99,8 @@ describe('uiScroll', function () {
         function (viewport, scope) {
           expect(scope.adapter.isBOF()).toBe(true);
           expect(scope.adapter.isEOF()).toBe(false);
+          expect(scope.adapter.bufferFirst).toBe('item-5');
+          expect(scope.adapter.bufferLast).toBe('item1');
 
           // remove items -5..1 items form -5..6 datasource
           cleanBuffer(scope);
@@ -102,12 +108,13 @@ describe('uiScroll', function () {
           // result [2..6]
           expect(scope.adapter.isBOF()).toBe(true);
           expect(scope.adapter.isEOF()).toBe(true);
-          expect(scope.adapter.bufferFirst).toBe('item2');
-          expect(scope.adapter.bufferLast).toBe('item6');
+          expect(Helper.getFirstRow(viewport)).toBe('2: item2');
+          expect(Helper.getLastRow(viewport)).toBe('6: item6');
           expect(scope.adapter.bufferLength).toBe(5);
         }
       );
     });
+
   });
 
 });

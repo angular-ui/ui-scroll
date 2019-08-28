@@ -1226,7 +1226,9 @@ describe('uiScroll', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
           expect(scope.adapter.bufferFirst).toBe('item1');
+          expect(Helper.getFirstRow(viewport)).toBe('1: item1');
           expect(scope.adapter.bufferLast).toBe('item10');
+          expect(Helper.getLastRow(viewport)).toBe('10: item10');
           expect(scope.adapter.bufferLength).toBe(10);
         }
       );
@@ -1239,7 +1241,9 @@ describe('uiScroll', function () {
           viewport.trigger('scroll');
 
           expect(scope.adapter.bufferFirst).toBe('item5');
+          expect(Helper.getFirstRow(viewport)).toBe('5: item5');
           expect(scope.adapter.bufferLast).toBe('item20');
+          expect(Helper.getLastRow(viewport)).toBe('20: item20');
           expect(scope.adapter.bufferLength).toBe(16);
         }
       );
