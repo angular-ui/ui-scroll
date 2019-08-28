@@ -172,8 +172,11 @@ class Adapter {
     if (!newItems.reverse().some(newItem => newItem === wrapper.item)) {
       wrapper.op = OPERATIONS.REMOVE;
       // try to catch "first" edge case on remove
-      if (!options.immutableTop && position === 0 && !newItems.length) {
-        wrapper.shiftTop = true; 
+      if (!options.immutableTop && !newItems.length) {
+        // this is the first item, or the previous one's part of the "shift-top" group
+        if (position === 0 || this.buffer[position - 1].shiftTop) {
+          wrapper.shiftTop = true;
+        }
       }
     }
     newItems.forEach((newItem) => {
