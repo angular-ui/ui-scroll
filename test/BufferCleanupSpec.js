@@ -1,52 +1,48 @@
-describe('uiScroll', function () {
+describe('uiScroll', () => {
   'use strict';
 
   let datasource;
   beforeEach(module('ui.scroll'));
   beforeEach(module('ui.scroll.test.datasources'));
 
-  const injectDatasource = (datasourceToken) =>
+  const injectDatasource = datasourceToken =>
     beforeEach(
-      inject([datasourceToken, function (_datasource) {
-        datasource = _datasource;
-      }])
+      inject([datasourceToken, _datasource =>
+        datasource = _datasource
+      ])
     );
 
-  describe('buffer cleanup', function () {
-    var getSettings = function () {
-      return {
-        datasource: 'myEdgeDatasource',
-        adapter: 'adapter',
-        viewportHeight: 60,
-        itemHeight: 20,
-        padding: 0.3,
-        startIndex: 3,
-        bufferSize: 3
-      };
+  describe('buffer cleanup', () => {
+    const settings = {
+      datasource: 'myEdgeDatasource', // items range is [-5..6]
+      adapter: 'adapter',
+      viewportHeight: 60,
+      itemHeight: 20,
+      padding: 0.3,
+      startIndex: 3,
+      bufferSize: 3
     };
 
     injectDatasource('myEdgeDatasource');
 
-    var cleanBuffer = function (scope, applyUpdateOptions) {
-      var get = datasource.get;
-      var removedItems = [];
+    const cleanBuffer = (scope, applyUpdateOptions) => {
+      const get = datasource.get;
+      const removedItems = [];
       // sync the datasource
-      datasource.get = function (index, count, success) {
-        var removedIndex = removedItems.indexOf('item' + index);
-        if (removedIndex !== -1) {
-          // todo consider mutable-top case
-          index += removedItems.length;// - removedIndex;
+      datasource.get = (index, count, success) => {
+        if (removedItems.indexOf('item' + index) !== -1) {
+          index += removedItems.length;
         }
         get(index, count, success);
       };
       // clean up the buffer
-      scope.adapter.applyUpdates(function (item) {
+      scope.adapter.applyUpdates(item => {
         removedItems.push(item);
         return [];
       }, applyUpdateOptions);
     };
 
-    var shouldWorkWhenEOF = function (viewport, scope, options) {
+    const shouldWorkWhenEOF = (viewport, scope, options) => {
       expect(scope.adapter.isBOF()).toBe(false);
       expect(scope.adapter.isEOF()).toBe(true);
       expect(scope.adapter.bufferFirst).toBe('item0');
@@ -66,19 +62,19 @@ describe('uiScroll', function () {
       expect(scope.adapter.bufferLength).toBe(5);
     };
 
-    it('should be consistent on forward direction when eof with immutabeTop', function () {
-      runTest(getSettings(), function (viewport, scope) {
-        shouldWorkWhenEOF(viewport, scope, { immutableTop: true });
-      });
-    });
+    it('should be consistent on forward direction when eof with immutabeTop', () =>
+      runTest(settings, (viewport, scope) =>
+        shouldWorkWhenEOF(viewport, scope, { immutableTop: true })
+      )
+    );
 
-    it('should be consistent on forward direction when eof without immutabeTop', function () {
-      runTest(getSettings(), function (viewport, scope) {
-        shouldWorkWhenEOF(viewport, scope);
-      });
-    });
+    it('should be consistent on forward direction when eof without immutabeTop', () =>
+      runTest(settings, (viewport, scope) =>
+        shouldWorkWhenEOF(viewport, scope)
+      )
+    );
 
-    var shouldWorkWhenNotEOF = function (viewport, scope, options) {
+    const shouldWorkWhenNotEOF = (viewport, scope, options) => {
       expect(scope.adapter.isBOF()).toBe(false);
       expect(scope.adapter.isEOF()).toBe(false);
       expect(scope.adapter.bufferFirst).toBe('item-4');
@@ -97,29 +93,32 @@ describe('uiScroll', function () {
       expect(scope.adapter.bufferLength).toBe(4);
     };
 
-    it('should be consistent on forward direction when not eof with immutabeTop', function () {
-      var scrollSettings = getSettings();
-      scrollSettings.startIndex = -1;
-      scrollSettings.viewportHeight = 40;
-      runTest(scrollSettings, function (viewport, scope) {
-        shouldWorkWhenNotEOF(viewport, scope, { immutableTop: true });
-      });
-    });
+    it('should be consistent on forward direction when not eof with immutabeTop', () =>
+      runTest({
+        ...settings,
+        startIndex: -1,
+        viewportHeight: 40
+      }, (viewport, scope) =>
+        shouldWorkWhenNotEOF(viewport, scope, { immutableTop: true })
+      )
+    );
 
-    it('should be consistent on forward direction when not eof without immutabeTop', function () {
-      var scrollSettings = getSettings();
-      scrollSettings.startIndex = -1;
-      scrollSettings.viewportHeight = 40;
-      runTest(scrollSettings, function (viewport, scope) {
-        shouldWorkWhenNotEOF(viewport, scope);
-      });
-    });
+    it('should be consistent on forward direction when not eof without immutabeTop', () =>
+      runTest({
+        ...settings,
+        startIndex: -1,
+        viewportHeight: 40
+      }, (viewport, scope) =>
+        shouldWorkWhenNotEOF(viewport, scope)
+      )
+    );
 
-    it('should be consistent on backward direction when bof with immutableTop', function () {
-      var scrollSettings = getSettings();
-      scrollSettings.startIndex = -3;
-      scrollSettings.padding = 0.5;
-      runTest(scrollSettings, function (viewport, scope) {
+    it('should be consistent on backward direction when bof with immutableTop', () =>
+      runTest({
+        ...settings,
+        startIndex: -3,
+        padding: 0.5
+      }, (viewport, scope) => {
         expect(scope.adapter.isBOF()).toBe(true);
         expect(scope.adapter.isEOF()).toBe(false);
         expect(scope.adapter.bufferFirst).toBe('item-5');
@@ -137,14 +136,15 @@ describe('uiScroll', function () {
         expect(Helper.getRow(viewport, 4)).toBe('-2: item5');
         expect(Helper.getRow(viewport, 5)).toBe('-1: item6');
         expect(scope.adapter.bufferLength).toBe(5);
-      });
-    });
+      })
+    );
 
-    it('should be consistent on backward direction when bof without immutableTop', function () {
-      var scrollSettings = getSettings();
-      scrollSettings.startIndex = -3;
-      scrollSettings.padding = 0.5;
-      runTest(scrollSettings, function (viewport, scope) {
+    it('should be consistent on backward direction when bof without immutableTop', () =>
+      runTest({
+        ...settings,
+        startIndex: -3,
+        padding: 0.5
+      }, (viewport, scope) => {
         expect(scope.adapter.isBOF()).toBe(true);
         expect(scope.adapter.isEOF()).toBe(false);
         expect(scope.adapter.bufferFirst).toBe('item-5');
@@ -162,10 +162,10 @@ describe('uiScroll', function () {
         expect(Helper.getRow(viewport, 4)).toBe('5: item5');
         expect(Helper.getRow(viewport, 5)).toBe('6: item6');
         expect(scope.adapter.bufferLength).toBe(5);
-      });
-    });
+      })
+    );
 
-    var shouldWorkWhenNotBOF = function (viewport, scope, options) {
+    const shouldWorkWhenNotBOF = (viewport, scope, options) => {
       expect(scope.adapter.isBOF()).toBe(false);
       expect(scope.adapter.isEOF()).toBe(false);
       expect(scope.adapter.bufferFirst).toBe('item-4');
@@ -185,24 +185,25 @@ describe('uiScroll', function () {
       expect(scope.adapter.bufferLength).toBe(5);
     };
 
-    it('should be consistent on backward direction when not bof with immutableTop', function () {
-      var scrollSettings = getSettings();
-      scrollSettings.startIndex = -1;
-      scrollSettings.padding = 0.3;
-      runTest(scrollSettings, function (viewport, scope) {
-        shouldWorkWhenNotBOF(viewport, scope, { immutableTop: true });
-      });
-    });
+    it('should be consistent on backward direction when not bof with immutableTop', () =>
+      runTest({
+        ...settings,
+        startIndex: -1,
+        padding: 0.3
+      }, (viewport, scope) =>
+        shouldWorkWhenNotBOF(viewport, scope, { immutableTop: true })
+      )
+    );
 
-    it('should be consistent on backward direction when not bof without immutableTop', function () {
-      var scrollSettings = getSettings();
-      scrollSettings.startIndex = -1;
-      scrollSettings.padding = 0.3;
-      runTest(scrollSettings, function (viewport, scope) {
-        shouldWorkWhenNotBOF(viewport, scope);
-      });
-    });
-
+    it('should be consistent on backward direction when not bof without immutableTop', () =>
+      runTest({ 
+        ...settings,
+        startIndex: -1,
+        padding: 0.3
+      }, (viewport, scope) =>
+        shouldWorkWhenNotBOF(viewport, scope)
+      )
+    );
   });
 
 });
