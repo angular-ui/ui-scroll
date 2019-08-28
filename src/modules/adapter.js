@@ -174,7 +174,10 @@ class Adapter {
       // try to catch "first" edge case on remove
       if (!options.immutableTop && !newItems.length) {
         // this is the first item, or the previous one's part of the "shift-top" group
-        if (position === 0 || this.buffer[position - 1].shiftTop) {
+        if (
+          (position === 0 && this.buffer.bof) ||
+          (position !== 0 && this.buffer[position - 1].shiftTop)
+        ) {
           wrapper.shiftTop = true;
         }
       }
