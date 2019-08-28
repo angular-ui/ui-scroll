@@ -1,3 +1,5 @@
+import { OPERATIONS } from './utils';
+
 export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
   const buffer = Object.create(Array.prototype);
 
@@ -19,7 +21,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
     append(items) {
       items.forEach((item) => {
         ++buffer.next;
-        buffer.insert('append', item);
+        buffer.insert(OPERATIONS.APPEND, item);
       });
       buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
     },
@@ -32,7 +34,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         else {
           --buffer.first;
         }
-        buffer.insert('prepend', item);
+        buffer.insert(OPERATIONS.PREPEND, item);
       });
       buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
     },
@@ -41,15 +43,15 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
      * inserts wrapped element in the buffer
      * the first argument is either operation keyword (see below) or a number for operation 'insert'
      * for insert the number is the index for the buffer element the new one have to be inserted after
-     * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
+     * operations: 'append', 'prepend', 'insert', 'remove', 'none'
      */
     insert(operation, item, isTop) {
       const wrapper = {
         item: item
       };
 
-      if (operation % 1 === 0) {// it is an insert
-        wrapper.op = 'insert';
+      if (operation % 1 === 0) { // it is an insert
+        wrapper.op = OPERATIONS.INSERT;
         buffer.splice(operation, 0, wrapper);
         if(isTop) {
           buffer.first--;
@@ -60,10 +62,10 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
       } else {
         wrapper.op = operation;
         switch (operation) {
-          case 'append':
+          case OPERATIONS.APPEND:
             buffer.push(wrapper);
             break;
-          case 'prepend':
+          case OPERATIONS.PREPEND:
             buffer.unshift(wrapper);
             break;
         }
@@ -152,7 +154,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
     },
 
     getItems() {
-      return buffer.filter(item => item.op === 'none');
+      return buffer.filter(item => item.op === OPERATIONS.NONE);
     },
 
     getFirstItem() {
