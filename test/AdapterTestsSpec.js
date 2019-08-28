@@ -1597,13 +1597,61 @@ describe('uiScroll', function () {
 
     it('scroll to the bottom', function () {
       runTest(scrollSettings,
-        function (viewport, scope) {          
+        function (viewport, scope) {
           viewport.scrollTop(10000);
           viewport.trigger('scroll');
 
           expect(scope.adapter.bufferFirst).toBe('item5');
           expect(scope.adapter.bufferLast).toBe('item20');
           expect(scope.adapter.bufferLength).toBe(16);
+        }
+      );
+    });
+
+  });
+
+  describe('buffer cleanup', function () {
+    var scrollSettings = { datasource: 'myEdgeDatasource', adapter: 'adapter', viewportHeight: 60, itemHeight: 20, padding: 0.3, startIndex: 3, bufferSize: 3 };
+
+    injectDatasource('myEdgeDatasource');
+
+    var cleanBuffer = function (scope) {
+      var get = datasource.get;
+      var removedItems = [];
+      // sync the datasource
+      datasource.get = function (index, count, success) {
+        get(index, count, function (result) {
+          result = result.filter(function (item) {
+            return removedItems.indexOf(item) === -1;
+          });
+          success(result);
+        });
+      };
+      // clean up the buffer
+      scope.adapter.applyUpdates(
+        function (item) {
+          removedItems.push(item);
+          return [];
+        }, {
+          immutableTop: true
+        }
+      );
+    };
+
+    it('should be consistent on forward direction with immutabeTop', function () {
+      runTest(scrollSettings,
+        function (viewport, scope) {
+          expect(scope.adapter.isBOF()).toBe(false);
+          expect(scope.adapter.isEOF()).toBe(true);
+
+          // remove items 0..6 items form -5..6 datasource
+          cleanBuffer(scope);
+
+          expect(scope.adapter.isBOF()).toBe(true);
+          expect(scope.adapter.isEOF()).toBe(true);
+          expect(scope.adapter.bufferFirst).toBe('item-5');
+          expect(scope.adapter.bufferLast).toBe('item-1');
+          expect(scope.adapter.bufferLength).toBe(5);
         }
       );
     });

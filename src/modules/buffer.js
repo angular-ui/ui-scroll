@@ -96,8 +96,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         buffer.next--;
       }
       if (!buffer.length) {
-        buffer.first = 1;
-        buffer.next = 1;
+        buffer.minIndex = Math.min(buffer.maxIndex, buffer.minIndex);
       }
 
       return elementRoutines.removeElementAnimated(arg1);
