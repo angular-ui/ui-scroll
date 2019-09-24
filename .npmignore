@@ -1,3 +1,4 @@
+.idea
 /node_modules/
 /src
 /temp
@@ -7,6 +8,4 @@
 .jshintrc
 .npmignore
 .travis.yml
-bower.json
-Gruntfile.js
 webpack.config.js
