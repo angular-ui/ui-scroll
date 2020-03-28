@@ -73,10 +73,16 @@ angular.module('ui.scroll', [])
           return parseNumber(result, defaultValue, isFloat);
         }
 
+        function parseBooleanAttr(value, defaultValue) {
+          const result = $parse(value)($scope);
+          return typeof result === 'boolean' ? result : defaultValue;
+        }
+
         const BUFFER_MIN = 3;
         const BUFFER_DEFAULT = 10;
         const PADDING_MIN = 0.3;
         const PADDING_DEFAULT = 0.5;
+        const HANDLE_INERTIA_DEFAULT = true;
         const START_INDEX_DEFAULT = 1;
         const MAX_VIEWPORT_DELAY = 500;
         const VIEWPORT_POLLING_INTERVAL = 50;
@@ -87,6 +93,7 @@ angular.module('ui.scroll', [])
         const viewportController = controllers[0];
         const bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
         const padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT, true));
+        const handleInertia = parseBooleanAttr($attr.handleInertia, HANDLE_INERTIA_DEFAULT);
         let startIndex = parseNumericAttr($attr.startIndex, START_INDEX_DEFAULT);
         let ridActual = 0; // current data revision id
         let pending = [];
@@ -501,7 +508,7 @@ angular.module('ui.scroll', [])
         }
 
         function resizeAndScrollHandler() {
-          if (fixInertia()) {
+          if (handleInertia && fixInertia()) {
             return;
           }
           if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {

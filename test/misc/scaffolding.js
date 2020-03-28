@@ -12,12 +12,13 @@ function createHtml(settings) {
   var adapter = settings.adapter ? ' adapter="' + settings.adapter + '"' : '';
   var template = settings.template ? settings.template : '{{$index}}: {{item}}';
   var startIndex = settings.startIndex ? ' start-index="' + settings.startIndex + '"' : '';
+  var inertia = ' handle-inertia="false"';
   var extra = settings.extra || '';
   return '<div ui-scroll-viewport' + viewportStyle + '>' +
     (settings.wrapper ? settings.wrapper.start : '') +
     '<div class="item" ui-scroll="item in ' + settings.datasource + '"' +
     adapter +
-    itemStyle + bufferSize + padding + isLoading + topVisible + disabled + startIndex + extra + '>' +
+    itemStyle + bufferSize + padding + isLoading + topVisible + disabled + startIndex + inertia + extra + '>' +
     template +
     '</div>' +
     (settings.wrapper ? settings.wrapper.end : '') +
@@ -35,6 +36,7 @@ function finalize(scroller, options, scope, $timeout) {
 }
 
 function augmentScroller(scroller) {
+  'use strict';
   var scrollTop = scroller.scrollTop;
   scroller.scrollTop = function () {
     var result = scrollTop.apply(scroller, arguments);
