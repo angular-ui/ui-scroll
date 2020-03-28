@@ -485,7 +485,25 @@ angular.module('ui.scroll', [])
           }
         }
 
+        function fixInertia() {
+          if (!viewport.synthetic) {
+            return;
+          }
+          const position = viewport.synthetic.position;
+          if (viewport.scrollTop() !== position) {
+            requestAnimationFrame(() => {
+              viewport.scrollTop(position);
+              viewport.synthetic = null;
+            });
+            return true;
+          }
+          viewport.synthetic = null;
+        }
+
         function resizeAndScrollHandler() {
+          if (fixInertia()) {
+            return;
+          }
           if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
 
             enqueueFetch(ridActual);

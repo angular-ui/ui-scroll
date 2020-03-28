@@ -178,17 +178,20 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
     },
 
     onAfterPrepend(updates) {
-      if (!updates.prepended.length)
+      if (!updates.prepended.length) {
         return;
+      }
       const height = buffer.effectiveHeight(updates.prepended);
       const paddingHeight = topPadding.height() - height;
       if (paddingHeight >= 0) {
         topPadding.height(paddingHeight);
+        return;
       }
-      else {
-        topPadding.height(0);
-        viewport.scrollTop(viewport.scrollTop() - paddingHeight);
-      }
+      const currentPosition = viewport.scrollTop();
+      const newPosition = currentPosition - paddingHeight;
+      topPadding.height(0);
+      viewport.synthetic = { position: newPosition };
+      viewport.scrollTop(newPosition);
     },
 
     resetTopPadding() {
