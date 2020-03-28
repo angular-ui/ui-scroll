@@ -155,7 +155,6 @@ describe('uiScroll', function () {
             runTest(scrollSettings,
                 function (viewport) {
                     viewport.scrollTop(100);
-                    viewport.trigger('scroll');
                     inject(function () {
                         expect(viewport.children().length).toBe(itemsWithPaddings);
                         expect(viewport.scrollTop()).toBe(100);
@@ -180,10 +179,8 @@ describe('uiScroll', function () {
             runTest(scrollSettings,
                 function (viewport) {
                     viewport.scrollTop(100);
-                    viewport.trigger('scroll');
 
                     expect(spy.calls.all().length).toBe(5);
-
                     expect(spy.calls.all()[0].args[0]).toBe(1);
                     expect(spy.calls.all()[1].args[0]).toBe(4);
                     expect(spy.calls.all()[2].args[0]).toBe(7);
@@ -199,11 +196,9 @@ describe('uiScroll', function () {
                     var itemsLoaded = 11;
                     var itemsWithPaddings = itemsLoaded + 2;
                     var clippedDivs = 4;
-                    viewport.scrollTop(100);
-                    viewport.trigger('scroll');
 
+                    viewport.scrollTop(100);
                     viewport.scrollTop(400);
-                    viewport.trigger('scroll');
 
                     expect(viewport.children().length).toBe(itemsWithPaddings);
                     expect(viewport.scrollTop()).toBe(280);
@@ -229,10 +224,7 @@ describe('uiScroll', function () {
                     var calls = 6;
 
                     viewport.scrollTop(100);
-                    viewport.trigger('scroll');
-
                     viewport.scrollTop(400);
-                    viewport.trigger('scroll');
 
                     expect(spy.calls.all().length).toBe(calls);
                     expect(spy.calls.all()[0].args[0]).toBe(1);
@@ -252,13 +244,8 @@ describe('uiScroll', function () {
                     var itemsWithPaddings = itemsLoaded + 2;
 
                     viewport.scrollTop(100);
-                    viewport.trigger('scroll');
-
                     viewport.scrollTop(400);
-                    viewport.trigger('scroll');
-
                     viewport.scrollTop(0);
-                    viewport.trigger('scroll');
 
                     expect(viewport.children().length).toBe(itemsWithPaddings);
                     expect(viewport.scrollTop()).toBe(0);
@@ -285,13 +272,8 @@ describe('uiScroll', function () {
                     var totalCallsNumber = 8;
 
                     viewport.scrollTop(100);
-                    viewport.trigger('scroll');
-
                     viewport.scrollTop(400);
-                    viewport.trigger('scroll');
-
                     viewport.scrollTop(0);
-                    viewport.trigger('scroll');
 
                     expect(spy.calls.all().length).toBe(totalCallsNumber);
                     expect(spy.calls.all()[0].args[0]).toBe(1);
@@ -380,13 +362,9 @@ describe('uiScroll', function () {
                 },
                 function (viewport) {
                     viewport.scrollTop(viewportHeight + itemHeight);
-                    viewport.trigger('scroll');
-
                     viewport.scrollTop(viewportHeight + itemHeight * 2);
-                    viewport.trigger('scroll');
 
                     expect(spy.calls.all().length).toBe(4);
-
                     expect(spy.calls.all()[0].args[0]).toBe(1);
                     expect(spy.calls.all()[1].args[0]).toBe(4); //last full
                     expect(spy.calls.all()[2].args[0]).toBe(-2);
@@ -413,13 +391,8 @@ describe('uiScroll', function () {
                 },
                 function (viewport) {
                     viewport.scrollTop(0); //first full, scroll to -2
-                    viewport.trigger('scroll');
-
                     viewport.scrollTop(0); //last full, scroll to -5, bof is reached
-                    viewport.trigger('scroll');
-
                     viewport.scrollTop(0); //empty, no scroll occurred (-8)
-                    viewport.trigger('scroll');
 
                     expect(spy.calls.all().length).toBe(5);
                     expect(spy.calls.all()[0].args[0]).toBe(1);
@@ -468,7 +441,6 @@ describe('uiScroll', function () {
                     expect(documentScrollBubblingCount).toBe(1);
 
                     viewport.scrollTop(0);
-                    viewport.trigger('scroll');
 
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //now we are at the top but preventDefault is occurred because of bof will be reached only after next scroll trigger
                     expect(documentScrollBubblingCount).toBe(2); //here! the only one prevented wheel-event
@@ -476,8 +448,7 @@ describe('uiScroll', function () {
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred but document will not scroll because of viewport will be scrolled
                     expect(documentScrollBubblingCount).toBe(3);
 
-                    viewport.scrollTop(0);
-                    viewport.trigger('scroll'); //bof will be reached right after that
+                    viewport.scrollTop(0); //bof will be reached right after that
 
                     wheelEventElement.dispatchEvent(getNewWheelEvent()); //preventDefault will not occurred because of we are at the top and bof is reached
                     expect(documentScrollBubblingCount).toBe(4);
@@ -513,7 +484,6 @@ describe('uiScroll', function () {
                     // scroll down + expectation
                     for(var i = 0; i < 6; i++) {
                         viewport.scrollTop(5000);
-                        viewport.trigger('scroll');
                         expect(Helper.getTopPadding(viewport)).toBe(itemHeight * bufferSize * (i + 1));
                     }
                 }
@@ -526,7 +496,6 @@ describe('uiScroll', function () {
                     // scroll up + expectation
                     for(var i = 0; i < 6; i++) {
                         viewport.scrollTop(-5000);
-                        viewport.trigger('scroll');
                         expect(Helper.getBottomPadding(viewport)).toBe(itemHeight * bufferSize * (i + 1));
                     }
 
@@ -543,7 +512,6 @@ describe('uiScroll', function () {
                     // scroll down + expectation
                     for(i = 0; i < scrollIteration; i++) {
                         viewport.scrollTop(viewport.scrollTop() + scrollDelta);
-                        viewport.trigger('scroll');
                         expect(Helper.getTopPadding(viewport)).toBe(itemHeight * bufferSize * (i + 1));
                         expect(Helper.getBottomPadding(viewport)).toBe(0);
                     }
@@ -551,7 +519,6 @@ describe('uiScroll', function () {
                     // scroll up + expectation
                     for(i = 0; i < scrollIteration; i++) {
                         viewport.scrollTop(viewport.scrollTop() - scrollDelta);
-                        viewport.trigger('scroll');
                         expect(Helper.getTopPadding(viewport)).toBe(itemHeight * bufferSize * (scrollIteration - i - 1));
                         expect(Helper.getBottomPadding(viewport)).toBe(itemHeight * bufferSize * (i + 1));
                     }
@@ -559,7 +526,6 @@ describe('uiScroll', function () {
                     // further scroll up + expectation
                     for(i = scrollIteration; i < 2*scrollIteration; i++) {
                       viewport.scrollTop(viewport.scrollTop() - scrollDelta);
-                      viewport.trigger('scroll');
                       expect(Helper.getTopPadding(viewport)).toBe(0);
                       expect(Helper.getBottomPadding(viewport)).toBe(itemHeight * bufferSize * (i + 1));
                     }
@@ -617,11 +583,8 @@ describe('uiScroll', function () {
 					});
 
 					viewport.scrollTop(100); // 100 : 40 = 2.5 --> item3
-					viewport.trigger('scroll');
-
-					viewport.scrollTop(300); // 300 : 40 = 7.5 --> item8
-					viewport.trigger('scroll');
-
+                    viewport.scrollTop(300); // 300 : 40 = 7.5 --> item8
+                    
 					expect(topVisibleChangeCount).toBe(2);
 				}
 			);
@@ -656,10 +619,7 @@ describe('uiScroll', function () {
 					});
 
 					viewport.scrollTop(100); // 100 : 40 = 2.5 --> item3
-					viewport.trigger('scroll');
-
 					viewport.scrollTop(300); // 300 : 40 = 7.5 --> item8
-					viewport.trigger('scroll');
 
 					expect(topVisibleChangeCount).toBe(2);
 				}
@@ -680,7 +640,6 @@ describe('uiScroll', function () {
 				function (viewport, scope) {
 					scope.adapter.disabled = true;
 					viewport.scrollTop(1000); // scroll to bottom
-					viewport.trigger('scroll');
 
           expect(spy.calls.all().length).toBe(3); // just three initial requests
 				}
@@ -698,8 +657,6 @@ describe('uiScroll', function () {
 
 					scope.adapter.disabled = true;
 					viewport.scrollTop(1000); // scroll to bottom
-					viewport.trigger('scroll');
-
 					scope.adapter.disabled = false;
 
 					expect(spy.calls.all().length).toBe(4); // 3 initial + 1 new requests
@@ -767,7 +724,6 @@ describe('uiScroll', function () {
         function (viewport, scope) {
 
           viewport.scrollTop(0); // scroll to the very top
-          viewport.trigger('scroll');
 
           expect(scope.topVisible).toBe('item-9');
           expect(viewport.scrollTop()).toBe(400); // 1 pack (bufferSize * itemHeight) from the top

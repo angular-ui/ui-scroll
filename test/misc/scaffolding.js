@@ -34,12 +34,24 @@ function finalize(scroller, options, scope, $timeout) {
   }
 }
 
+function augmentScroller(scroller) {
+  var scrollTop = scroller.scrollTop;
+  scroller.scrollTop = function () {
+    var result = scrollTop.apply(scroller, arguments);
+    if (arguments.length) {
+      scroller.trigger('scroll');
+    }
+    return result;
+  };
+}
+
 function runTest(scrollSettings, run, options) {
   'use strict';
   options = options || {};
-  inject(function($rootScope, $compile, $window, $timeout) {
+  inject(function ($rootScope, $compile, $window, $timeout) {
     var scroller = angular.element(createHtml(scrollSettings));
     var scope = $rootScope.$new();
+    augmentScroller(scroller);
 
     angular.element(document).find('body').append(scroller);
 
