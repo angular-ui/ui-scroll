@@ -187,10 +187,10 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
         topPadding.height(paddingHeight);
         return;
       }
-      const currentPosition = viewport.scrollTop();
-      const newPosition = currentPosition - paddingHeight;
+      const position = viewport.scrollTop();
+      const newPosition = position - paddingHeight;
+      viewport.synthetic = { previous: position, next: newPosition };
       topPadding.height(0);
-      viewport.synthetic = { position: newPosition };
       viewport.scrollTop(newPosition);
     },
 

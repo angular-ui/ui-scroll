@@ -496,10 +496,17 @@ angular.module('ui.scroll', [])
           if (!viewport.synthetic) {
             return;
           }
-          const position = viewport.synthetic.position;
-          if (viewport.scrollTop() !== position) {
+          const oldPosition = viewport.synthetic.previous;
+          const newPosition = viewport.synthetic.next;
+          if (viewport.scrollTop() !== newPosition) {
             requestAnimationFrame(() => {
-              viewport.scrollTop(position);
+              const position = viewport.scrollTop();
+              const diff = oldPosition - position;
+              if (diff > 0) { // inertia over synthetic
+                viewport.scrollTop(newPosition - diff);
+              } else {
+                viewport.scrollTop(newPosition);
+              }
               viewport.synthetic = null;
             });
             return true;
