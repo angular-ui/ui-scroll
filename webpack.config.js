@@ -5,7 +5,7 @@ const glob = require('glob');
 const webpack = require('webpack');
 const CleanWebpackPlugin = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+const TerserPlugin = require('terser-webpack-plugin');
 
 const packageJSON = require('./package.json');
 
@@ -89,11 +89,13 @@ if (ENV === 'production') {
     devtool: 'source-map',
 
     optimization: {
+      minimize: true,
       minimizer: [
-        new UglifyJsPlugin({
+        new TerserPlugin({
           sourceMap: true,
           parallel: true,
-          uglifyOptions: {
+          extractComments: false,
+          terserOptions: {
             warnings: true,
             compress: {
               warnings: true,
@@ -104,7 +106,7 @@ if (ENV === 'production') {
           },
           include: /\.min\.js$/
         })
-      ]
+      ],
     },
 
     plugins: [

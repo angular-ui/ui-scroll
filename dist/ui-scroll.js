@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.6 -- 2019-08-17T00:42:28.970Z
+ * Version: 1.8.0 -- 2020-04-08T15:33:19.924Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -96,6 +96,7 @@
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
+// ESM COMPAT FLAG
 __webpack_require__.r(__webpack_exports__);
 
 // CONCATENATED MODULE: ./src/modules/jqLiteExtras.js
@@ -985,16 +986,26 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       }
     },
     onAfterPrepend: function onAfterPrepend(updates) {
-      if (!updates.prepended.length) return;
+      if (!updates.prepended.length) {
+        return;
+      }
+
       var height = buffer.effectiveHeight(updates.prepended);
       var paddingHeight = topPadding.height() - height;
 
       if (paddingHeight >= 0) {
         topPadding.height(paddingHeight);
-      } else {
-        topPadding.height(0);
-        viewport.scrollTop(viewport.scrollTop() - paddingHeight);
+        return;
       }
+
+      var position = viewport.scrollTop();
+      var newPosition = position - paddingHeight;
+      viewport.synthetic = {
+        previous: position,
+        next: newPosition
+      };
+      topPadding.height(0);
+      viewport.scrollTop(newPosition);
     },
     resetTopPadding: function resetTopPadding() {
       topPadding.height(0);
@@ -1364,10 +1375,16 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
       return parseNumber(result, defaultValue, isFloat);
     }
 
+    function parseBooleanAttr(value, defaultValue) {
+      var result = $parse(value)($scope);
+      return typeof result === 'boolean' ? result : defaultValue;
+    }
+
     var BUFFER_MIN = 3;
     var BUFFER_DEFAULT = 10;
     var PADDING_MIN = 0.3;
     var PADDING_DEFAULT = 0.5;
+    var HANDLE_INERTIA_DEFAULT = true;
     var START_INDEX_DEFAULT = 1;
     var MAX_VIEWPORT_DELAY = 500;
     var VIEWPORT_POLLING_INTERVAL = 50;
@@ -1377,6 +1394,7 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     var viewportController = controllers[0];
     var bufferSize = Math.max(BUFFER_MIN, parseNumericAttr($attr.bufferSize, BUFFER_DEFAULT));
     var padding = Math.max(PADDING_MIN, parseNumericAttr($attr.padding, PADDING_DEFAULT, true));
+    var handleInertia = parseBooleanAttr($attr.handleInertia, HANDLE_INERTIA_DEFAULT);
     var startIndex = parseNumericAttr($attr.startIndex, START_INDEX_DEFAULT);
     var ridActual = 0; // current data revision id
 
@@ -1805,7 +1823,39 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
       }
     }
 
+    function fixInertia() {
+      if (!viewport.synthetic) {
+        return;
+      }
+
+      var oldPosition = viewport.synthetic.previous;
+      var newPosition = viewport.synthetic.next;
+
+      if (viewport.scrollTop() !== newPosition) {
+        requestAnimationFrame(function () {
+          var position = viewport.scrollTop();
+          var diff = oldPosition - position;
+
+          if (diff > 0) {
+            // inertia over synthetic
+            viewport.scrollTop(newPosition - diff);
+          } else {
+            viewport.scrollTop(newPosition);
+          }
+
+          viewport.synthetic = null;
+        });
+        return true;
+      }
+
+      viewport.synthetic = null;
+    }
+
     function resizeAndScrollHandler() {
+      if (handleInertia && fixInertia()) {
+        return;
+      }
+
       if (!$rootScope.$$phase && !adapter.isLoading && !adapter.disabled) {
         enqueueFetch(ridActual);
 
