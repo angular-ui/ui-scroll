@@ -34,14 +34,12 @@ describe('uiScroll Paddings spec.', () => {
   function scrollBottom(viewport, count = 1) {
     for (var i = 0; i < count; i++) {
       viewport.scrollTop(99999);
-      viewport.trigger('scroll');
     }
   }
 
   function scrollTop(viewport, count = 1) {
     for (var i = 0; i < count; i++) {
       viewport.scrollTop(0);
-      viewport.trigger('scroll');
     }
   }
 

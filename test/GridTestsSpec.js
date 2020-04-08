@@ -222,10 +222,6 @@ describe('uiScroll', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope) {
 					scope.adapter.gridAdapter.columns[2].moveBefore(1);
-
-					body.scrollTop(1000);
-					body.trigger('scroll');
-
 					expectLastRowContents(body, ['col0', 'col2', 'col1', 'col3']);
 				}
 			);
@@ -255,12 +251,7 @@ describe('uiScroll', function () {
 		it('should apply css to new elements', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope) {
-
 					scope.adapter.gridAdapter.columns[0].css(attr, value);
-
-					body.scrollTop(1000);
-					body.trigger('scroll');
-
 					var headerElement = getHeaderElement(head, 0);
 					var lastRowElement = getLastRowElement(body, 0);
 					expect(headerElement.style[attr]).toBe(value);
@@ -335,10 +326,6 @@ describe('uiScroll', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope) {
 					scope.adapter.gridAdapter.applyLayout(layoutCss);
-
-					body.scrollTop(1000);
-					body.trigger('scroll');
-
 					layoutCss.forEach((column, index) => {
 						expect(getLastRowElement(body, index).style['zIndex']).toBe(column.css['zIndex']);
 					});
@@ -368,10 +355,6 @@ describe('uiScroll', function () {
 			runGridTest(scrollSettings,
 				function (head, body, scope) {
 					applyOrderLayout(scope, [3, 2, 1, 0]);
-
-					body.scrollTop(1000);
-					body.trigger('scroll');
-
 					expectLastRowContents(body, ['col3', 'col2', 'col1', 'col0']);
 				}
 			);

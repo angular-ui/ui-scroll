@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.7.6 -- 2019-08-17T00:42:28.970Z
+ * Version: 1.8.0 -- 2020-04-08T15:33:19.924Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
