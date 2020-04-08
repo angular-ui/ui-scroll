@@ -477,6 +477,10 @@ Pull Rerquest should include source code (./scr) changes, may include tests (./t
 
 ## Change log
 
+### v1.8.0
+ * Reconsidered scroll event handling
+ * Fixed inertia scrolling issues
+
 ### v1.7.6
  * Added immutableTop option for applyUpdates and prepend Adapter methods.
 
