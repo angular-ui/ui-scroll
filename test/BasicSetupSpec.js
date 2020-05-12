@@ -18,27 +18,29 @@ describe('uiScroll', function() {
     var scrollSettings = { datasource: 'myEmptyDatasource' };
 
     it('should bind to window scroll and resize events and unbind them after the scope is destroyed', function() {
-      spyOn($.fn, 'bind').and.callThrough();
-      spyOn($.fn, 'unbind').and.callThrough();
+      spyOn($.fn, 'on').and.callThrough();
+      spyOn($.fn, 'off').and.callThrough();
       runTest(scrollSettings,
         function(viewport) {
-          expect($.fn.bind.calls.all().length).toBe(3);
-          expect($.fn.bind.calls.all()[0].args[0]).toBe('mousewheel');
-          expect($.fn.bind.calls.all()[0].object[0]).toBe(viewport[0]);
-          expect($.fn.bind.calls.all()[1].args[0]).toBe('resize');
-          expect($.fn.bind.calls.all()[1].object[0]).toBe(viewport[0]);
-          expect($.fn.bind.calls.all()[2].args[0]).toBe('scroll');
-          expect($.fn.bind.calls.all()[2].object[0]).toBe(viewport[0]);
+          expect($.fn.on.calls.all().length).toBe(4);
+          expect($.fn.on.calls.all()[0].args[0]).toBe('visibilitychange');
+          expect($.fn.on.calls.all()[1].args[0]).toBe('mousewheel');
+          expect($.fn.on.calls.all()[1].object[0]).toBe(viewport[0]);
+          expect($.fn.on.calls.all()[2].args[0]).toBe('resize');
+          expect($.fn.on.calls.all()[2].object[0]).toBe(viewport[0]);
+          expect($.fn.on.calls.all()[3].args[0]).toBe('scroll');
+          expect($.fn.on.calls.all()[3].object[0]).toBe(viewport[0]);
         }, {
           cleanupTest: function(viewport, scope, $timeout) {
             $timeout(function() {
-              expect($.fn.unbind.calls.all().length).toBe(3);
-              expect($.fn.unbind.calls.all()[0].args[0]).toBe('resize');
-              expect($.fn.unbind.calls.all()[0].object[0]).toBe(viewport[0]);
-              expect($.fn.unbind.calls.all()[1].args[0]).toBe('scroll');
-              expect($.fn.unbind.calls.all()[1].object[0]).toBe(viewport[0]);
-              expect($.fn.unbind.calls.all()[2].args[0]).toBe('mousewheel');
-              expect($.fn.unbind.calls.all()[2].object[0]).toBe(viewport[0]);
+              expect($.fn.off.calls.all().length).toBe(4);
+              expect($.fn.off.calls.all()[0].args[0]).toBe('visibilitychange');
+              expect($.fn.off.calls.all()[1].args[0]).toBe('resize');
+              expect($.fn.off.calls.all()[1].object[0]).toBe(viewport[0]);
+              expect($.fn.off.calls.all()[2].args[0]).toBe('scroll');
+              expect($.fn.off.calls.all()[2].object[0]).toBe(viewport[0]);
+              expect($.fn.off.calls.all()[3].args[0]).toBe('mousewheel');
+              expect($.fn.off.calls.all()[3].object[0]).toBe(viewport[0]);
             });
           }
         }
