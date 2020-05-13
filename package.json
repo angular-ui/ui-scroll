@@ -1,6 +1,6 @@
 {
   "name": "angular-ui-scroll",
-  "description": "AngularJS infinite scrolling module",
+  "description": "AngularJS virtual scrolling module",
   "version": "1.8.0",
   "src": "./src/",
   "public": "./dist/",
@@ -10,6 +10,12 @@
     "name": "Michael Feingold",
     "email": "mfeingold@hill30.com"
   },
+  "maintainers": [
+    {
+      "name": "Denis Hilt",
+      "web": "https://github.com/dhilt"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/angular-ui/ui-scroll.git"
@@ -29,6 +35,9 @@
     "dev": "npm-run-all --parallel dev-server dev-test",
     "test": "npm run dev-test",
     "start": "npm run dev-server"
+  },
+  "peerDependencies": {
+    "angular": ">=1.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.3.3",
@@ -58,6 +67,7 @@
     "ui.scroll",
     "ui-scroll",
     "angular-ui-scroll",
+    "virtual",
     "unlimited",
     "infinite",
     "live",
