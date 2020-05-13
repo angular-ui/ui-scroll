@@ -479,6 +479,9 @@ Pull Request should include source code (./scr) changes, may include tests (./te
 
 ## Change log
 
+### v1.8.1
+ * Removed deprecated bind/unbind methods.
+
 ### v1.8.0
  * Reconsidered scroll event handling.
  * Fixed inertia scrolling issues.
