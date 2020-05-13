@@ -224,10 +224,10 @@ angular.module('ui.scroll', [])
 
         $scope.$on('$destroy', () => {
           unbindEvents();
-          viewport.unbind('mousewheel', wheelHandler);
+          viewport.off('mousewheel', wheelHandler);
         });
 
-        viewport.bind('mousewheel', wheelHandler);
+        viewport.on('mousewheel', wheelHandler);
 
         initialize();
 
@@ -238,13 +238,13 @@ angular.module('ui.scroll', [])
         }
 
         function bindEvents() {
-          viewport.bind('resize', resizeAndScrollHandler);
-          viewport.bind('scroll', resizeAndScrollHandler);
+          viewport.on('resize', resizeAndScrollHandler);
+          viewport.on('scroll', resizeAndScrollHandler);
         }
 
         function unbindEvents() {
-          viewport.unbind('resize', resizeAndScrollHandler);
-          viewport.unbind('scroll', resizeAndScrollHandler);
+          viewport.off('resize', resizeAndScrollHandler);
+          viewport.off('scroll', resizeAndScrollHandler);
         }
 
         function reload() {

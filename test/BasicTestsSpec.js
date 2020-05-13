@@ -433,7 +433,7 @@ describe('uiScroll', function () {
                 function (viewport) {
                     var wheelEventElement = viewport[0];
 
-                    angular.element(document.body).bind('mousewheel', incrementDocumentScrollCount); //spy for wheel-events bubbling
+                    angular.element(document.body).on('mousewheel', incrementDocumentScrollCount); //spy for wheel-events bubbling
 
                     //simulate multiple wheel-scroll events within viewport
 
@@ -458,7 +458,7 @@ describe('uiScroll', function () {
 
                 }, {
                     cleanupTest: function () {
-                        angular.element(document.body).unbind('mousewheel', incrementDocumentScrollCount);
+                        angular.element(document.body).off('mousewheel', incrementDocumentScrollCount);
                     }
                 }
             );
