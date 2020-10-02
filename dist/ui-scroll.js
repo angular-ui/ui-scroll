@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.8.1 -- 2020-05-13T13:54:15.842Z
+ * Version: 1.8.2 -- 2020-10-02T15:06:03.904Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -509,7 +509,16 @@ function () {
 }();
 
 
+// CONCATENATED MODULE: ./src/modules/utils.js
+var OPERATIONS = {
+  PREPEND: 'prepend',
+  APPEND: 'append',
+  INSERT: 'insert',
+  REMOVE: 'remove',
+  NONE: 'none'
+};
 // CONCATENATED MODULE: ./src/modules/buffer.js
+
 function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
   var buffer = Object.create(Array.prototype);
   angular.extend(buffer, {
@@ -528,7 +537,7 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
     append: function append(items) {
       items.forEach(function (item) {
         ++buffer.next;
-        buffer.insert('append', item);
+        buffer.insert(OPERATIONS.APPEND, item);
       });
       buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
     },
@@ -540,7 +549,7 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
           --buffer.first;
         }
 
-        buffer.insert('prepend', item);
+        buffer.insert(OPERATIONS.PREPEND, item);
       });
       buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
     },
@@ -549,19 +558,19 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
      * inserts wrapped element in the buffer
      * the first argument is either operation keyword (see below) or a number for operation 'insert'
      * for insert the number is the index for the buffer element the new one have to be inserted after
-     * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
+     * operations: 'append', 'prepend', 'insert', 'remove', 'none'
      */
-    insert: function insert(operation, item, isTop) {
+    insert: function insert(operation, item, shiftTop) {
       var wrapper = {
         item: item
       };
 
       if (operation % 1 === 0) {
         // it is an insert
-        wrapper.op = 'insert';
+        wrapper.op = OPERATIONS.INSERT;
         buffer.splice(operation, 0, wrapper);
 
-        if (isTop) {
+        if (shiftTop) {
           buffer.first--;
         } else {
           buffer.next++;
@@ -570,11 +579,11 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         wrapper.op = operation;
 
         switch (operation) {
-          case 'append':
+          case OPERATIONS.APPEND:
             buffer.push(wrapper);
             break;
 
-          case 'prepend':
+          case OPERATIONS.PREPEND:
             buffer.unshift(wrapper);
             break;
         }
@@ -589,26 +598,25 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         }
 
         return buffer.splice(arg1, arg2 - arg1);
-      } // removes single item(wrapper) from the buffer
+      } // removes single item (wrapper) from the buffer
 
 
       buffer.splice(buffer.indexOf(arg1), 1);
 
-      if (arg1._op === 'isTop' && buffer.first === this.getAbsMinIndex()) {
+      if (arg1.shiftTop && buffer.first === this.getAbsMinIndex()) {
         this.incrementMinIndex();
       } else {
         this.decrementMaxIndex();
       }
 
-      if (arg1._op === 'isTop') {
+      if (arg1.shiftTop) {
         buffer.first++;
       } else {
         buffer.next--;
       }
 
       if (!buffer.length) {
-        buffer.first = 1;
-        buffer.next = 1;
+        buffer.minIndex = Math.min(buffer.maxIndex, buffer.minIndex);
       }
 
       return elementRoutines.removeElementAnimated(arg1);
@@ -666,7 +674,7 @@ function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
     },
     getItems: function getItems() {
       return buffer.filter(function (item) {
-        return item.op === 'none';
+        return item.op === OPERATIONS.NONE;
       });
     },
     getFirstItem: function getFirstItem() {
@@ -727,9 +735,9 @@ function () {
     }
   }, {
     key: "remove",
-    value: function remove(argument, _isTop) {
+    value: function remove(argument, _shiftTop) {
       var index = argument % 1 === 0 ? argument : argument.scope.$index;
-      var isTop = argument % 1 === 0 ? _isTop : argument._op === 'isTop';
+      var shiftTop = argument % 1 === 0 ? _shiftTop : argument.shiftTop;
 
       for (var i = this.length - 1; i >= 0; i--) {
         if (this[i].index === index) {
@@ -738,7 +746,7 @@ function () {
         }
       }
 
-      if (!isTop) {
+      if (!shiftTop) {
         for (var _i = this.length - 1; _i >= 0; _i--) {
           if (this[_i].index > index) {
             this[_i].index--;
@@ -1015,9 +1023,9 @@ function Viewport(elementRoutines, buffer, element, viewportController, $rootSco
       bottomPadding.height(0);
       bottomPadding.cache.clear();
     },
-    removeCacheItem: function removeCacheItem(item, isTop) {
-      topPadding.cache.remove(item, isTop);
-      bottomPadding.cache.remove(item, isTop);
+    removeCacheItem: function removeCacheItem(item, shiftTop) {
+      topPadding.cache.remove(item, shiftTop);
+      bottomPadding.cache.remove(item, shiftTop);
     },
     removeItem: function removeItem(item) {
       this.removeCacheItem(item);
@@ -1033,7 +1041,9 @@ function adapter_defineProperties(target, props) { for (var i = 0; i < props.len
 
 function adapter_createClass(Constructor, protoProps, staticProps) { if (protoProps) adapter_defineProperties(Constructor.prototype, protoProps); if (staticProps) adapter_defineProperties(Constructor, staticProps); return Constructor; }
 
-var Adapter =
+
+
+var adapter_Adapter =
 /*#__PURE__*/
 function () {
   function Adapter($scope, $parse, $attr, viewport, buffer, doAdjust, reload) {
@@ -1239,10 +1249,13 @@ function () {
       if (!newItems.reverse().some(function (newItem) {
         return newItem === wrapper.item;
       })) {
-        wrapper.op = 'remove';
+        wrapper.op = OPERATIONS.REMOVE; // try to catch "first" edge case on remove
 
-        if (!options.immutableTop && position === 0 && !newItems.length) {
-          wrapper._op = 'isTop'; // to catch "first" edge case on remove
+        if (!options.immutableTop && !newItems.length) {
+          // this is the first item, or the previous one's part of the "shift-top" group
+          if (position === 0 && this.buffer.bof || position !== 0 && this.buffer[position - 1].shiftTop) {
+            wrapper.shiftTop = true;
+          }
         }
       }
 
@@ -1250,7 +1263,7 @@ function () {
         if (newItem === wrapper.item) {
           position--;
         } else {
-          // 3 parameter (isTop) is to catch "first" edge case on insert
+          // 3 parameter (shiftTop) is to catch "first" edge case on insert
           _this3.buffer.insert(position + 1, newItem, !options.immutableTop && position === -1);
         }
       });
@@ -1317,8 +1330,9 @@ function () {
   return Adapter;
 }();
 
-/* harmony default export */ var modules_adapter = (Adapter);
+/* harmony default export */ var modules_adapter = (adapter_Adapter);
 // CONCATENATED MODULE: ./src/ui-scroll.js
+
 
 
 
@@ -1647,23 +1661,23 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
       var inserted = [];
       buffer.forEach(function (wrapper, i) {
         switch (wrapper.op) {
-          case 'prepend':
+          case OPERATIONS.PREPEND:
             toBePrepended.unshift(wrapper);
             break;
 
-          case 'append':
+          case OPERATIONS.APPEND:
             insertWrapperContent(wrapper, i);
-            wrapper.op = 'none';
+            wrapper.op = OPERATIONS.NONE;
             inserted.push(wrapper);
             break;
 
-          case 'insert':
+          case OPERATIONS.INSERT:
             promises = promises.concat(createElement(wrapper, i, viewport.insertElementAnimated));
-            wrapper.op = 'none';
+            wrapper.op = OPERATIONS.NONE;
             inserted.push(wrapper);
             break;
 
-          case 'remove':
+          case OPERATIONS.REMOVE:
             toBeRemoved.push(wrapper);
         }
       });
@@ -1672,7 +1686,7 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
       });
       if (toBePrepended.length) toBePrepended.forEach(function (wrapper) {
         insertWrapperContent(wrapper);
-        wrapper.op = 'none';
+        wrapper.op = OPERATIONS.NONE;
       });
       buffer.forEach(function (item, i) {
         return item.scope.$index = buffer.first + i;
