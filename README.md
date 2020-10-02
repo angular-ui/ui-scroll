@@ -479,6 +479,9 @@ Pull Request should include source code (./scr) changes, may include tests (./te
 
 ## Change log
 
+### v1.8.2
+ * Fixed edge cases when removing items.
+
 ### v1.8.1
  * Removed deprecated bind/unbind methods.
 

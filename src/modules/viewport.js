@@ -35,7 +35,7 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       if (!container) {
         return true;
       }
-      if(container !== viewport) {
+      if (container !== viewport) {
         viewport.css('height', window.getComputedStyle(container[0]).height);
       }
       return viewport.height() > 0;
@@ -137,7 +137,7 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
 
       let topPaddingHeight = 0, topCount = 0;
       topPadding.cache.forEach(item => {
-        if(item.index < buffer.first) {
+        if (item.index < buffer.first) {
           topPaddingHeight += item.height;
           topCount++;
         }
@@ -145,7 +145,7 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
 
       let bottomPaddingHeight = 0, bottomCount = 0;
       bottomPadding.cache.forEach(item => {
-        if(item.index >= buffer.next) {
+        if (item.index >= buffer.next) {
           bottomPaddingHeight += item.height;
           bottomCount++;
         }
@@ -204,9 +204,9 @@ export default function Viewport(elementRoutines, buffer, element, viewportContr
       bottomPadding.cache.clear();
     },
 
-    removeCacheItem(item, isTop) {
-      topPadding.cache.remove(item, isTop);
-      bottomPadding.cache.remove(item, isTop);
+    removeCacheItem(item, shiftTop) {
+      topPadding.cache.remove(item, shiftTop);
+      bottomPadding.cache.remove(item, shiftTop);
     },
 
     removeItem(item) {

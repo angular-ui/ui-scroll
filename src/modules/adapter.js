@@ -1,3 +1,5 @@
+import { OPERATIONS } from './utils';
+
 class Adapter {
 
   constructor($scope, $parse, $attr, viewport, buffer, doAdjust, reload) {
@@ -168,16 +170,23 @@ class Adapter {
     }
     let position = this.buffer.indexOf(wrapper);
     if (!newItems.reverse().some(newItem => newItem === wrapper.item)) {
-      wrapper.op = 'remove';
-      if (!options.immutableTop && position === 0 && !newItems.length) {
-        wrapper._op = 'isTop'; // to catch "first" edge case on remove
+      wrapper.op = OPERATIONS.REMOVE;
+      // try to catch "first" edge case on remove
+      if (!options.immutableTop && !newItems.length) {
+        // this is the first item, or the previous one's part of the "shift-top" group
+        if (
+          (position === 0 && this.buffer.bof) ||
+          (position !== 0 && this.buffer[position - 1].shiftTop)
+        ) {
+          wrapper.shiftTop = true;
+        }
       }
     }
     newItems.forEach((newItem) => {
       if (newItem === wrapper.item) {
         position--;
       } else {
-        // 3 parameter (isTop) is to catch "first" edge case on insert
+        // 3 parameter (shiftTop) is to catch "first" edge case on insert
         this.buffer.insert(position + 1, newItem, !options.immutableTop && position === -1);
       }
     });

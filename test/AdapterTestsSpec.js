@@ -21,17 +21,9 @@ describe('uiScroll', function () {
         function (viewport, scope) {
           expect(viewport.children().length).toBe(5);
 
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -51,17 +43,9 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(5);
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one *1');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two *2');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three *3');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one *1');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two *2');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three *3');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one *1');
@@ -83,18 +67,9 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(5);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one *1');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one *1');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one *1');
@@ -116,18 +91,9 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(5);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two *2');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two *2');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -149,18 +115,9 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(5);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three *3');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three *3');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -182,14 +139,8 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(4);
-
-          var row2 = viewport.children()[1];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[2];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('2: two');
+          expect(Helper.getRow(viewport, 2)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('2: two');
@@ -214,14 +165,8 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(4);
-
-          var row2 = viewport.children()[1];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('1: two');
-
-          var row3 = viewport.children()[2];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('2: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: two');
+          expect(Helper.getRow(viewport, 2)).toBe('2: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: two');
@@ -242,14 +187,8 @@ describe('uiScroll', function () {
       );
 
       expect(viewport.children().length).toBe(4);
-
-      var row1 = viewport.children()[1];
-      expect(row1.tagName.toLowerCase()).toBe('div');
-      expect(row1.innerHTML).toBe('1: one');
-
-      var row2 = viewport.children()[2];
-      expect(row2.tagName.toLowerCase()).toBe('div');
-      expect(row2.innerHTML).toBe('2: three');
+      expect(Helper.getRow(viewport, 1)).toBe('1: one');
+      expect(Helper.getRow(viewport, 2)).toBe('2: three');
 
       expect(scope.adapter).toBeTruthy();
       expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -283,14 +222,8 @@ describe('uiScroll', function () {
       );
 
       expect(viewport.children().length).toBe(4);
-
-      var row1 = viewport.children()[1];
-      expect(row1.tagName.toLowerCase()).toBe('div');
-      expect(row1.innerHTML).toBe('1: one');
-
-      var row2 = viewport.children()[2];
-      expect(row2.tagName.toLowerCase()).toBe('div');
-      expect(row2.innerHTML).toBe('2: two');
+      expect(Helper.getRow(viewport, 1)).toBe('1: one');
+      expect(Helper.getRow(viewport, 2)).toBe('2: two');
 
       expect(scope.adapter).toBeTruthy();
       expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -326,22 +259,10 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(6);
-
-          var row0 = viewport.children()[1];
-          expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('0: before one');
-
-          var row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[3];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[4];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('0: before one');
+          expect(Helper.getRow(viewport, 2)).toBe('1: one');
+          expect(Helper.getRow(viewport, 3)).toBe('2: two');
+          expect(Helper.getRow(viewport, 4)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('0: before one');
@@ -364,22 +285,10 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(6);
-
-          var row0 = viewport.children()[1];
-          expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('1: before one');
-
-          var row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: one');
-
-          var row2 = viewport.children()[3];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('3: two');
-
-          var row3 = viewport.children()[4];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('4: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: before one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: one');
+          expect(Helper.getRow(viewport, 3)).toBe('3: two');
+          expect(Helper.getRow(viewport, 4)).toBe('4: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: before one');
@@ -399,22 +308,10 @@ describe('uiScroll', function () {
       );
 
       expect(viewport.children().length).toBe(6);
-
-      var row0 = viewport.children()[1];
-      expect(row0.tagName.toLowerCase()).toBe('div');
-      expect(row0.innerHTML).toBe('1: one');
-
-      var row1 = viewport.children()[2];
-      expect(row1.tagName.toLowerCase()).toBe('div');
-      expect(row1.innerHTML).toBe('2: after one');
-
-      var row2 = viewport.children()[3];
-      expect(row2.tagName.toLowerCase()).toBe('div');
-      expect(row2.innerHTML).toBe('3: two');
-
-      var row3 = viewport.children()[4];
-      expect(row3.tagName.toLowerCase()).toBe('div');
-      expect(row3.innerHTML).toBe('4: three');
+      expect(Helper.getRow(viewport, 1)).toBe('1: one');
+      expect(Helper.getRow(viewport, 2)).toBe('2: after one');
+      expect(Helper.getRow(viewport, 3)).toBe('3: two');
+      expect(Helper.getRow(viewport, 4)).toBe('4: three');
 
       expect(scope.adapter).toBeTruthy();
       expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -450,22 +347,10 @@ describe('uiScroll', function () {
       );
 
       expect(viewport.children().length).toBe(6);
-
-      var row0 = viewport.children()[1];
-      expect(row0.tagName.toLowerCase()).toBe('div');
-      expect(row0.innerHTML).toBe('1: one');
-
-      var row1 = viewport.children()[2];
-      expect(row1.tagName.toLowerCase()).toBe('div');
-      expect(row1.innerHTML).toBe('2: before two');
-
-      var row2 = viewport.children()[3];
-      expect(row2.tagName.toLowerCase()).toBe('div');
-      expect(row2.innerHTML).toBe('3: two');
-
-      var row3 = viewport.children()[4];
-      expect(row3.tagName.toLowerCase()).toBe('div');
-      expect(row3.innerHTML).toBe('4: three');
+      expect(Helper.getRow(viewport, 1)).toBe('1: one');
+      expect(Helper.getRow(viewport, 2)).toBe('2: before two');
+      expect(Helper.getRow(viewport, 3)).toBe('3: two');
+      expect(Helper.getRow(viewport, 4)).toBe('4: three');
 
       expect(scope.adapter).toBeTruthy();
       expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -499,22 +384,10 @@ describe('uiScroll', function () {
       );
 
       expect(viewport.children().length).toBe(6);
-
-      var row0 = viewport.children()[1];
-      expect(row0.tagName.toLowerCase()).toBe('div');
-      expect(row0.innerHTML).toBe('1: one');
-
-      var row1 = viewport.children()[2];
-      expect(row1.tagName.toLowerCase()).toBe('div');
-      expect(row1.innerHTML).toBe('2: two');
-
-      var row2 = viewport.children()[3];
-      expect(row2.tagName.toLowerCase()).toBe('div');
-      expect(row2.innerHTML).toBe('3: three');
-
-      var row3 = viewport.children()[4];
-      expect(row3.tagName.toLowerCase()).toBe('div');
-      expect(row3.innerHTML).toBe('4: after three');
+      expect(Helper.getRow(viewport, 1)).toBe('1: one');
+      expect(Helper.getRow(viewport, 2)).toBe('2: two');
+      expect(Helper.getRow(viewport, 3)).toBe('3: three');
+      expect(Helper.getRow(viewport, 4)).toBe('4: after three');
 
       expect(scope.adapter).toBeTruthy();
       expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -548,18 +421,9 @@ describe('uiScroll', function () {
           scope.adapter.applyUpdates(1, ['one *1']);
 
           expect(viewport.children().length).toBe(5);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one *1');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one *1');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one *1');
@@ -575,18 +439,9 @@ describe('uiScroll', function () {
           scope.adapter.applyUpdates(0, ['invalid']);
 
           expect(viewport.children().length).toBe(5);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -602,18 +457,9 @@ describe('uiScroll', function () {
           scope.adapter.applyUpdates(4, ['invalid']);
 
           expect(viewport.children().length).toBe(5);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -629,18 +475,9 @@ describe('uiScroll', function () {
           scope.adapter.applyUpdates(2, ['two *2']);
 
           expect(viewport.children().length).toBe(5);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two *2');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two *2');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -656,18 +493,9 @@ describe('uiScroll', function () {
           scope.adapter.applyUpdates(3, ['three *3']);
 
           expect(viewport.children().length).toBe(5);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three *3');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three *3');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -683,14 +511,8 @@ describe('uiScroll', function () {
           scope.adapter.applyUpdates(1, []);
 
           expect(viewport.children().length).toBe(4);
-
-          var row2 = viewport.children()[1];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[2];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('2: two');
+          expect(Helper.getRow(viewport, 2)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('2: two');
@@ -708,14 +530,8 @@ describe('uiScroll', function () {
           scope.adapter.applyUpdates(1, [], { immutableTop: true });
 
           expect(viewport.children().length).toBe(4);
-
-          var row2 = viewport.children()[1];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('1: two');
-
-          var row3 = viewport.children()[2];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('2: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: two');
+          expect(Helper.getRow(viewport, 2)).toBe('2: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: two');
@@ -728,14 +544,8 @@ describe('uiScroll', function () {
       scope.adapter.applyUpdates(2, [], options);
 
       expect(viewport.children().length).toBe(4);
-
-      var row1 = viewport.children()[1];
-      expect(row1.tagName.toLowerCase()).toBe('div');
-      expect(row1.innerHTML).toBe('1: one');
-
-      var row2 = viewport.children()[2];
-      expect(row2.tagName.toLowerCase()).toBe('div');
-      expect(row2.innerHTML).toBe('2: three');
+      expect(Helper.getRow(viewport, 1)).toBe('1: one');
+      expect(Helper.getRow(viewport, 2)).toBe('2: three');
 
       expect(scope.adapter).toBeTruthy();
       expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -758,14 +568,8 @@ describe('uiScroll', function () {
       scope.adapter.applyUpdates(3, []);
 
       expect(viewport.children().length).toBe(4);
-
-      var row1 = viewport.children()[1];
-      expect(row1.tagName.toLowerCase()).toBe('div');
-      expect(row1.innerHTML).toBe('1: one');
-
-      var row2 = viewport.children()[2];
-      expect(row2.tagName.toLowerCase()).toBe('div');
-      expect(row2.innerHTML).toBe('2: two');
+      expect(Helper.getRow(viewport, 1)).toBe('1: one');
+      expect(Helper.getRow(viewport, 2)).toBe('2: two');
 
       expect(scope.adapter).toBeTruthy();
       expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -791,22 +595,10 @@ describe('uiScroll', function () {
           scope.adapter.applyUpdates(1, ['before one', 'one']);
 
           expect(viewport.children().length).toBe(6);
-
-          var row0 = viewport.children()[1];
-          expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('0: before one');
-
-          var row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[3];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[4];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('0: before one');
+          expect(Helper.getRow(viewport, 2)).toBe('1: one');
+          expect(Helper.getRow(viewport, 3)).toBe('2: two');
+          expect(Helper.getRow(viewport, 4)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('0: before one');
@@ -824,22 +616,10 @@ describe('uiScroll', function () {
           scope.adapter.applyUpdates(1, ['before one', 'one'], { immutableTop: true });
 
           expect(viewport.children().length).toBe(6);
-
-          var row0 = viewport.children()[1];
-          expect(row0.tagName.toLowerCase()).toBe('div');
-          expect(row0.innerHTML).toBe('1: before one');
-
-          var row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: one');
-
-          var row2 = viewport.children()[3];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('3: two');
-
-          var row3 = viewport.children()[4];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('4: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: before one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: one');
+          expect(Helper.getRow(viewport, 3)).toBe('3: two');
+          expect(Helper.getRow(viewport, 4)).toBe('4: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: before one');
@@ -852,22 +632,10 @@ describe('uiScroll', function () {
       scope.adapter.applyUpdates(1, ['one', 'after one'], options);
 
       expect(viewport.children().length).toBe(6);
-
-      var row0 = viewport.children()[1];
-      expect(row0.tagName.toLowerCase()).toBe('div');
-      expect(row0.innerHTML).toBe('1: one');
-
-      var row1 = viewport.children()[2];
-      expect(row1.tagName.toLowerCase()).toBe('div');
-      expect(row1.innerHTML).toBe('2: after one');
-
-      var row2 = viewport.children()[3];
-      expect(row2.tagName.toLowerCase()).toBe('div');
-      expect(row2.innerHTML).toBe('3: two');
-
-      var row3 = viewport.children()[4];
-      expect(row3.tagName.toLowerCase()).toBe('div');
-      expect(row3.innerHTML).toBe('4: three');
+      expect(Helper.getRow(viewport, 1)).toBe('1: one');
+      expect(Helper.getRow(viewport, 2)).toBe('2: after one');
+      expect(Helper.getRow(viewport, 3)).toBe('3: two');
+      expect(Helper.getRow(viewport, 4)).toBe('4: three');
 
       expect(scope.adapter).toBeTruthy();
       expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -894,22 +662,10 @@ describe('uiScroll', function () {
       scope.adapter.applyUpdates(2, ['before two', 'two'], options);
 
       expect(viewport.children().length).toBe(6);
-
-      var row0 = viewport.children()[1];
-      expect(row0.tagName.toLowerCase()).toBe('div');
-      expect(row0.innerHTML).toBe('1: one');
-
-      var row1 = viewport.children()[2];
-      expect(row1.tagName.toLowerCase()).toBe('div');
-      expect(row1.innerHTML).toBe('2: before two');
-
-      var row2 = viewport.children()[3];
-      expect(row2.tagName.toLowerCase()).toBe('div');
-      expect(row2.innerHTML).toBe('3: two');
-
-      var row3 = viewport.children()[4];
-      expect(row3.tagName.toLowerCase()).toBe('div');
-      expect(row3.innerHTML).toBe('4: three');
+      expect(Helper.getRow(viewport, 1)).toBe('1: one');
+      expect(Helper.getRow(viewport, 2)).toBe('2: before two');
+      expect(Helper.getRow(viewport, 3)).toBe('3: two');
+      expect(Helper.getRow(viewport, 4)).toBe('4: three');
 
       expect(scope.adapter).toBeTruthy();
       expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -936,22 +692,10 @@ describe('uiScroll', function () {
       scope.adapter.applyUpdates(3, ['three', 'after three'], options);
 
       expect(viewport.children().length).toBe(6);
-
-      var row0 = viewport.children()[1];
-      expect(row0.tagName.toLowerCase()).toBe('div');
-      expect(row0.innerHTML).toBe('1: one');
-
-      var row1 = viewport.children()[2];
-      expect(row1.tagName.toLowerCase()).toBe('div');
-      expect(row1.innerHTML).toBe('2: two');
-
-      var row2 = viewport.children()[3];
-      expect(row2.tagName.toLowerCase()).toBe('div');
-      expect(row2.innerHTML).toBe('3: three');
-
-      var row3 = viewport.children()[4];
-      expect(row3.tagName.toLowerCase()).toBe('div');
-      expect(row3.innerHTML).toBe('4: after three');
+      expect(Helper.getRow(viewport, 1)).toBe('1: one');
+      expect(Helper.getRow(viewport, 2)).toBe('2: two');
+      expect(Helper.getRow(viewport, 3)).toBe('3: three');
+      expect(Helper.getRow(viewport, 4)).toBe('4: after three');
 
       expect(scope.adapter).toBeTruthy();
       expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -993,17 +737,9 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(5);
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one *1');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two *2');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three *3');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one *1');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two *2');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three *3');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one *1');
@@ -1027,18 +763,9 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(5);
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one *1');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two *2');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three *3');
-
+          expect(Helper.getRow(viewport, 1)).toBe('1: one *1');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two *2');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three *3');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one *1');
@@ -1067,35 +794,13 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(9);
-          var row1, row2, row3;
-
-          row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('-1: one *1 before 1');
-
-          row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('0: one *1 before 2');
-
-          row1 = viewport.children()[3];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one *1');
-
-          row1 = viewport.children()[4];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: one *1 after 1');
-
-          row1 = viewport.children()[5];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('3: one *1 after 2');
-
-          row2 = viewport.children()[6];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('4: two');
-
-          row3 = viewport.children()[7];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('5: three');
+          expect(Helper.getRow(viewport, 1)).toBe('-1: one *1 before 1');
+          expect(Helper.getRow(viewport, 2)).toBe('0: one *1 before 2');
+          expect(Helper.getRow(viewport, 3)).toBe('1: one *1');
+          expect(Helper.getRow(viewport, 4)).toBe('2: one *1 after 1');
+          expect(Helper.getRow(viewport, 5)).toBe('3: one *1 after 2');
+          expect(Helper.getRow(viewport, 6)).toBe('4: two');
+          expect(Helper.getRow(viewport, 7)).toBe('5: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: one *1 before 1');
@@ -1124,35 +829,13 @@ describe('uiScroll', function () {
           );
 
           expect(viewport.children().length).toBe(9);
-          var row1, row2, row3;
-
-          row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          row1 = viewport.children()[2];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('2: two *2 before 1');
-
-          row1 = viewport.children()[3];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('3: two *2 before 2');
-
-          row2 = viewport.children()[4];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('4: two *2');
-
-          row1 = viewport.children()[5];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('5: two *2 after 1');
-
-          row1 = viewport.children()[6];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('6: two *2 after 2');
-
-          row3 = viewport.children()[7];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('7: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two *2 before 1');
+          expect(Helper.getRow(viewport, 3)).toBe('3: two *2 before 2');
+          expect(Helper.getRow(viewport, 4)).toBe('4: two *2');
+          expect(Helper.getRow(viewport, 5)).toBe('5: two *2 after 1');
+          expect(Helper.getRow(viewport, 6)).toBe('6: two *2 after 2');
+          expect(Helper.getRow(viewport, 7)).toBe('7: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -1171,26 +854,11 @@ describe('uiScroll', function () {
           scope.adapter.append(['appended one', 'appended two']);
 
           expect(viewport.children().length).toBe(7);
-
-          var row1 = viewport.children()[1];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[2];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[3];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
-
-          var row4 = viewport.children()[4];
-          expect(row4.tagName.toLowerCase()).toBe('div');
-          expect(row4.innerHTML).toBe('4: appended one');
-
-          var row5 = viewport.children()[5];
-          expect(row5.tagName.toLowerCase()).toBe('div');
-          expect(row5.innerHTML).toBe('5: appended two');
+          expect(Helper.getRow(viewport, 1)).toBe('1: one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: two');
+          expect(Helper.getRow(viewport, 3)).toBe('3: three');
+          expect(Helper.getRow(viewport, 4)).toBe('4: appended one');
+          expect(Helper.getRow(viewport, 5)).toBe('5: appended two');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: one');
@@ -1206,14 +874,8 @@ describe('uiScroll', function () {
           scope.adapter.append(['appended one', 'appended two']);
 
           expect(viewport.children().length).toBe(4);
-
-          var row4 = viewport.children()[1];
-          expect(row4.tagName.toLowerCase()).toBe('div');
-          expect(row4.innerHTML).toBe('1: appended one');
-
-          var row5 = viewport.children()[2];
-          expect(row5.tagName.toLowerCase()).toBe('div');
-          expect(row5.innerHTML).toBe('2: appended two');
+          expect(Helper.getRow(viewport, 1)).toBe('1: appended one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: appended two');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: appended one');
@@ -1233,26 +895,11 @@ describe('uiScroll', function () {
           scope.adapter.prepend(['prepended one', 'prepended two']);
 
           expect(viewport.children().length).toBe(7);
-
-          var row4 = viewport.children()[1];
-          expect(row4.tagName.toLowerCase()).toBe('div');
-          expect(row4.innerHTML).toBe('-1: prepended one');
-
-          var row5 = viewport.children()[2];
-          expect(row5.tagName.toLowerCase()).toBe('div');
-          expect(row5.innerHTML).toBe('0: prepended two');
-
-          var row1 = viewport.children()[3];
-          expect(row1.tagName.toLowerCase()).toBe('div');
-          expect(row1.innerHTML).toBe('1: one');
-
-          var row2 = viewport.children()[4];
-          expect(row2.tagName.toLowerCase()).toBe('div');
-          expect(row2.innerHTML).toBe('2: two');
-
-          var row3 = viewport.children()[5];
-          expect(row3.tagName.toLowerCase()).toBe('div');
-          expect(row3.innerHTML).toBe('3: three');
+          expect(Helper.getRow(viewport, 1)).toBe('-1: prepended one');
+          expect(Helper.getRow(viewport, 2)).toBe('0: prepended two');
+          expect(Helper.getRow(viewport, 3)).toBe('1: one');
+          expect(Helper.getRow(viewport, 4)).toBe('2: two');
+          expect(Helper.getRow(viewport, 5)).toBe('3: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: prepended one');
@@ -1268,11 +915,11 @@ describe('uiScroll', function () {
           scope.adapter.prepend(['prepended one', 'prepended two'], { immutableTop: true });
 
           expect(viewport.children().length).toBe(7);
-          expect(viewport.children()[1].innerHTML).toBe('1: prepended one');
-          expect(viewport.children()[2].innerHTML).toBe('2: prepended two');
-          expect(viewport.children()[3].innerHTML).toBe('3: one');
-          expect(viewport.children()[4].innerHTML).toBe('4: two');
-          expect(viewport.children()[5].innerHTML).toBe('5: three');
+          expect(Helper.getRow(viewport, 1)).toBe('1: prepended one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: prepended two');
+          expect(Helper.getRow(viewport, 3)).toBe('3: one');
+          expect(Helper.getRow(viewport, 4)).toBe('4: two');
+          expect(Helper.getRow(viewport, 5)).toBe('5: three');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: prepended one');
@@ -1288,14 +935,8 @@ describe('uiScroll', function () {
           scope.adapter.prepend(['prepended one', 'prepended two']);
 
           expect(viewport.children().length).toBe(4);
-
-          var row4 = viewport.children()[1];
-          expect(row4.tagName.toLowerCase()).toBe('div');
-          expect(row4.innerHTML).toBe('-1: prepended one');
-
-          var row5 = viewport.children()[2];
-          expect(row5.tagName.toLowerCase()).toBe('div');
-          expect(row5.innerHTML).toBe('0: prepended two');
+          expect(Helper.getRow(viewport, 1)).toBe('-1: prepended one');
+          expect(Helper.getRow(viewport, 2)).toBe('0: prepended two');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('-1: prepended one');
@@ -1311,8 +952,8 @@ describe('uiScroll', function () {
           scope.adapter.prepend(['prepended one', 'prepended two'], { immutableTop: true });
 
           expect(viewport.children().length).toBe(4);
-          expect(viewport.children()[1].innerHTML).toBe('1: prepended one');
-          expect(viewport.children()[2].innerHTML).toBe('2: prepended two');
+          expect(Helper.getRow(viewport, 1)).toBe('1: prepended one');
+          expect(Helper.getRow(viewport, 2)).toBe('2: prepended two');
 
           expect(scope.adapter).toBeTruthy();
           expect(scope.adapter.topVisibleElement[0].innerHTML).toBe('1: prepended one');
@@ -1516,9 +1157,7 @@ describe('uiScroll', function () {
           scope.adapter.append(['item1*', 'item2*', 'item3*']);
           expect(scope.adapter.isEOF()).toBe(true);
           expect(viewport.children().length).toBe(2 + 3 + 3);
-
-          var lastRow = viewport.children()[viewport.children().length - 2];
-          expect(lastRow.innerHTML).toBe('6: item3*');
+          expect(Helper.getLastRow(viewport)).toBe('6: item3*');
         }
       );
     });
@@ -1534,9 +1173,7 @@ describe('uiScroll', function () {
           viewport.scrollTop(10000);
           expect(scope.adapter.isEOF()).toBe(true);
           expect(viewport.children().length).toBe(2 + 3 + 3);
-
-          var lastRow = viewport.children()[viewport.children().length - 2];
-          expect(lastRow.innerHTML).toBe('6: item3*');
+          expect(Helper.getLastRow(viewport)).toBe('6: item3*');
         }
       );
     });
@@ -1556,11 +1193,8 @@ describe('uiScroll', function () {
           scope.adapter.append(['item7*', 'item8*', 'item9*', 'item10*']);
           expect(viewport.children().length).toBe(2 + 3 + 3 + 3);
 
-          var firstRow = viewport.children()[1];
-          expect(firstRow.innerHTML).toBe('4: item1*');
-
-          var lastRow = viewport.children()[viewport.children().length - 2];
-          expect(lastRow.innerHTML).toBe('12: item9*');
+          expect(Helper.getFirstRow(viewport)).toBe('4: item1*');
+          expect(Helper.getLastRow(viewport)).toBe('12: item9*');
         }
       );
     });
@@ -1574,7 +1208,9 @@ describe('uiScroll', function () {
       runTest(scrollSettings,
         function (viewport, scope) {
           expect(scope.adapter.bufferFirst).toBe('item1');
+          expect(Helper.getFirstRow(viewport)).toBe('1: item1');
           expect(scope.adapter.bufferLast).toBe('item10');
+          expect(Helper.getLastRow(viewport)).toBe('10: item10');
           expect(scope.adapter.bufferLength).toBe(10);
         }
       );
@@ -1582,15 +1218,16 @@ describe('uiScroll', function () {
 
     it('scroll to the bottom', function () {
       runTest(scrollSettings,
-        function (viewport, scope) {          
+        function (viewport, scope) {
           viewport.scrollTop(10000);
           expect(scope.adapter.bufferFirst).toBe('item5');
+          expect(Helper.getFirstRow(viewport)).toBe('5: item5');
           expect(scope.adapter.bufferLast).toBe('item20');
+          expect(Helper.getLastRow(viewport)).toBe('20: item20');
           expect(scope.adapter.bufferLength).toBe(16);
         }
       );
     });
-
   });
 
 });

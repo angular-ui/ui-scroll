@@ -3,6 +3,7 @@ import ElementRoutines from './modules/elementRoutines.js';
 import ScrollBuffer from './modules/buffer.js';
 import Viewport from './modules/viewport.js';
 import Adapter from './modules/adapter.js';
+import { OPERATIONS } from './modules/utils';
 
 angular.module('ui.scroll', [])
 
@@ -318,20 +319,20 @@ angular.module('ui.scroll', [])
 
           buffer.forEach((wrapper, i) => {
             switch (wrapper.op) {
-              case 'prepend':
+              case OPERATIONS.PREPEND:
                 toBePrepended.unshift(wrapper);
                 break;
-              case 'append':
+              case OPERATIONS.APPEND:
                 insertWrapperContent(wrapper, i);
-                wrapper.op = 'none';
+                wrapper.op = OPERATIONS.NONE;
                 inserted.push(wrapper);
                 break;
-              case 'insert':
+              case OPERATIONS.INSERT:
                 promises = promises.concat(createElement(wrapper, i, viewport.insertElementAnimated));
-                wrapper.op = 'none';
+                wrapper.op = OPERATIONS.NONE;
                 inserted.push(wrapper);
                 break;
-              case 'remove':
+              case OPERATIONS.REMOVE:
                 toBeRemoved.push(wrapper);
             }
           });
@@ -341,7 +342,7 @@ angular.module('ui.scroll', [])
           if (toBePrepended.length)
             toBePrepended.forEach((wrapper) => {
               insertWrapperContent(wrapper);
-              wrapper.op = 'none';
+              wrapper.op = OPERATIONS.NONE;
             });
 
           buffer.forEach((item, i) => item.scope.$index = buffer.first + i);

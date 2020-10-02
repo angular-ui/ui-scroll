@@ -1,3 +1,5 @@
+import { OPERATIONS } from './utils';
+
 export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
   const buffer = Object.create(Array.prototype);
 
@@ -19,7 +21,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
     append(items) {
       items.forEach((item) => {
         ++buffer.next;
-        buffer.insert('append', item);
+        buffer.insert(OPERATIONS.APPEND, item);
       });
       buffer.maxIndex = buffer.eof ? buffer.next - 1 : Math.max(buffer.next - 1, buffer.maxIndex);
     },
@@ -32,7 +34,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         else {
           --buffer.first;
         }
-        buffer.insert('prepend', item);
+        buffer.insert(OPERATIONS.PREPEND, item);
       });
       buffer.minIndex = buffer.bof ? buffer.minIndex = buffer.first : Math.min(buffer.first, buffer.minIndex);
     },
@@ -41,17 +43,17 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
      * inserts wrapped element in the buffer
      * the first argument is either operation keyword (see below) or a number for operation 'insert'
      * for insert the number is the index for the buffer element the new one have to be inserted after
-     * operations: 'append', 'prepend', 'insert', 'remove', 'update', 'none'
+     * operations: 'append', 'prepend', 'insert', 'remove', 'none'
      */
-    insert(operation, item, isTop) {
+    insert(operation, item, shiftTop) {
       const wrapper = {
         item: item
       };
 
-      if (operation % 1 === 0) {// it is an insert
-        wrapper.op = 'insert';
+      if (operation % 1 === 0) { // it is an insert
+        wrapper.op = OPERATIONS.INSERT;
         buffer.splice(operation, 0, wrapper);
-        if(isTop) {
+        if (shiftTop) {
           buffer.first--;
         }
         else {
@@ -60,10 +62,10 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
       } else {
         wrapper.op = operation;
         switch (operation) {
-          case 'append':
+          case OPERATIONS.APPEND:
             buffer.push(wrapper);
             break;
-          case 'prepend':
+          case OPERATIONS.PREPEND:
             buffer.unshift(wrapper);
             break;
         }
@@ -79,35 +81,34 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
         }
         return buffer.splice(arg1, arg2 - arg1);
       }
-      // removes single item(wrapper) from the buffer
+      // removes single item (wrapper) from the buffer
       buffer.splice(buffer.indexOf(arg1), 1);
-      if(arg1._op === 'isTop' && buffer.first === this.getAbsMinIndex()) {
+      if (arg1.shiftTop && buffer.first === this.getAbsMinIndex()) {
         this.incrementMinIndex();
       }
       else {
         this.decrementMaxIndex();
       }
-      if(arg1._op === 'isTop') {
+      if (arg1.shiftTop) {
         buffer.first++;
       }
       else {
         buffer.next--;
       }
-      if(!buffer.length) {
-        buffer.first = 1;
-        buffer.next = 1;
+      if (!buffer.length) {
+        buffer.minIndex = Math.min(buffer.maxIndex, buffer.minIndex);
       }
 
       return elementRoutines.removeElementAnimated(arg1);
     },
 
     incrementMinIndex() {
-      if(buffer.minIndexUser !== null) {
-        if(buffer.minIndex > buffer.minIndexUser) {
+      if (buffer.minIndexUser !== null) {
+        if (buffer.minIndex > buffer.minIndexUser) {
           buffer.minIndexUser++;
           return;
         }
-        if(buffer.minIndex === buffer.minIndexUser) {
+        if (buffer.minIndex === buffer.minIndexUser) {
           buffer.minIndexUser++;
         }
       }
@@ -115,21 +116,21 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
     },
 
     decrementMaxIndex() {
-      if(buffer.maxIndexUser !== null && buffer.maxIndex <= buffer.maxIndexUser) {
+      if (buffer.maxIndexUser !== null && buffer.maxIndex <= buffer.maxIndexUser) {
         buffer.maxIndexUser--;
       }
       buffer.maxIndex--;
     },
 
     getAbsMinIndex() {
-      if(buffer.minIndexUser !== null) {
+      if (buffer.minIndexUser !== null) {
         return Math.min(buffer.minIndexUser, buffer.minIndex);
       }
       return buffer.minIndex;
     },
 
     getAbsMaxIndex() {
-      if(buffer.maxIndexUser !== null) {
+      if (buffer.maxIndexUser !== null) {
         return Math.max(buffer.maxIndexUser, buffer.maxIndex);
       }
       return buffer.maxIndex;
@@ -152,7 +153,7 @@ export default function ScrollBuffer(elementRoutines, bufferSize, startIndex) {
     },
 
     getItems() {
-      return buffer.filter(item => item.op === 'none');
+      return buffer.filter(item => item.op === OPERATIONS.NONE);
     },
 
     getFirstItem() {
