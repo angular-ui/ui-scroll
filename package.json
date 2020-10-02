@@ -44,7 +44,7 @@
     "@babel/preset-env": "^7.3.1",
     "babel-loader": "^8.1.0",
     "clean-webpack-plugin": "^0.1.17",
-    "copy-webpack-plugin": "^5.1.1",
+    "copy-webpack-plugin": "^6.1.1",
     "jasmine-core": "^2.8.0",
     "jshint": "^2.10.1",
     "karma": "^5.0.5",
@@ -54,7 +54,7 @@
     "karma-sourcemap-loader": "^0.3.7",
     "karma-webpack": "^4.0.2",
     "npm-run-all": "^4.1.2",
-    "terser-webpack-plugin": "^2.3.5",
+    "terser-webpack-plugin": "^4.2.2",
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.1",
     "webpack-dev-server": "^3.11.0"

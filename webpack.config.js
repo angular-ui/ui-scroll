@@ -113,10 +113,12 @@ if (ENV === 'production') {
       new CleanWebpackPlugin('dist', {
         root: __dirname
       }),
-      new CopyWebpackPlugin([
-        { from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.min.js' },
-        { from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.js' }
-      ], { copyUnmodified: true }),
+      new CopyWebpackPlugin({
+        patterns: [
+          { from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.min.js' },
+          { from: 'src/ui-scroll-jqlite.js', to: 'ui-scroll-jqlite.js' }
+        ]
+      }),
       new webpack.BannerPlugin(getBanner())
     ],
 
