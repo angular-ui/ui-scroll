@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Chat demo</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="chat.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-controller="mainController" ng-app="application">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Chat demo</h1>
+
+		<div class="description">
+			Chat demo provides:
+			<div> - initial position at the bottom of the dataset</div>
+			<div> - scroll up to retrieve new items with positive indexes</div>
+			<div> - special Server service to emulate the remote</div>
+		</div>
+
+		<div class="info">
+			<div>{{adapter.topVisible.title}} -- top visible item</div>
+			<div>{{adapter.bottomVisible.title}} -- bottom visible item</div>
+		</div>
+
+		<ul class="chat" ui-scroll-viewport>
+			<li class="item" ui-scroll="item in datasource" adapter="adapter">
+				<span class="number">{{item.number}})</span>
+				<span class="title">{{item.title}}</span>
+				<div class="text">{{item.text}}</div>
+			</li>
+		</ul>
+
+	</div>
+
+</body>
+</html>

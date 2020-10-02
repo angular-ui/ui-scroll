@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Inside directive</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="insideDirective.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-app="application">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Scroller inside the directive</h1>
+
+		<div class="description">
+			This sample demonstrates encapsulation of the ui-scroll directive inside another custom directive wich has it's own controller and wich uses "Controller As" syntax in it's template.
+			To demonstrate the work of the Adapter, click on any row. The text of the item should change after click.
+		</div>
+
+		<div ng-controller="mainController">
+			<div ng-if="show">
+				<my-dir></my-dir>
+			</div>
+		</div>
+
+	</div>
+
+</body>
+</html>

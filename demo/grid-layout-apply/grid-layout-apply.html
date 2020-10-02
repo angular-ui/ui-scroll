@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Grid layout apply</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="../../dist/ui-scroll-grid.js"></script>
+	<script src="grid-layout-apply.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+	<link rel="stylesheet" href="grid.css" type="text/css"/>
+</head>
+<body ng-controller="gridController" ng-app="application">
+<div class="cont cont-global">
+
+	<a class="back" href="../index.html">browse other examples</a>
+
+	<h1 class="page-header page-header-exapmle">Grid layout apply</h1>
+
+	<br/>
+	<button ng-click="applyLayout()">Apply layout</button> - should apply bg-colors and a new columns order
+	<br/>
+	<button ng-click="clearLayout()">Clear layout</button> - just should clear
+	<br/>
+	<br/>
+
+	<table class="grid" ui-scroll-viewport>
+		<thead style="display:block">
+		<tr>
+			<th class="col1" ui-scroll-th>number</th>
+			<th class="col2" ui-scroll-th>content</th>
+			<th class="col3" ui-scroll-th>bool</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr class="row" ui-scroll="item in datasource" adapter="adapter">
+			<td ui-scroll-td class="col1">{{item.col1}}</td>
+			<td ui-scroll-td class="col2">{{item.col2}}</td>
+			<td ui-scroll-td class="col3">{{item.col3}}</td>
+		</tr>
+		</tbody>
+	</table>
+
+</div>
+</body>
+</html>

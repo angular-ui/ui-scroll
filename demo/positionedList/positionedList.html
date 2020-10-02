@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Scroller Demo (list based)</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="positionedList.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css" />
+</head>
+<body ng-app="application">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Positions the list based on element data</h1>
+
+		<div class="description">
+			This sample demonstrates a functionality of list positioning based on element data.
+			There is no persistence, just enter key value in textinput (from 'aa' to 'zz') and get the key-offset positioned list.
+		</div>
+
+		<div class="actions">
+			<form class="form-inline">
+				<div class="form-group">
+					<input class="form-control" type="text" ng-model="key" placeholder="Enter key value">
+				</div>
+			</form>
+		</div>
+
+		<div class="viewport" id="viewport-positionedList" ui-scroll-viewport>
+			<div class="item" ui-scroll="item in datasource" adapter="adapter">{{$index}}: {{item}}</div>
+		</div>
+	</div>
+
+</body>
+</html>

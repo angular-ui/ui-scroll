@@ -1,0 +1,455 @@
+@import "../css/bootstrap.css";
+
+.global {
+	padding: 20px 0;
+}
+
+.cont {
+	width: 970px;
+	margin: 0 auto;
+	padding: 0 10px;
+
+	&.cont-global {
+		padding-top: 20px;
+		padding-bottom: 20px;
+	}
+}
+
+.cont-in-frame {
+	width: 930px;
+	margin: 0 auto;
+}
+
+.example-list {
+	padding: 0 0 0 15px;
+
+	li {
+		list-style: none;
+		margin: .7em 0;
+
+		a {
+			position: relative;
+
+			&:before {
+				content: "\2022";
+				position: absolute;
+				left: -15px;
+				font-size: 20px;
+				top: -2px;
+				line-height: 1em;
+			}
+		}
+	}
+
+}
+
+.more-wrap {
+	border-top: 1px solid #eee;
+	margin-top: 20px;
+	padding: 10px 0;
+}
+
+.back:before {
+	content: "<< ";
+}
+
+.page-header {
+	margin-top: .1em;
+
+	&.page-header-exapmle {
+		margin-top: .2em;
+		margin-bottom: .2em;
+	}
+}
+
+.description {
+	margin: 15px 0;
+	border-left: 5px hsl(0,0%,90%) solid;
+	padding-left: 15px;
+
+	ul {
+		padding-left: 20px;
+	}
+}
+
+.code {
+  margin-top: 10px;
+}
+
+
+/*info*/
+.info, .info-if-frame {
+	border-radius: 5px;
+	padding: 10px;
+	font-family: monospace, monospace;
+}
+
+
+
+.info {
+	background: hsl(0,0%,95%);
+	margin: 10px 0;
+}
+
+.info-if-frame-wrap {
+	position: fixed;
+	top: 5px;
+	left: 0;
+	right: 0;
+}
+
+
+.info-if-frame {
+	float: right;
+	position: relative;
+	z-index: 100;
+	margin-right: 10px;
+	background: #fff;
+	min-width: 150px;
+	border: 1px hsl(0,0%,85%) solid;
+	box-shadow: 2px 2px 2px hsla(0,0%,0%,.1);
+	opacity: .6;
+
+	&:hover {
+		opacity: 1;
+	}
+}
+
+
+/*!info*/
+
+.actions {
+	margin: 10px 0;
+	border-radius: 5px;
+	padding: 10px;
+	border: 1px hsl(0,0%,95%) solid;
+
+	label {
+		font-weight: normal;
+	}
+}
+
+.item() {
+	padding: 3px 5px;
+
+	&:nth-child(odd) {
+		background-color: hsl(0,0%,90%);
+	}
+}
+
+
+.viewport-iframe,
+.viewport {
+	border: 1px hsl(0,0%,80%) solid;
+	border-radius: 5px;
+}
+
+/*iframe*/
+.iframe-wrap {
+	margin-top: 15px;
+
+	.iframe-top {
+
+		> * {
+			display: inline-block;
+			vertical-align: middle;
+			padding: 3px 10px 7px 12px;
+		}
+
+		.iframe-title {
+			background: hsl(0,0%,70%);
+			border-radius: 5px 5px 0 0;
+			color: #fff;
+			line-height: 20px;
+			margin: 0;
+			font-size: 14px;
+			font-weight: normal;
+		}
+	}
+
+	.viewport-iframe {
+		width: 100%;
+		height: 300px;
+		margin-top: -5px;
+
+
+		@media screen and (min-height: 500px) {
+			height: calc(~"100vh - 225px");
+
+			/*custom*/
+			&#windowviewport {
+
+			}
+			/*!custom*/
+		}
+
+	}
+}
+
+
+/*!iframe*/
+
+/*viewport*/
+.viewport-group {
+	border: 1px hsl(0,0%,70%) solid;
+	border-radius: 5px;
+	padding: 10px;
+	margin: 30px 0;
+
+
+	.viewport-group-tilte {
+	float: left;
+		margin: -1.2em 0 0 6px;
+		font-weight: bold;
+		font-size: 15px;
+		background: #fff;
+		padding: 0 8px;
+	}
+
+	.actions {
+		border: none;
+		padding: 0;
+	}
+}
+
+
+
+
+
+
+.viewport-wrap {
+	margin-top: 15px;
+	
+	.viewport-title {
+		display: inline-block;
+		padding: 3px 10px 7px 12px;
+		background: hsl(0,0%,70%);
+		border-radius: 5px 5px 0 0;
+		color: #fff;
+		line-height: 20px;
+		margin: 0;
+		font-size: 14px;
+		font-weight: normal;
+	}
+}
+
+.viewport2 {
+	height: 300px;
+	list-style: none;
+	padding: 0;
+	width: 400px;
+	.uid {
+		font-size: small;
+		color: #aaa;
+	}
+}
+
+.viewport {
+	margin-top: 15px;
+	height: 300px;
+	overflow: auto;
+
+	.viewport-wrap & {
+		margin-top: -5px;
+		position: relative;
+		background: #fff;
+	}
+
+	.item {
+		.item;
+	}
+
+	table {
+		width: 100%;
+
+
+		td {
+			border: 1px hsl(0,0%,85%) solid;
+			padding: 5px;
+
+			&:first-child {
+				border-left: none;
+			}
+
+			&:last-child {
+				border-right: none;
+			}
+		}
+	}
+
+	&:not(.viewport-height-fixed) {
+
+		@media screen and (min-height: 500px) {
+			height: calc(~"100vh - 200px");
+
+			/*custom*/
+			&#viewport-persistentScroll {
+				height: calc(~"100vh - 300px");
+			}
+
+			&#viewport-positionedList {
+				height: calc(~"100vh - 320px");
+			}
+
+			&#viewport-listScroller {
+				height: calc(~"100vh - 280px");
+			}
+
+		  &#viewport-windowviewportInline {
+			  height: calc(~"100vh - 230px");
+		  }
+
+		  &#viewport-cache {
+			  height: calc(~"100vh - 300px");
+		  }
+			/*!custom*/
+
+		}
+
+	}
+
+
+
+	/*custom*/
+	&#viewport-multipleList-2 {
+		.item {
+			background-color: transparent;
+			border-top: 1px hsl(0,0%,85%) dotted;
+
+			&:first-child {
+				border-top: none;
+			}
+
+			ul {
+				margin-bottom: 0;
+				padding-left: 20px;
+			}
+		}
+	}
+
+	&#viewport-tableScroller {
+		table {
+			td:first-child {
+				width: 1%;
+				text-align: center;
+			}
+		}
+
+	}
+
+	&#viewport-windowviewportInline {
+		.item-inline {
+			display: inline-block;
+
+			.item-inline-inn {
+				display: inline-block;
+			}
+		}
+	}
+
+
+
+	&#viewport-listScroller {
+		ul {
+			padding-left: 20px;
+
+			li {
+				margin: 7px 0;
+			}
+		}
+	}
+
+	&#viewport-animation {
+		height: auto;
+		max-height: 300px;
+
+		.item.ng-leave, .item.ng-enter {
+			-webkit-transition: 0.75s linear all;
+			transition: 0.75s linear all;
+		}
+
+		.item.ng-enter { opacity: 0; color: yellow; height: 0; }
+		.item.ng-enter.ng-enter-active { opacity: 1; color: black;  height: 18px; }
+
+		.item.ng-leave { opacity: 1; color: black; height: 18px; }
+		.item.ng-leave.ng-leave-active { opacity: 0; color: red; height: 0; }
+	}
+	/*!custom*/
+
+
+
+}
+
+
+#viewport-scrollBubblingPrevent-wrap {
+	background-color: rgba(255, 249, 0, 0.28);
+	padding: 300px 0;
+	position: relative;
+
+	&:before,
+	&:after {
+		content: "wrapper";
+		position: absolute;
+		width: 100%;
+		text-align: center;
+		font-size: 50px;
+		opacity: .2;
+		vertical-align: middle;
+		line-height: 1;
+	}
+
+	&:before {
+		top: 120px;
+	}
+
+	&:after {
+		bottom: 120px;
+	}
+}
+
+.toggler {
+	cursor: pointer;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	user-select: none;
+}
+
+
+.viewport-in-frame {
+
+	.item {
+		.item;
+	}
+
+}
+
+/*!viewport*/
+
+.chat {
+	height: 300px;
+	padding-left: 10px;
+
+	.item {
+		height: 50px;
+		list-style-type: none;
+		border: 0 dotted #ddd;
+		border-bottom-width: 1px;
+
+		.number {
+			font-weight: bolder;
+		}
+
+		.text {
+			margin-left: 10px;
+			font-style: italic;
+
+		}
+	}
+
+	.item:last-child {
+		border-bottom-width: 0;
+	}
+}
+
+
+

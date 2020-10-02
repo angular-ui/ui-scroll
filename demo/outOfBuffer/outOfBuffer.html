@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Adapter sync</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.js"></script>
+  <script src="../../dist/ui-scroll.js"></script>
+  <script src="outOfBuffer.js"></script>
+  <link rel="stylesheet" href="../css/style.css" type="text/css"/>
+  <style>
+    .remove {
+      float: right;
+      margin-right: 15px;
+      cursor: pointer;
+    }
+    .remove:hover {
+      color: #a00;
+    }
+    .viewport2 .uid {
+      font-size: x-small;
+    }
+  </style>
+</head>
+<body ng-controller="mainController as mainCtrl" ng-app="application">
+
+<div class="cont cont-global">
+
+  <div class="actions">
+    <button ng-click="mainCtrl.prepend()">Prepend one item</button>
+    <button ng-click="mainCtrl.append()">Append one item</button>
+    <!--button ng-click="mainCtrl.removeAll()">Clear the viewport</button-->
+    <button ng-click="mainCtrl.removeFirst()">Remove first</button>
+    <button ng-click="mainCtrl.removeLast()">Remove last</button>
+  </div>
+
+  <br/>
+
+  <ul class="viewport2" ui-scroll-viewport>
+    <li ui-scroll="item in mainCtrl.datasource" adapter="mainCtrl.adapter">
+      <div>
+        <span>{{$index}}: {{item.content}} <span class="uid">({{item.id}})</span></span>
+        <span class="remove" ng-click="mainCtrl.remove(item)">[x]</span>
+      </div>
+    </li>
+  </ul>
+
+</div>
+</body>
+</html>

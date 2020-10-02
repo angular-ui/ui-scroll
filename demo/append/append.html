@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Append and prepend</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+  <script src="server.js"></script>
+	<script src="append.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-controller="mainController" ng-app="application">
+
+<div class="cont cont-global">
+
+	<a class="back" href="../index.html">browse other examples</a>
+
+	<h1 class="page-header page-header-exapmle">Adapter: append and prepend sync</h1>
+
+	<div class="description">
+		<p>
+			This sample demonstrates an ability to append and prepend new items to the initial data set via adapter.
+			New appended and prepended items have to be synced with the real data source.
+			For this purpose a special Server module was implemented to emulate the remote.
+      The Server hides all indices magic, so the front-end controller logic (ui-scroll datasource implementation) looks very simple.
+		</p>
+		<p>
+      Two methods are implemented on the controller's scope: prepend and append.
+      They work with two Server methods: prependItem and appendItem.
+      The additional point is that new items would not be appended to the viewport if the EOF (end of file) is not reached.
+      Also new items would not be prepended to the viewport if the BOF (begin of file) is not reached.
+		</p>
+    <p>
+      For more complex and powerful sample you may follow <a href="../adapterSync/adapterSync.html">this</a> demo.
+    </p>
+	</div>
+
+	<div class="actions">
+		<button ng-click="prepend()">Prepend one item</button>
+		<button ng-click="append()">Append one item</button>
+	</div>
+
+	<br/>
+
+	<ul class="viewport2" ui-scroll-viewport>
+		<li ui-scroll="item in datasource" adapter="adapter">
+			<span class="title">{{item.content}}</span>
+		</li>
+	</ul>
+
+</div>
+</body>
+</html>

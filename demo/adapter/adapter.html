@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Scroller Demo (adapter)</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+    <script src="adapter.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-controller="mainController" ng-app="application">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Adapter (updatable scroller)</h1>
+
+		<div class="description">
+			<ul>
+				<li>This is a simple demo which demonstrates some basic Adapter usage.</li>
+				<li>For all operations presented here the only one Adapter method is being used: applyUpdates.</li>
+				<li>In this demo we have single datasource defined on the Main Controller .</li>
+				<li>And two different viewports with two different processing Adapters (on the First and the Second Controllers).</li>
+			</ul>
+		</div>
+
+		<div class="viewport-group" ng-controller="firstController">
+			<h2 class="viewport-group-tilte">1st list</h2>
+
+			<div class="info">
+				<span ng-hide="!firstListAdapter.isLoading">...data loading...</span>
+				<span ng-hide="isLoadingOnScope">1st list is loaded</span>
+			</div>
+
+			<div class="actions">
+				<button class="btn btn-default" ng-click="updateList1()">update this list</button>
+				<button class="btn btn-default" ng-click="addToList1()">add new 3d item</button>
+				<button class="btn btn-default" ng-click="removeFromList1()">remove even items</button>
+			</div>
+
+			<div ui-scroll-viewport class="viewport viewport-height-fixed" id="viewport-adapter1">
+				<div class="item" ui-scroll="item in datasource"
+					 adapter="firstListAdapter"
+					 is-loading="isLoadingOnScope"
+					 buffer-size='5'>{{item.content}}</div>
+			</div>
+		</div>
+
+		<hr>
+
+		<div class="viewport-group" ng-controller="secondController">
+			<h2 class="viewport-group-tilte">2st list</h2>
+
+			<div class="info">
+				<span ng-hide="!second.list.adapter.isLoading">...data loading...</span>
+				<span ng-hide="second.list.adapter.isLoading">2nd list is loaded</span>
+			</div>
+
+			<div class="actions">
+				<button class="btn btn-default" ng-click="updateList2()">update this list</button>
+				<button class="btn btn-default" ng-click="addToList2()">add new 5th item</button>
+				<button class="btn btn-default" ng-click="removeFromList2()">remove odd items</button>
+			</div>
+
+			<div ui-scroll-viewport class="viewport viewport-height-fixed" id="viewport-adapter2">
+				<div class="item" ui-scroll="item in datasource"
+					 adapter="second.list.adapter"
+					 buffer-size='5'>{{item.content}}</div>
+			</div>
+
+		</div>
+
+	</div>
+</body>
+</html>

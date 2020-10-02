@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Adapter sync</title>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.1/angular.js"></script>
+  <script src="../../dist/ui-scroll.js"></script>
+  <script src="server.js"></script>
+  <script src="adapterSync.js"></script>
+  <link rel="stylesheet" href="../css/style.css" type="text/css"/>
+  <style>
+    .remove {
+      float: right;
+      margin-right: 15px;
+      cursor: pointer;
+    }
+    .remove:hover {
+      color: #a00;
+    }
+    .viewport2 .uid {
+      font-size: x-small;
+    }
+    .some {
+      margin-top: 5px;
+    }
+    .some input {
+      width: 50px;
+    }
+  </style>
+</head>
+<body ng-controller="mainController as mainCtrl" ng-app="application">
+
+<div class="cont cont-global">
+
+  <a class="back" href="../index.html">browse other examples</a>
+
+  <h1 class="page-header page-header-exapmle">Adapter: append, prepend and remove sync</h1>
+
+  <div class="description">
+    <p>
+      This demo had been created to show Adapter 'append', 'prepend' and 'applyUpdates' methods in action.
+      The main point here is that all changes made on the front end have to be synced with the back end.
+      For this purpose a special Server module was introduced to emulate the remote server.
+      The following public methods are implemented by this Server factory:<br/>
+    <ul>
+      <li>
+        <b>request(index, count)</b> just to fetch a bunch of items for the viewport (used by ui-scroll datasource.get);
+      </li>
+      <li>
+        <b>appendItem(params)</b> to add one new item (based on params) to the end of the remote data set;
+      </li>
+      <li>
+        <b>prependItem(params)</b> to add one new item (based on params) to the beginning of the remote data;
+      </li>
+      <li>
+        <b>insertAfterIndex(index, params)</b> to add one new item (based on params) after the item with given index;
+      </li>
+      <li>
+        <b>removeFirst()</b> remove first item;
+      </li>
+      <li>
+        <b>removeLast()</b> remove last item;
+      </li>
+      <li>
+        <b>removeItemById(id)</b> remove one item (based on id).
+      </li>
+    </ul>
+    The initial data set consists of 40 items and can be extended/reduced unlimitedly.
+    </p>
+    <p>
+      The implementation of the Server factory is not trivial, it is based on indices variations.
+      Also you may see that new items would not be appended (via 'Append one item' or
+      'Insert some after index' buttons) to the viewport immediately if the EOF (end of file) is not reached.
+      The same is true for prepend operations ('Prepend one item'): BOF (begin of file) must be reached,
+      otherwise your new items will be rendered only after scrolling to the very top...
+    </p>
+  </div>
+
+  <div class="actions">
+    <button ng-click="mainCtrl.prepend()">Prepend one item</button>
+    <button ng-click="mainCtrl.append()">Append one item</button>
+    <!--button ng-click="mainCtrl.removeAll()">Clear the viewport</button-->
+    <button ng-click="mainCtrl.removeFirst()">Remove first</button>
+    <button ng-click="mainCtrl.removeLast()">Remove last</button>
+    <div class="some">
+      <button ng-click="mainCtrl.insertSome(ctrl.indexToInsert)">Insert some after index</button>
+      <input ng-model="ctrl.indexToInsert">
+    </div>
+  </div>
+
+  <br/>
+
+  <ul class="viewport2" ui-scroll-viewport>
+    <li ui-scroll="item in mainCtrl.datasource" adapter="mainCtrl.adapter">
+      <div>
+        <span>{{$index}}: {{item.content}} <span class="uid">({{item.id}})</span></span>
+        <span class="remove" ng-click="mainCtrl.remove(item)">[x]</span>
+      </div>
+    </li>
+  </ul>
+
+</div>
+</body>
+</html>

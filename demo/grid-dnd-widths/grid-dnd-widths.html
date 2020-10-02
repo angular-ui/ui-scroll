@@ -1,0 +1,55 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Grid dnd widths</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="../../dist/ui-scroll-grid.js"></script>
+	<script src="grid-dnd-widths.js"></script>
+	<link rel="stylesheet" type="text/css" href="../css/style.css"/>
+	<link rel="stylesheet" type="text/css" href="grid.css"/>
+</head>
+<body ng-controller="gridController" ng-app="application">
+<div class="cont cont-global">
+
+	<a class="back" href="../index.html">browse other examples</a>
+
+	<h1 class="page-header page-header-exapmle">Grid drag and drop widths</h1>
+
+	<div class="description">
+		To manipulate grid columns widths .css method on gridAdapter column is available:
+		<div class="code">
+				<pre>
+$scope.adapter.gridAdapter.columns[0].css('width', '200px');</pre>
+		</div>
+		You also can set any css property this way.
+	</div>
+
+	<table class="grid" ui-scroll-viewport>
+		<thead style="display:block">
+		<tr
+				onmouseup="angular.element(arguments[0].currentTarget).scope().dragDrop(arguments[0])"
+				onmousemove="angular.element(arguments[0].currentTarget).scope().dragOver(arguments[0])">
+			<th class="col1" ui-scroll-th>
+				num
+				<span
+						class="splitter"
+						id="splitter"
+						onmousedown="angular.element(arguments[0].currentTarget).scope().dragStart(arguments[0])"
+				></span>
+			</th>
+			<th class="col2" ui-scroll-th>text</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr class="row" ui-scroll="item in datasource" adapter="adapter">
+			<td ui-scroll-td class="col1">{{item.col1}}</td>
+			<td ui-scroll-td class="col2">{{item.col2}}</td>
+		</tr>
+		</tbody>
+	</table>
+
+</div>
+</body>
+</html>

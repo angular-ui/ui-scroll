@@ -1,0 +1,52 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Grid dnd sort (applyLayout)</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="./angular-dnd.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="../../dist/ui-scroll-grid.js"></script>
+	<script src="grid-dnd-sort.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+	<link rel="stylesheet" href="grid.css" type="text/css"/>
+</head>
+<body ng-controller="gridController" ng-app="application">
+<div class="cont cont-global">
+
+	<a class="back" href="../index.html">browse other examples</a>
+
+	<h1 class="page-header page-header-exapmle">Grid drag and drop sort, applyLayout</h1>
+
+	<div class="description">
+		Here is the implementation sample of drag and drop grid columns sorting through the applyLayout method call.</br>
+		Also this demo demonstrates an option of an integration with some external components.</br>
+		And here is being used <a href="https://github.com/Tuch/angular-dnd">angular-dnd</a> component to provide
+		columns drag and drop functionality.
+	</div>
+
+	<table class="grid" ui-scroll-viewport>
+		<thead style="display:block">
+		<tr dnd-sortable-list="headers" >
+			<th ng-repeat="item in headers"
+				class="col{{item.index + 1}}"
+				ui-scroll-th
+				dnd-sortable
+				dnd-on-sortend="onSortEnd()"
+				dnd-sortable-opts="{useAsPoint: true}">
+				{{item.name}}
+			</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr class="row" ui-scroll="item in datasource" adapter="adapter">
+			<td ui-scroll-td class="col1">{{item.col1}}</td>
+			<td ui-scroll-td class="col2">{{item.col2}}</td>
+			<td ui-scroll-td class="col3">{{item.col3}}</td>
+		</tr>
+		</tbody>
+	</table>
+
+</div>
+</body>
+</html>

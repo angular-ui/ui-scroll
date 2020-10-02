@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Is loading</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="isLoading.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-app="application">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Is loading</h1>
+
+		<div class="description">
+			There is an optional parameter of ui-scroll directive which allows us to know whether there are any pending load requests.
+
+			<div class="code">
+				<pre>&lt;li ui-scroll="item in datasource" is-loading="loading"&gt;*{{item}<!---->}*&lt;/li&gt;</pre>
+			</div>
+
+			We recommend to use <i>isLoading</i> property on <i>adapter</i>.
+			Please follow <a href="isLoadingAdapter.html">this demo</a>.
+		</div>
+
+		<div class="info">
+			<div class="info-item"><span class="info-item-label">is loading:</span> {{loading}}</div>
+		</div>
+
+		<div class="viewport" id="viewport-listScroller" ui-scroll-viewport>
+			<ul>
+				<li ui-scroll="item in datasource" is-loading="loading">*{{item}}*</li>
+			</ul>
+		</div>
+
+	</div>
+
+</body>
+</html>

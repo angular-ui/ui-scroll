@@ -1,0 +1,66 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Grid layout manipulations</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="../../dist/ui-scroll-grid.js"></script>
+	<script src="grid-layout-manipulations.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+	<link rel="stylesheet" href="grid.css" type="text/css"/>
+</head>
+<body ng-controller="gridController" ng-app="application">
+<div class="cont cont-global">
+
+	<a class="back" href="../index.html">browse other examples</a>
+
+	<h1 class="page-header page-header-exapmle">Grid layout manipulations</h1>
+
+	<div class="description">
+		<p>
+			Here we have a demo on grid layout manipulations.
+			The layout can be updated out of the components core, saved and applied.
+			To apply some layout you may call applyLayout method on gridAdapter:
+		<div class="code">
+				<pre>
+$scope.adapter.gridAdapter.applyLayout(layout)</pre>
+			The "layout" variable must have an appropriate format which exactly matches the format of getLayout() method call result.
+		</div>
+				<pre>
+layout = $scope.adapter.gridAdapter.getLayout()</pre>
+			Note that saving via cookie requires web-server.
+		</p>
+	</div>
+
+	<div class="actions">
+		<input ng-model="layout[0].css.backgroundColor"> 1 column bg-color <br/>
+		<input ng-model="layout[1].css.backgroundColor"> 2 column bg-color <br/>
+		<input ng-model="layout[2].css.backgroundColor"> 3 column bg-color <br/>
+		<button ng-click="applyLayout()">Apply layout</button>
+		<button ng-click="clearLayout()">Clear layout</button>
+		<hr>
+		<button ng-click="saveLayout()">Save layout to cookie</button>
+		<button ng-click="restoreLayout()">Restore layout from cookie</button>
+	</div>
+
+	<table class="grid" ui-scroll-viewport>
+		<thead style="display:block">
+		<tr>
+			<th class="col1" ui-scroll-th>number</th>
+			<th class="col2" ui-scroll-th>content</th>
+			<th class="col3" ui-scroll-th>bool</th>
+		</tr>
+		</thead>
+		<tbody>
+		<tr class="row" ui-scroll="item in datasource" adapter="adapter">
+			<td ui-scroll-td class="col1">{{item.col1}}</td>
+			<td ui-scroll-td class="col2">{{item.col2}}</td>
+			<td ui-scroll-td class="col3">{{item.col3}}</td>
+		</tr>
+		</tbody>
+	</table>
+
+</div>
+</body>
+</html>

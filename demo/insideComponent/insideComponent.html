@@ -1,0 +1,32 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Inside Angular 1.5+ component</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="insideComponent.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-app="application">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Scroller inside Angular 1.5+ Component</h1>
+
+		<div class="description">
+			This sample demonstrates encapsulation of the ui-scroll directive inside some custom component (Angular 1.5+).
+
+			To demonstrate the work of the Adapter, click on any row. The text of the item should change after click.
+
+			The controller of this Component is implemented as ES6 class. Note that this demo might not work in old browsers which don't support ES6 classes.
+		</div>
+
+		<my-component></my-component>
+
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Scroller Demo (controller as)</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="controllerAs.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-app="application">
+
+<div class="cont cont-global" ng-controller="mainController as mainCtrl" ng-init="show = true">
+	<a class="back" href="../index.html">browse other examples</a>
+	<h1 class="page-header page-header-exapmle">Controller as syntax for the Datasource and the Adapter</h1>
+	<div class="description">
+		If you have defined your controller in such way
+		<div class="code">
+			<pre>&lt;div ng-controller="mainController as mainCtrl"&gt;</pre>
+		</div>
+		then you just shouldn't miss it when you define your datasource or adapter:
+		<div class="code">
+			<pre>&lt;div ui-scroll="item in mainCtrl.datasource" adapter="mainCtrl.adapter"&gt;{{item}<!---->}&lt;/div&gt;</pre>
+		</div>
+		"Hide/Show" button provides a nested scope between mainController and the Viewport via ng-if directive.
+	</div>
+
+	<div class="actions">
+		<button ng-click="show = !show">{{!show ? 'Show' : 'Hide'}}</button>
+		<button ng-click="mainCtrl.updateList()">Update</button>
+	</div>
+
+	<div class="info">
+		<span ng-hide="mainCtrl.adapter.isLoading">data has been loaded</span>
+		<span ng-hide="!mainCtrl.adapter.isLoading">data loading...</span>
+	</div>
+
+	<div ng-if="show">
+		<div ui-scroll-viewport class="viewport viewport-height-fixed" id="viewport-adapter1">
+			<div class="item" ui-scroll="item in mainCtrl.datasource"
+				 adapter="mainCtrl.adapter"
+				 buffer-size='5'>{{item.content}}
+			</div>
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

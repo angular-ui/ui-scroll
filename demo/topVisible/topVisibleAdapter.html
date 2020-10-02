@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Top visible (Adapter)</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="topVisibleAdapter.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-app="application" ng-controller="mainController">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Top visible (Adapter)</h1>
+
+		<div class="description">
+			As it follows from documentation Adapter implements topVisible property which is a reference to the item currently in the topmost visible position.
+
+			<div class="code">
+				<pre>&lt;li ui-scroll="item in datasource" adapter="adapter"&gt;*{{item}<!---->}*&lt;/li&gt;</pre>
+			</div>
+
+			<div class="code">
+				<pre>top visible: {{adapter.topVisible}<!---->}</pre>
+			</div>
+		</div>
+
+		<div class="info">
+			<div class="info-item"><span class="info-item-label">top visible:</span> {{adapter.topVisible}}</div>
+		</div>
+
+		<div class="viewport" id="viewport-listScroller" ui-scroll-viewport>
+			<div class="item" ui-scroll="item in datasource" adapter="adapter">*{{item}}*</div>
+		</div>
+
+	</div>
+
+</body>
+</html>

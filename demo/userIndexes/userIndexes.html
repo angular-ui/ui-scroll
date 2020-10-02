@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>User min and max indexes</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="userIndexes.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+	<style type="text/css">
+		button {
+			width: 180px;
+			margin-bottom: 3px;
+			margin-right: 7px;
+		}
+	</style>
+</head>
+<body ng-controller="mainController" ng-app="application">
+
+<div class="cont cont-global">
+
+	<a class="back" href="../index.html">browse other examples</a>
+
+	<h1 class="page-header page-header-exapmle">Set user min and max indexes</h1>
+
+	<div class="description">
+		Here we provide an ability of external min and max indexes setting to let the viewport know how many items do we have.
+		<div class="code">
+			<pre>&lt;li ui-scroll="item in datasource"&gt;{{item}<!---->}&lt;/li&gt;</pre>
+		</div>
+		Then you can play with minIndex and maxIndex properties which are being accessible on your datasource after the ui-scroll directive is linked:
+		<div class="code">
+			<pre>
+datasource.minIndex = -100;
+datasource.maxIndex = 100;</pre>
+		</div>
+		Such setting does not not lead to data fetching but the scroll bar params do match datasource size defined this way.
+	</div>
+
+	<div class="actions" ng-init="userMinIndex = -100; userMaxIndex = 100">
+		<button ng-click="setUserMinIndex()"> Set minIndex = {{userMinIndex}} </button>
+		<input ng-model="userMinIndex" size="2"> minIndex value to set
+		<br>
+		<button ng-click="setUserMaxIndex()"> Set maxIndex = {{userMaxIndex}} </button>
+		<input ng-model="userMaxIndex" size="2"> maxIndex value to set
+		<br>
+		<button ng-click="setUserIndexes()"> Set both Indexes </button>
+	</div>
+
+	<div ng-if="delay" class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
+		<div class="item" ui-scroll="item in datasource" adapter="adapter">{{item}}</div>
+	</div>
+
+</div>
+
+</body>
+</html>

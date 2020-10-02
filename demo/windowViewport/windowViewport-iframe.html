@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Scroller Demo (entire window)</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="windowViewport.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-app="application">
+
+<div class="info-if-frame-wrap">
+	<div class="cont-in-frame">
+		<div class="info-if-frame">
+			<div class="info-item"><span class="info-item-label">is loading:</span> {{loading}}</div>
+			<div class="info-item"><span class="info-item-label">top visible:</span> {{topItem}}</div>
+		</div>
+	</div>
+</div>
+
+<div class="cont-in-frame">
+	<div class="viewport-in-frame">
+		<div
+				ui-scroll="item in datasource"
+				top-visible="topItem" is-loading="loading"
+				class="item" ng-class-even="'even'" ng-class-odd="'odd'">
+			{{item}}
+		</div>
+	</div>
+</div>
+
+
+<!--<h2 style="position: fixed; left: 150px; top: 0;"> is loading: {{loading}}; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="../index.html"> browse sample code</a></h2>
+<h2 style="position: fixed; left: 150px; top: 20px;"> top visible: {{topItem}} </h2>
+<div ui-scroll="item in datasource" top-visible="topItem" is-loading="loading" ng-class-even="'even'" ng-class-odd="'odd'">*{{item}}*</div>-->
+
+</body>
+</html>

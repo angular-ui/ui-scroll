@@ -1,0 +1,28 @@
+language: node_js
+
+node_js:
+- "stable"
+
+install:
+- npm install
+
+cache:
+  directories:
+  - "node_modules"
+
+addons:
+  firefox: latest
+
+services:
+- xvfb
+
+script:
+- npm run build
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $github_token
+  local_dir: ./
+  on:
+    branch: master

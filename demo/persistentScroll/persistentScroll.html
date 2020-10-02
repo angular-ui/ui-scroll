@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Preserves the scroll position on refresh</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="persistentScroll.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css" />
+</head>
+<body ng-app="application">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Preserves the scroll position on refresh</h1>
+
+		<div class="description">
+			This sample demonstrates a functionality of top item position persistence.
+			This persistence is based on topVisible element's index (offset) which is stored in URL ($location).
+			So when you do some scrolls you see that 'offset' param is persisted via URL hash.
+			Then you refresh the page and after that the $index value (and leftmost column in the example) changes,
+			but the item which used to be on top stays on top.
+		</div>
+
+		<div class="info">
+			<div class="info-item"><span class="info-item-label">top visible:</span> {{topVisible.$index}}</div>
+		</div>
+
+		<div class="viewport" id="viewport-persistentScroll" ui-scroll-viewport>
+				<div class="item" ui-scroll="item in datasource"  top-visible-scope="topVisible">{{$index}}: {{item}}</div>
+		</div>
+
+	</div>
+
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Datasource as service</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="serviceDatasource.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-app="application">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Datasource as service</h1>
+
+		<div class="description">
+			Per documentation the datasource object can be defined in two different ways.
+
+			<div class="code">
+				<pre>&lt;li ui-scroll="item in datasource"&gt;{{item}<!---->}&lt;/li&gt;</pre>
+			</div>
+
+			In this sample we use service-approach. Here you need to define angular service and declare method <i>get</i> on it.
+
+			<div class="code">
+				<pre>
+angular.module('application', ['ui.scroll'])
+  .factory('datasource', function() { ...
+
+    var get = function(index, count, success) { ... };
+
+    return { get: get };
+  });</pre>
+			</div>
+
+		</div>
+
+		<div class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
+			<div class="item" ui-scroll="item in datasource">{{item}}</div>
+		</div>
+
+	</div>
+
+</body>
+</html>

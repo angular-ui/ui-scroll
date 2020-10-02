@@ -1,0 +1,11 @@
+.idea
+/node_modules/
+/src
+/temp
+/test
+.babelrc
+.gitignore
+.jshintrc
+.npmignore
+.travis.yml
+webpack.config.js

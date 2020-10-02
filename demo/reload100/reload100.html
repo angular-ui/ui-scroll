@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Reload 100</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="reload100.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-controller="mainController" ng-app="application">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Reload with parameter</h1>
+
+		<div class="description">
+			Here we provide an ability to reload the datasource to some specified position. First you need an adapter defined on your scope:
+			<div class="code">
+				<pre>&lt;div ui-scroll="item in datasource" adapter="myAdapter"&gt;{{item}<!---->}&lt;/div&gt;</pre>
+			</div>
+			Then just call the reload method on the adapter with index parameter:
+			<div class="code">
+				<pre>$scope.myAdapter.reload(100);</pre>
+			</div>
+		</div>
+
+		<div class="actions" ng-init="reloadIndex = 100">
+			<input ng-model="reloadIndex" size="2"> - index to reload <br>
+			<button ng-click="doReload(reloadIndex)"> Reload({{reloadIndex}}) </button>
+		</div>
+
+		<!-- div ng-if="delay" class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport -->
+		<div class="viewport" id="viewport-serviceDatasource" ui-scroll-viewport>
+			<div class="item" ui-scroll="item in datasource" adapter="adapter">{{item}}</div>
+		</div>
+
+	</div>
+
+</body>
+</html>

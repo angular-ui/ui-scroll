@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Visibility</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.1/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="visibility.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body ng-app="application" ng-init="visible = false">
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Visibility</h1>
+
+		<div class="description">
+			We have an internal mechanism to start data fetching after invisible scroller becomes visible.
+			So generally you don't need to execute reload method when you play with scroller visibility.
+		</div>
+
+		<div class="actions">
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" ng-model="visible"> Visible {{visible}}
+				</label>
+			</div>
+		</div>
+
+		<div class="viewport" id="viewport-listScroller" ng-show="visible" ui-scroll-viewport>
+			<ul>
+				<li ui-scroll="item in datasource">*{{item}}*</li>
+			</ul>
+		</div>
+
+	</div>
+
+</body>
+</html>

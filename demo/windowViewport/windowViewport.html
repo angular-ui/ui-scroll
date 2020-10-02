@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Entire window scrollable</title>
+	<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.js"></script>
+	<script src="../../dist/ui-scroll.js"></script>
+	<script src="windowViewport.js"></script>
+	<link rel="stylesheet" href="../css/style.css" type="text/css"/>
+</head>
+<body>
+
+	<div class="cont cont-global">
+
+		<a class="back" href="../index.html">browse other examples</a>
+
+		<h1 class="page-header page-header-exapmle">Entire window scrollable</h1>
+
+		<div class="description">
+			This sample demonstrates the scroller without viewport defining.
+			As it follows from documentation:
+			unless specified explicitly with the uiScrollViewport directive, browser window will be used as viewport.
+			And this is the reason why this demo is placed in an iframe. You also can open it in a new tab.
+		</div>
+
+		<div class="iframe-wrap">
+			<div class="iframe-top">
+				<h2 class="iframe-title">Sample in iframe</h2>
+				<a href="windowViewport-iframe.html" target="_blank">Open example in new tab</a>
+			</div>
+			<iframe id="windowviewport" class="viewport-iframe" src="windowViewport-iframe.html"></iframe>
+		</div>
+
+	</div>
+
+</body>
+</html>
