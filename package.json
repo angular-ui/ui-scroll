@@ -1,7 +1,7 @@
 {
   "name": "angular-ui-scroll",
-  "description": "AngularJS infinite scrolling module",
-  "version": "1.8.0",
+  "description": "AngularJS virtual scrolling module",
+  "version": "1.8.1",
   "src": "./src/",
   "public": "./dist/",
   "main": "./dist/ui-scroll.js",
@@ -10,6 +10,12 @@
     "name": "Michael Feingold",
     "email": "mfeingold@hill30.com"
   },
+  "maintainers": [
+    {
+      "name": "Denis Hilt",
+      "web": "https://github.com/dhilt"
+    }
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/angular-ui/ui-scroll.git"
@@ -30,6 +36,9 @@
     "test": "npm run dev-test",
     "start": "npm run dev-server"
   },
+  "peerDependencies": {
+    "angular": ">=1.2.0"
+  },
   "devDependencies": {
     "@babel/core": "^7.3.3",
     "@babel/preset-env": "^7.3.1",
@@ -38,7 +47,7 @@
     "copy-webpack-plugin": "^5.1.1",
     "jasmine-core": "^2.8.0",
     "jshint": "^2.10.1",
-    "karma": "^4.4.1",
+    "karma": "^5.0.5",
     "karma-chrome-launcher": "^2.2.0",
     "karma-firefox-launcher": "^1.1.0",
     "karma-jasmine": "^2.0.1",
@@ -48,7 +57,7 @@
     "terser-webpack-plugin": "^2.3.5",
     "webpack": "^4.42.0",
     "webpack-cli": "^3.3.1",
-    "webpack-dev-server": "^3.10.3"
+    "webpack-dev-server": "^3.11.0"
   },
   "keywords": [
     "angular",
@@ -58,6 +67,7 @@
     "ui.scroll",
     "ui-scroll",
     "angular-ui-scroll",
+    "virtual",
     "unlimited",
     "infinite",
     "live",

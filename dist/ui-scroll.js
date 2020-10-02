@@ -1,7 +1,7 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.8.0 -- 2020-04-08T15:33:19.924Z
+ * Version: 1.8.1 -- 2020-05-13T13:54:15.842Z
  * License: MIT
  */
 /******/ (function(modules) { // webpackBootstrap
@@ -1544,9 +1544,9 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     });
     $scope.$on('$destroy', function () {
       unbindEvents();
-      viewport.unbind('mousewheel', wheelHandler);
+      viewport.off('mousewheel', wheelHandler);
     });
-    viewport.bind('mousewheel', wheelHandler);
+    viewport.on('mousewheel', wheelHandler);
     initialize();
     /* Private function definitions */
 
@@ -1555,13 +1555,13 @@ angular.module('ui.scroll', []).constant('JQLiteExtras', jqLiteExtras_JQLiteExtr
     }
 
     function bindEvents() {
-      viewport.bind('resize', resizeAndScrollHandler);
-      viewport.bind('scroll', resizeAndScrollHandler);
+      viewport.on('resize', resizeAndScrollHandler);
+      viewport.on('scroll', resizeAndScrollHandler);
     }
 
     function unbindEvents() {
-      viewport.unbind('resize', resizeAndScrollHandler);
-      viewport.unbind('scroll', resizeAndScrollHandler);
+      viewport.off('resize', resizeAndScrollHandler);
+      viewport.off('scroll', resizeAndScrollHandler);
     }
 
     function reload() {

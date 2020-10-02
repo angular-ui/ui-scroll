@@ -86,9 +86,9 @@ _Important!_ The viewport height must be constrained. If the height of the viewp
 in the datasource. Even if it does not, using the directive this way does not provide any advantages over using ng-repeat, because
 item template will be always instantiated for every item in the datasource.
 
-_Important!_ There is a Scroll Anchoring feature enforced by Google Chrome (since Chrome 56) which makes scroller behaviour incorrect.
+_Important!_ There is a Scroll Anchoring feature enforced by some browsers (e.g Google Chrome since v56) which makes scroller behavior incorrect.
 The ui-scroll-viewport directive eliminates this effect by disabling the 'overflow-anchor' css-property on its element.
-But if the ui-scroll-viewport is not presented in the template, you should take care of this manually.
+But if the ui-scroll-viewport is not presented in the template, you should take care of this manually by switching it off on the body/html container.
 
 
 ### Examples
@@ -134,6 +134,8 @@ To use it in your angular-app you should add the module (modules)
 ```
 angular.module('application', ['ui.scroll', 'ui.scroll.grid'])
 ```
+
+_Note:_ angular-ui-scroll works with AngularJS v1.2.0 and above.
 
 Currently we have 2 regular modules which can be added to the angular-app you are developing:
  - __ui.scroll__ module which has
@@ -274,9 +276,9 @@ Adapter object implements the following methods
 
         reload(startIndex)
 
-    Calling this method reinitializes and reloads the scroller content. `startIndex` is an integer indicating what item index the scroller will use to start the load process. The value of the argument replaces the value provided with the start-index attribute.  Calling `reload()` is equivalent to calling `reload` method with current value of the `start-index` attribute.
+    Calling this method re-initializes and reloads the scroller content. `startIndex` is an integer indicating what item index the scroller will use to start the load process. The value of the argument replaces the value provided with the start-index attribute.  Calling `reload()` is equivalent to calling `reload` method with current value of the `start-index` attribute.
 
-    _Important!_ `startIndex` should fall within underlying datset boundaries. The scroller will request two batches of items one starting from the `startIndex` and another one preceding the first one (starting from `startIndex - bufferSize`). If both requests come back empty, the scroller will consider the dataset to be empty and will place no further data requests.
+    _Important!_ `startIndex` should fall within underlying dataset boundaries. The scroller will request two batches of items one starting from the `startIndex` and another one preceding the first one (starting from `startIndex - bufferSize`). If both requests come back empty, the scroller will consider the dataset to be empty and will place no further data requests.
 
 * Method `applyUpdates`
 
@@ -296,7 +298,7 @@ Adapter object implements the following methods
     * **updater** is a function to be applied to every item currently in the buffer. The function will receive 3 parameters: `item`, `scope`, and `element`. Here `item` is the item to be affected, `scope` is the item $scope, and `element` is the html element for the item. The return value of the function should be an array of items. Similarly to the `newItem` parameter (see above), if the array is empty(`[]`), the item is deleted, otherwise the item is replaced by the items in the array. If the return value is not an array, the item remains unaffected, unless some updates were made to the item in the updater function. This can be thought of as in place update.
 
     Options for both signatures, an object with following fields
-    * **immutableTop** is a boolean flag with `false` defalt value. This option has an impact on removing/inserting items procedure. If it's `false`, deleting the topmost item will lead to incrementing min index, also inserting new item(s) before the topmost one will lead to decrementing min index. If it's `true`, min index will not be affected, max index will be shifted instead. If it's `true`, no matter which item is going to be removed/inserted, max index will be reduced/increased respectively.
+    * **immutableTop** is a boolean flag with `false` default value. This option has an impact on removing/inserting items procedure. If it's `false`, deleting the topmost item will lead to incrementing min index, also inserting new item(s) before the topmost one will lead to decrementing min index. If it's `true`, min index will not be affected, max index will be shifted instead. If it's `true`, no matter which item is going to be removed/inserted, max index will be reduced/increased respectively.
 
     Let's discuss a little sample. We have `{{$index}}: {{item}}` template and three rows: `1: item1`, `2: item2`, `3: item3`. Then we want to remove the first item. Without `immutableTop` we'll get `2: item2`, `3: item3`. With `immutableTop` we'll get `1: item2`, `2: item3`. The same for inserting, say, `item0` before `item1`. Without `immutableTop` we'll get `0: item0`, `1: item1`, `2: item2`, `3: item3`. With `immutableTop` we'll get `1: item0`, `2: item1`, `3: item2`, `4: item3`.
 
@@ -413,7 +415,7 @@ A reference to this object is injected as a property named `gridAdapter`in the s
 `GridAdapter` object implements the following methods:
 
 * Method `getLayout()` - returns an object describing current scrollable grid layout.
-* Method `applyLayout(layout)` - restores scrollabel grid layout to the state as defined by the object passed as the parameter
+* Method `applyLayout(layout)` - restores scrollable grid layout to the state as defined by the object passed as the parameter
 * Method `columnFromPoint(x,y)` - if the coordinates belong to a scrollable grid column returns the appropriate ColumnAdapter object. Otherwise, returns `undefined`.
 
 `ColumnAdapter` object implements the following methods:
@@ -469,7 +471,7 @@ npm run build
   b) generate compressed and uncompressed versions of the ui-scroll distributive in the public [./dist](https://github.com/angular-ui/ui-scroll/tree/master/dist) folder,
   c) run tests over minified distributive files.
 
-Pull Rerquest should include source code (./scr) changes, may include tests (./test) changes and may not include public distributive (./dist) changes.
+Pull Request should include source code (./scr) changes, may include tests (./test) changes and may not include public distributive (./dist) changes.
 
 
 -------------------
@@ -477,9 +479,12 @@ Pull Rerquest should include source code (./scr) changes, may include tests (./t
 
 ## Change log
 
+### v1.8.1
+ * Removed deprecated bind/unbind methods.
+
 ### v1.8.0
- * Reconsidered scroll event handling
- * Fixed inertia scrolling issues
+ * Reconsidered scroll event handling.
+ * Fixed inertia scrolling issues.
 
 ### v1.7.6
  * Added immutableTop option for applyUpdates and prepend Adapter methods.
@@ -558,7 +563,7 @@ Pull Rerquest should include source code (./scr) changes, may include tests (./t
 
 ### v1.3.1
 * Changed the logic of viewport scroll/padding recalculation.
-* Splitted test specifications.
+* Reorganized test specifications.
 * Updated dev-dependencies (package.json).
 * Implemented append/prepend methods on the adapter.
 
