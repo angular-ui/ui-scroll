@@ -3,9 +3,9 @@
 /src
 /temp
 /test
+/.github
 .babelrc
 .gitignore
 .jshintrc
 .npmignore
-.travis.yml
 webpack.config.js

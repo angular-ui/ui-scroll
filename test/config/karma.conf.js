@@ -36,7 +36,7 @@ module.exports = function (config) {
 
     keepalive: ENV === 'development',
 
-    browsers: process.env.TRAVIS ?
+    browsers: process.env.GITHUB ?
       ['Firefox'] :
       [chrome],
 

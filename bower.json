@@ -27,10 +27,10 @@
     "src",
     "temp",
     "test",
+    ".github",
     ".gitignore",
     ".jshintrc",
     ".npmignore",
-    ".travis.yml",
     "Gruntfile.js",
     "package.json",
     "webpack.config.js"
