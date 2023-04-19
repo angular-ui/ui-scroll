@@ -1,0 +1,40 @@
+name: ui-scroll build
+
+on:
+  push:
+    branches:
+      - "**"
+  workflow_dispatch:
+    inputs:
+      cause:
+        description: 'Reason'
+        required: true
+        default: 'Manual triggering'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dispatched?
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          echo "This is dispatched"
+          echo "Build reason: ${{ github.event.inputs.cause }}"
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        env:
+          CI: true
+          BROWSER: headless
+        run: npm test

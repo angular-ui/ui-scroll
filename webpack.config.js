@@ -3,7 +3,7 @@
 const path = require('path');
 const glob = require('glob');
 const webpack = require('webpack');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const TerserPlugin = require('terser-webpack-plugin');
 
@@ -43,31 +43,24 @@ if (ENV === 'development') {
     optimization: {},
 
     devServer: !isTest ? {
-      historyApiFallback: {
-        rewrites: [
-          { from: /\/*\/*\.html$/, to: (context) => '/demo' + context.parsedUrl.pathname },
-          { from: /\/*\/*\.css$/, to: (context) => '/demo' + context.parsedUrl.pathname },
-          { from: /\/*\/*\.js$/, to: (context) => '/demo' + context.parsedUrl.pathname },
-          { from: /\/ui-scroll-demo\.gif$/, to: '/demo/ui-scroll-demo.gif' },
-          { from: /^\/$/, to: '/demo/index.html' }
-        ]
-      },
       proxy: {
         '/dist': {
           target: 'http://' + devServerHost + ':' + devServerPort,
           pathRewrite: { '^/dist': '' }
         }
       },
-      inline: true,
-      quiet: false,
-      stats: {
-        modules: false,
-        errors: true,
-        warnings: true
-      },
+
       port: devServerPort,
       host: devServerHost,
-      publicPath: '/'
+      static: "demo",
+      devMiddleware: {
+        stats: {
+          modules: false,
+          errors: true,
+          warnings: true
+        },
+        publicPath: '/'
+      },
     } : {},
 
     watch: true
@@ -82,7 +75,7 @@ if (ENV === 'production') {
     },
 
     output: {
-      path: path.join(__dirname, 'dist'),
+      path: path.resolve(__dirname, 'dist'),
       filename: '[name].js'
     },
 
@@ -92,10 +85,10 @@ if (ENV === 'production') {
       minimize: true,
       minimizer: [
         new TerserPlugin({
-          sourceMap: true,
           parallel: true,
           extractComments: false,
           terserOptions: {
+            sourceMap: true,
             warnings: true,
             compress: {
               warnings: true,
@@ -110,8 +103,8 @@ if (ENV === 'production') {
     },
 
     plugins: [
-      new CleanWebpackPlugin('dist', {
-        root: __dirname
+      new CleanWebpackPlugin({
+        cleanOnceBeforeBuildPatterns: [path.join(__dirname, 'dist/**/*')]
       }),
       new CopyWebpackPlugin({
         patterns: [

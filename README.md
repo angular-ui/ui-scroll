@@ -1,9 +1,8 @@
 ### UI Scroll - [AngularJS](http://angularjs.org/) directive to provide infinite scroll over a limited element buffer
 
-[![Build Status](https://travis-ci.org/angular-ui/ui-scroll.svg?branch=master)](https://travis-ci.org/angular-ui/ui-scroll)
-[![npm version](https://badge.fury.io/js/angular-ui-scroll.svg)](http://badge.fury.io/js/angular-ui-scroll)
+[![Build Status](https://github.com/angular-ui/ui-scroll/actions/workflows/ci.yml/badge.svg)](https://github.com/angular-ui/ui-scroll/actions/workflows/ci.yml)
+[![npm version](https://badge.fury.io/js/angular-ui-scroll.svg)](https://www.npmjs.com/package/angular-ui-scroll)
 [![Bower version](https://badge.fury.io/bo/angular-ui-scroll.svg)](http://badge.fury.io/bo/angular-ui-scroll)
-[![Join the chat at https://gitter.im/angular-ui/ui-scroll](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/angular-ui/ui-scroll?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 <p dir="rtl">
 <small>looking for next Angular version? try <a href="https://github.com/dhilt/ngx-ui-scroll">ngx-ui-scroll</a> &#9758;</small>
@@ -478,6 +477,9 @@ Pull Request should include source code (./scr) changes, may include tests (./te
 
 
 ## Change log
+
+### v1.9.0
+ * Webpack 5 build.
 
 ### v1.8.2
  * Fixed edge cases when removing items.

@@ -127,9 +127,9 @@ angular.module('ui.scroll', [])
         function persistDatasourceIndex(datasource, propName) {
           let getter;
           // need to postpone min/maxIndexUser processing if the view is empty
-          if(angular.isNumber(datasource[propName])) {
+          if (angular.isNumber(datasource[propName])) {
             getter = datasource[propName];
-            if(angular.isNumber(getter)) {
+            if (angular.isNumber(getter)) {
               onRenderHandlers = onRenderHandlers.filter(handler => handler.id !== propName);
               onRenderHandlers.push({
                 id: propName,
@@ -149,7 +149,7 @@ angular.module('ui.scroll', [])
           Object.defineProperty(datasource, propName, {
             set: (value) => {
               getter = value;
-              if(pending.length && !buffer.length) {
+              if (pending.length && !buffer.length) {
                 persistDatasourceIndex(datasource, propName);
                 return;
               }
@@ -189,14 +189,14 @@ angular.module('ui.scroll', [])
 
         const initialize = () => {
           let tryCount = 0;
-          if(!viewport.applyContainerStyle()) {
+          if (!viewport.applyContainerStyle()) {
             const timer = $interval(() => {
               tryCount++;
-              if(viewport.applyContainerStyle()) {
+              if (viewport.applyContainerStyle()) {
                 $interval.cancel(timer);
                 doAdjust();
               }
-              if(tryCount * VIEWPORT_POLLING_INTERVAL >= MAX_VIEWPORT_DELAY) {
+              if (tryCount * VIEWPORT_POLLING_INTERVAL >= MAX_VIEWPORT_DELAY) {
                 $interval.cancel(timer);
                 throw Error(`ui-scroll directive requires a viewport with non-zero height in ${MAX_VIEWPORT_DELAY}ms`);
               }
