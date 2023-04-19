@@ -1,6 +1,6 @@
 ### UI Scroll - [AngularJS](http://angularjs.org/) directive to provide infinite scroll over a limited element buffer
 
-[![Build Status](https://github.com/angular-ui/ui-scroll/actions/workflows/ci.yml/badge.svg)](https://github.com/angular-ui/ui-scroll/actions/workflows/ci.yml)
+[![Build Status](https://github.com/angular-ui/ui-scroll/actions/workflows/build.yml/badge.svg)](https://github.com/angular-ui/ui-scroll/actions/workflows/build.yml)
 [![npm version](https://badge.fury.io/js/angular-ui-scroll.svg)](https://www.npmjs.com/package/angular-ui-scroll)
 [![Bower version](https://badge.fury.io/bo/angular-ui-scroll.svg)](http://badge.fury.io/bo/angular-ui-scroll)
 
