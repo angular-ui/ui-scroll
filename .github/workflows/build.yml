@@ -1,8 +1,9 @@
 name: ui-scroll build
 
 on:
-  pull_request:
-    branches: [ master ]
+  push:
+    branches:
+      - "**"
   workflow_dispatch:
     inputs:
       cause:
@@ -34,5 +35,6 @@ jobs:
 
       - name: Run tests
         env:
-          GITHUB: true
+          CI: true
+          BROWSER: headless
         run: npm test
