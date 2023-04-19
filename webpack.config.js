@@ -85,10 +85,10 @@ if (ENV === 'production') {
       minimize: true,
       minimizer: [
         new TerserPlugin({
-          sourceMap: true,
           parallel: true,
           extractComments: false,
           terserOptions: {
+            sourceMap: true,
             warnings: true,
             compress: {
               warnings: true,
