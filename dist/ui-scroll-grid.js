@@ -1,10 +1,10 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.9.0 -- 2023-04-19T12:05:19.939Z
+ * Version: 1.9.1 -- 2023-05-17T15:38:46.936Z
  * License: MIT
  */
-/******/ (() => { // webpackBootstrap
+/******/ (function() { // webpackBootstrap
 var __webpack_exports__ = {};
 angular.module('ui.scroll.grid', []).directive('uiScrollTh', ['$log', '$timeout', function (console, $timeout) {
   function GridAdapter(controller) {

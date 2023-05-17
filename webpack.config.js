@@ -135,6 +135,8 @@ module.exports = {
 
   mode: ENV,
 
+  target: ['web', 'es5'],
+
   optimization: configEnv.optimization,
 
   module: {

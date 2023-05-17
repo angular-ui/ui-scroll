@@ -1,7 +1,7 @@
 {
   "name": "angular-ui-scroll",
   "description": "AngularJS virtual scrolling module",
-  "version": "1.9.0",
+  "version": "1.9.1",
   "src": "./src/",
   "public": "./dist/",
   "main": "./dist/ui-scroll.js",
