@@ -1,10 +1,10 @@
 /*!
  * angular-ui-scroll
  * https://github.com/angular-ui/ui-scroll
- * Version: 1.9.0 -- 2023-04-19T12:05:19.939Z
+ * Version: 1.9.1 -- 2023-05-17T15:38:46.936Z
  * License: MIT
  */
-/******/ (() => { // webpackBootstrap
+/******/ (function() { // webpackBootstrap
 /******/ 	"use strict";
 var __webpack_exports__ = {};
 
@@ -637,7 +637,7 @@ var Padding = /*#__PURE__*/function () {
   }]);
   return Padding;
 }();
-/* harmony default export */ const modules_padding = (Padding);
+/* harmony default export */ var modules_padding = (Padding);
 ;// CONCATENATED MODULE: ./src/modules/viewport.js
 
 function Viewport(elementRoutines, buffer, element, viewportController, $rootScope, padding) {
@@ -1098,7 +1098,7 @@ var Adapter = /*#__PURE__*/function () {
   }]);
   return Adapter;
 }();
-/* harmony default export */ const modules_adapter = (Adapter);
+/* harmony default export */ var modules_adapter = (Adapter);
 ;// CONCATENATED MODULE: ./src/ui-scroll.js
 
 
