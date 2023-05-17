@@ -478,6 +478,9 @@ Pull Request should include source code (./scr) changes, may include tests (./te
 
 ## Change log
 
+### v1.9.1
+ * Fixed ES5 build.
+
 ### v1.9.0
  * Webpack 5 build.
 
